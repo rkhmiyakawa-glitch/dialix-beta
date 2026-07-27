@@ -18,7 +18,14 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [creating, setCreating] = useState(false);
-  const [newUser, setNewUser] = useState({ displayName: "", email: "", password: "", role: "operator", isActive: true, sendInvite: true });
+  const [newUser, setNewUser] = useState({
+    displayName: "",
+    email: "",
+    password: "",
+    passwordConfirm: "",
+    role: "operator",
+    isActive: true,
+  });
 
   const activeAdminCount = useMemo(() => users.filter((u) => u.role === "admin" && u.isActive).length, [users]);
 
@@ -54,14 +61,21 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
   async function createUser() {
     if (!newUser.displayName.trim() || !newUser.email.trim()) return window.alert("名前とメールアドレスを入力してください。");
-    if (!newUser.sendInvite && newUser.password.length < 8) return window.alert("初期パスワードは8文字以上で入力してください。");
+    if (newUser.password.length < 8) return window.alert("初期パスワードは8文字以上で入力してください。");
+    if (newUser.password !== newUser.passwordConfirm) return window.alert("確認用パスワードが一致しません。");
     setSaving(true); setError("");
     try {
-      await createManagedUser(newUser);
+      await createManagedUser({
+        displayName: newUser.displayName,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+        isActive: newUser.isActive,
+      });
       setCreating(false);
-      setNewUser({ displayName: "", email: "", password: "", role: "operator", isActive: true, sendInvite: true });
+      setNewUser({ displayName: "", email: "", password: "", passwordConfirm: "", role: "operator", isActive: true });
       await reload();
-      window.alert(newUser.sendInvite ? "招待メールを送信しました。" : "ユーザーを追加しました。");
+      window.alert("ユーザーを追加しました。初期パスワードを本人へ安全に共有してください。");
     } catch (e) { setError(e.message || "ユーザー追加に失敗しました。"); }
     finally { setSaving(false); }
   }
@@ -127,10 +141,10 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
       <label>名前<input value={newUser.displayName} onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })} /></label>
       <label>メールアドレス<input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></label>
       <label>権限<select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}><option value="admin">管理者</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label>
+      <label>初期パスワード<input type="password" minLength="8" autoComplete="new-password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label>
+      <label>初期パスワード（確認）<input type="password" minLength="8" autoComplete="new-password" value={newUser.passwordConfirm} onChange={(e) => setNewUser({ ...newUser, passwordConfirm: e.target.value })} placeholder="もう一度入力" /></label>
       <label className="toggle-row"><input type="checkbox" checked={newUser.isActive} onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })} />アカウントを有効にする</label>
-      <label className="toggle-row"><input type="checkbox" checked={newUser.sendInvite} onChange={(e) => setNewUser({ ...newUser, sendInvite: e.target.checked })} />パスワード設定用の招待メールを送信する</label>
-      {!newUser.sendInvite && <label>初期パスワード<input type="password" minLength="8" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label>}
-      <p className="csv-note">招待メールを使う場合、パスワードをメール本文に記載せず、本人が安全に設定します。</p>
+      <p className="csv-note">招待メールは送信されません。登録後、メールアドレスと初期パスワードを本人へ安全に共有し、初回ログイン後にマイページから変更してもらってください。</p>
       <div className="modal-actions"><button className="secondary-button" onClick={() => setCreating(false)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={createUser} disabled={saving}>{saving ? "登録中..." : "登録"}</button></div>
     </section></div>}
 

@@ -16,7 +16,6 @@ type RequestBody = {
   password?: string;
   role?: Role;
   isActive?: boolean;
-  sendInvite?: boolean;
 };
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -77,34 +76,22 @@ Deno.serve(async (req) => {
       const displayName = String(body.displayName ?? "").trim();
       const role = validateRole(body.role);
       const isActive = body.isActive !== false;
-      const sendInvite = body.sendInvite !== false;
+      const password = String(body.password ?? "");
 
       if (!email || !displayName) return json({ ok: false, error: "名前とメールアドレスは必須です。" }, 400);
-      if (!sendInvite && String(body.password ?? "").length < 8) {
+      if (password.length < 8) {
         return json({ ok: false, error: "初期パスワードは8文字以上にしてください。" }, 400);
       }
 
       const metadata = { display_name: displayName, role };
-      let createdUserId = "";
-
-      if (sendInvite) {
-        const siteUrl = Deno.env.get("DIALIX_SITE_URL")?.replace(/\/$/, "");
-        const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-          data: metadata,
-          ...(siteUrl ? { redirectTo: siteUrl } : {}),
-        });
-        if (error) throw error;
-        createdUserId = data.user?.id ?? "";
-      } else {
-        const { data, error } = await admin.auth.admin.createUser({
-          email,
-          password: String(body.password),
-          email_confirm: true,
-          user_metadata: metadata,
-        });
-        if (error) throw error;
-        createdUserId = data.user?.id ?? "";
-      }
+      const { data, error } = await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: metadata,
+      });
+      if (error) throw error;
+      const createdUserId = data.user?.id ?? "";
 
       if (!createdUserId) throw new Error("認証ユーザーIDを取得できませんでした。");
 
