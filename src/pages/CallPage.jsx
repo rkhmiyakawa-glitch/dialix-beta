@@ -189,44 +189,48 @@ export default function CallPage({
           <button type="button" onClick={() => handleNavigate("next")} disabled={isSaving || navigationPosition >= navigationTotal}>次の顧客 →</button>
         </nav>
 
-        <div className="call-layout call-layout-v108">
-          <section className="call-column customer-column-v106">
-            <CustomerInfoCard
-              customer={selectedCustomer}
-              callState={callState}
-              onZoomCall={handleZoomCall}
-              onCopyField={handleCopyField}
-              isSaving={isSaving}
-            />
-          </section>
+        <div className="call-layout call-layout-v112">
+          <div className="call-stack call-stack-left">
+            <section className="call-column customer-column-v106">
+              <CustomerInfoCard
+                customer={selectedCustomer}
+                callState={callState}
+                onZoomCall={handleZoomCall}
+                onCopyField={handleCopyField}
+                isSaving={isSaving}
+              />
+            </section>
 
-          <section className="call-column last-contact-column-v106">
-            <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.ap || "―", status: selectedCustomer.status || "未架電" }} />
-          </section>
+            <section className="call-column memo-column-v106">
+              <MemoBox value={memo} onChange={markDirty(setMemo)} disabled={isSaving} />
+            </section>
 
-          <section className="call-column status-column-v106">
-            <StatusButtons
-              statuses={statuses}
-              selectedCategory={selectedCategory}
-              selectedStatus={selectedStatus}
-              onSelectCategory={handleSelectCategory}
-              onSelectStatus={markDirty(setSelectedStatus)}
-              onClearStatus={handleClearStatus}
-              disabled={isSaving}
-              reminderDate={reminderDate}
-              reminderTime={reminderTime}
-              onReminderDateChange={markDirty(setReminderDate)}
-              onReminderTimeChange={markDirty(setReminderTime)}
-            />
-          </section>
+            <section className="call-column history-column-v106">
+              <HistoryTimeline history={selectedCustomer.history || []} />
+            </section>
+          </div>
 
-          <section className="call-column memo-column-v106">
-            <MemoBox value={memo} onChange={markDirty(setMemo)} disabled={isSaving} />
-          </section>
+          <div className="call-stack call-stack-right">
+            <section className="call-column last-contact-column-v106">
+              <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.ap || "―", status: selectedCustomer.status || "未架電" }} />
+            </section>
 
-          <section className="call-column history-column-v106">
-            <HistoryTimeline history={selectedCustomer.history || []} />
-          </section>
+            <section className="call-column status-column-v106">
+              <StatusButtons
+                statuses={statuses}
+                selectedCategory={selectedCategory}
+                selectedStatus={selectedStatus}
+                onSelectCategory={handleSelectCategory}
+                onSelectStatus={markDirty(setSelectedStatus)}
+                onClearStatus={handleClearStatus}
+                disabled={isSaving}
+                reminderDate={reminderDate}
+                reminderTime={reminderTime}
+                onReminderDateChange={markDirty(setReminderDate)}
+                onReminderTimeChange={markDirty(setReminderTime)}
+              />
+            </section>
+          </div>
         </div>
         <SaveBar onSave={() => handleSave(false)} onSaveAndNext={() => handleSave(true)} isSaving={isSaving} />
         <nav className="customer-navigation bottom" aria-label="顧客移動（下部）">
