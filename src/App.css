@@ -1232,3 +1232,6 @@ input,select,textarea,button{max-width:100%}
 .status-mapping-grid label > span { font-weight:700; min-height:24px; }
 .csv-memo-cell { max-width:280px; white-space:normal; }
 .edit-modal .csv-note { margin:0; }
+
+/* Beta 1.0.19: list management */
+.list-management-stack{display:grid;gap:20px}.list-manager-search{min-width:240px;border:1px solid var(--border,#d8dee9);border-radius:10px;padding:10px 12px;background:#fff}.list-description{display:block;margin-top:4px;color:#6b7280}.bulk-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}.bulk-toolbar select,.bulk-toolbar input{min-height:40px;border:1px solid #d8dee9;border-radius:9px;padding:8px 10px;background:#fff}.danger-button{border:1px solid #dc2626;background:#fff;color:#dc2626;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.danger-button:hover{background:#fef2f2}.edit-modal textarea{width:100%;box-sizing:border-box;border:1px solid #d8dee9;border-radius:10px;padding:10px;resize:vertical}

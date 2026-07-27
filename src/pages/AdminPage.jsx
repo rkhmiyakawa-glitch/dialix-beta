@@ -6,6 +6,7 @@ import CsvImportPanel from "./CsvImportPanel";
 import AuditLogPanel from "./AuditLogPanel";
 import DashboardPanel from "./DashboardPanel";
 import ReportsPanel from "./ReportsPanel";
+import ListManagementPanel from "./ListManagementPanel";
 
 const roleLabels = { admin: "管理者", sv: "SV", operator: "オペレーター" };
 
@@ -98,12 +99,12 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
         <button className={`admin-tab ${activeTab === "dashboard" ? "active" : ""}`} onClick={() => setActiveTab("dashboard")}>ダッシュボード</button>
         <button className={`admin-tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>ユーザー管理</button>
         <button className={`admin-tab ${activeTab === "csv" ? "active" : ""}`} onClick={() => setActiveTab("csv")}>CSVインポート</button>
-        <button className="admin-tab" disabled>リスト管理（準備中）</button>
+        <button className={`admin-tab ${activeTab === "lists" ? "active" : ""}`} onClick={() => setActiveTab("lists")}>リスト管理</button>
         <button className={`admin-tab ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>レポート</button>
         <button className={`admin-tab ${activeTab === "audit" ? "active" : ""}`} onClick={() => setActiveTab("audit")}>監査ログ</button>
       </div>
 
-      {activeTab === "dashboard" ? <DashboardPanel /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
+      {activeTab === "dashboard" ? <DashboardPanel /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
         <div className="admin-panel-head">
           <div><h2>ユーザー一覧</h2><p>追加・権限変更・停止・パスワード変更・削除をDIALIX上で行えます。</p></div>
           <button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={currentProfile?.role !== "admin"}>＋ ユーザー追加</button>
