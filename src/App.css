@@ -804,3 +804,68 @@ input,select,textarea,button{max-width:100%}
     gap:5px!important;
   }
 }
+
+
+/* Beta 1.0.7 customer / last contact / status three-column layout */
+.call-layout-v106{
+  display:grid!important;
+  grid-template-columns:minmax(360px,1.15fr) minmax(280px,.85fr) minmax(260px,.7fr)!important;
+  grid-template-areas:
+    "customer last-contact status"
+    "memo memo memo"
+    "history history history"!important;
+  gap:18px!important;
+  align-items:stretch!important;
+}
+.customer-column-v106{grid-area:customer!important}
+.last-contact-column-v106{grid-area:last-contact!important}
+.status-column-v106{grid-area:status!important}
+.memo-column-v106{grid-area:memo!important}
+.history-column-v106{grid-area:history!important}
+
+.customer-column-v106 .customer-panel,
+.last-contact-column-v106 .last-contact-card,
+.status-column-v106 .status-panel{
+  height:100%!important;
+}
+
+/* コールステータスは縦一列 */
+.status-column-v106 .status-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+.status-column-v106 .status-button{
+  width:100%!important;
+  min-height:46px;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+.status-column-v106 .status-detail-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+
+/* 幅が足りない時は段階的に折り返す */
+@media(max-width:1260px){
+  .call-layout-v106{
+    grid-template-columns:minmax(360px,1.2fr) minmax(260px,.8fr)!important;
+    grid-template-areas:
+      "customer last-contact"
+      "status status"
+      "memo memo"
+      "history history"!important;
+  }
+}
+@media(max-width:900px){
+  .call-layout-v106{
+    grid-template-columns:1fr!important;
+    grid-template-areas:
+      "customer"
+      "last-contact"
+      "status"
+      "memo"
+      "history"!important;
+  }
+}
