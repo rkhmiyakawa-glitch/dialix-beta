@@ -6,10 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type Role = "admin" | "sv" | "operator";
+type Role = "owner" | "admin" | "sv" | "operator";
+type AssignableRole = Exclude<Role, "owner">;
 
 type RequestBody = {
-  action?: "create" | "update" | "reset_password" | "delete";
+  action?: "claim_owner" | "create" | "update" | "reset_password" | "delete";
   userId?: string;
   displayName?: string;
   email?: string;
@@ -29,7 +30,7 @@ function normalizeEmail(value: unknown) {
   return String(value ?? "").trim().toLowerCase();
 }
 
-function validateRole(value: unknown): Role {
+function validateAssignableRole(value: unknown): AssignableRole {
   if (value === "admin" || value === "sv" || value === "operator") return value;
   return "operator";
 }
@@ -59,29 +60,50 @@ Deno.serve(async (req) => {
 
     const { data: callerProfile, error: profileError } = await admin
       .from("profiles")
-      .select("id,role,is_active")
+      .select("id,display_name,email,role,is_active")
       .eq("id", caller.id)
       .single();
 
     if (profileError || !callerProfile) return json({ ok: false, error: "管理者プロフィールを確認できません。" }, 403);
-    if (callerProfile.role !== "admin" || callerProfile.is_active === false) {
-      return json({ ok: false, error: "この操作は有効な管理者だけが実行できます。" }, 403);
+    const callerRole = String(callerProfile.role || "").toLowerCase() as Role;
+    if (!["owner", "admin"].includes(callerRole) || callerProfile.is_active === false) {
+      return json({ ok: false, error: "この操作は有効なオーナーまたは管理者だけが実行できます。" }, 403);
     }
 
     const body = (await req.json()) as RequestBody;
     const action = body.action;
 
+    if (action === "claim_owner") {
+      if (callerRole === "owner") return json({ ok: true, alreadyOwner: true });
+      const { count: ownerCount, error: ownerCountError } = await admin
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "owner");
+      if (ownerCountError) throw ownerCountError;
+      if ((ownerCount ?? 0) > 0) return json({ ok: false, error: "オーナーはすでに設定されています。" }, 409);
+
+      const { error: authUpdateError } = await admin.auth.admin.updateUserById(caller.id, {
+        user_metadata: { ...(caller.user_metadata || {}), display_name: callerProfile.display_name, role: "owner" },
+      });
+      if (authUpdateError) throw authUpdateError;
+
+      const { error: profileUpdateError } = await admin
+        .from("profiles")
+        .update({ role: "owner", is_active: true })
+        .eq("id", caller.id);
+      if (profileUpdateError) throw profileUpdateError;
+      return json({ ok: true, userId: caller.id, role: "owner" });
+    }
+
     if (action === "create") {
       const email = normalizeEmail(body.email);
       const displayName = String(body.displayName ?? "").trim();
-      const role = validateRole(body.role);
+      const role = validateAssignableRole(body.role);
       const isActive = body.isActive !== false;
       const password = String(body.password ?? "");
 
       if (!email || !displayName) return json({ ok: false, error: "名前とメールアドレスは必須です。" }, 400);
-      if (password.length < 8) {
-        return json({ ok: false, error: "初期パスワードは8文字以上にしてください。" }, 400);
-      }
+      if (password.length < 8) return json({ ok: false, error: "初期パスワードは8文字以上にしてください。" }, 400);
 
       const metadata = { display_name: displayName, role };
       const { data, error } = await admin.auth.admin.createUser({
@@ -92,25 +114,16 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       const createdUserId = data.user?.id ?? "";
-
       if (!createdUserId) throw new Error("認証ユーザーIDを取得できませんでした。");
 
       const { error: upsertError } = await admin.from("profiles").upsert(
-        {
-          id: createdUserId,
-          display_name: displayName,
-          email,
-          role,
-          is_active: isActive,
-        },
+        { id: createdUserId, display_name: displayName, email, role, is_active: isActive },
         { onConflict: "id" },
       );
-
       if (upsertError) {
         await admin.auth.admin.deleteUser(createdUserId).catch(() => undefined);
         throw upsertError;
       }
-
       return json({ ok: true, userId: createdUserId });
     }
 
@@ -124,6 +137,11 @@ Deno.serve(async (req) => {
       .single();
     if (targetError || !targetProfile) return json({ ok: false, error: "対象ユーザーが見つかりません。" }, 404);
 
+    const targetRole = String(targetProfile.role || "").toLowerCase() as Role;
+    if (targetRole === "owner") {
+      return json({ ok: false, error: "オーナーは編集・停止・パスワード変更・削除できません。" }, 403);
+    }
+
     const { count: activeAdminCount, error: countError } = await admin
       .from("profiles")
       .select("id", { count: "exact", head: true })
@@ -131,12 +149,19 @@ Deno.serve(async (req) => {
       .eq("is_active", true);
     if (countError) throw countError;
 
+    const { count: activeOwnerCount, error: ownerCountError } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "owner")
+      .eq("is_active", true);
+    if (ownerCountError) throw ownerCountError;
+
     if (action === "update") {
       const displayName = String(body.displayName ?? targetProfile.display_name ?? "").trim();
-      const role = validateRole(body.role ?? targetProfile.role);
+      const role = validateAssignableRole(body.role ?? targetProfile.role);
       const isActive = body.isActive !== false;
-      const removesLastAdmin = targetProfile.role === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1 && (role !== "admin" || !isActive);
-      if (removesLastAdmin) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 409);
+      const removesLastManager = targetRole === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1 && (activeOwnerCount ?? 0) === 0 && (role !== "admin" || !isActive);
+      if (removesLastManager) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 409);
       if (!displayName) return json({ ok: false, error: "名前を入力してください。" }, 400);
 
       const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, {
@@ -144,12 +169,8 @@ Deno.serve(async (req) => {
       });
       if (authUpdateError) throw authUpdateError;
 
-      const { error: updateError } = await admin
-        .from("profiles")
-        .update({ display_name: displayName, role, is_active: isActive })
-        .eq("id", userId);
+      const { error: updateError } = await admin.from("profiles").update({ display_name: displayName, role, is_active: isActive }).eq("id", userId);
       if (updateError) throw updateError;
-
       return json({ ok: true });
     }
 
@@ -163,12 +184,11 @@ Deno.serve(async (req) => {
 
     if (action === "delete") {
       if (userId === caller.id) return json({ ok: false, error: "自分自身は削除できません。" }, 409);
-      const deletesLastAdmin = targetProfile.role === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1;
-      if (deletesLastAdmin) return json({ ok: false, error: "最後の管理者は削除できません。" }, 409);
+      const deletesLastManager = targetRole === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1 && (activeOwnerCount ?? 0) === 0;
+      if (deletesLastManager) return json({ ok: false, error: "最後の管理者は削除できません。" }, 409);
 
       const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);
       if (deleteAuthError) throw deleteAuthError;
-      // profiles.id が auth.users に外部キー設定されていない環境でも確実に消す。
       const { error: deleteProfileError } = await admin.from("profiles").delete().eq("id", userId);
       if (deleteProfileError) throw deleteProfileError;
       return json({ ok: true });

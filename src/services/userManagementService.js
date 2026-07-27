@@ -29,3 +29,7 @@ export function resetManagedUserPassword(userId, password) {
 export function deleteManagedUser(userId) {
   return invokeAdminUsers({ action: "delete", userId });
 }
+
+export function claimOwnerRole() {
+  return invokeAdminUsers({ action: "claim_owner" });
+}

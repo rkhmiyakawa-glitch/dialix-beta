@@ -4,7 +4,7 @@ import { updateMyDisplayName } from "../services/profileService";
 import { updateMyPassword } from "../services/authService";
 import { fetchMyPerformance } from "../services/dataService";
 
-const roleLabels = { admin: "管理者", sv: "SV", supervisor: "SV", operator: "オペレーター", 管理者: "管理者" };
+const roleLabels = { owner: "オーナー", admin: "管理者", sv: "SV", supervisor: "SV", operator: "オペレーター", 管理者: "管理者", オーナー: "オーナー" };
 const emptyPerformance = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
 const metricItems = [
   { key: "calls", label: "コール" },

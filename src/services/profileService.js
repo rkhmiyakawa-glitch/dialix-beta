@@ -1,6 +1,6 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
-const demoProfile = { id: "demo-admin", displayName: "宮川", email: "demo@dialix.jp", role: "admin", isActive: true };
+const demoProfile = { id: "demo-admin", displayName: "宮川", email: "demo@dialix.jp", role: "owner", isActive: true };
 const demoUsers = [
   demoProfile,
   { id: "demo-sv", displayName: "佐藤 SV", email: "sv@dialix.jp", role: "sv", isActive: true },

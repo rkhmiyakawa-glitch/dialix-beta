@@ -1,6 +1,6 @@
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
-  const canOpenAdmin = ["admin", "sv", "supervisor", "管理者"].includes(normalizedRole);
+  const canOpenAdmin = ["owner", "admin", "sv", "supervisor", "管理者", "オーナー"].includes(normalizedRole);
 
   async function goHome() {
     await onGoLists?.();
@@ -12,7 +12,7 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
     <header className="app-header">
       <div className="header-left">
         <button className="header-brand" type="button" onClick={goHome} aria-label="リスト一覧へ戻る">
-          <span className="header-mark">D</span><strong>DIALIX</strong><span className="beta-badge">Beta 1.0</span>
+          <span className="header-mark">D</span><strong>DIALIX</strong><span className="beta-badge">RC5</span>
         </button>
         <div className="topbar-breadcrumb"><button type="button" onClick={goHome}>リスト一覧</button><span>›</span><strong>{pageTitle}</strong></div>
       </div>

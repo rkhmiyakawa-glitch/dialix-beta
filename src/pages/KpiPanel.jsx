@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchOperatorKpi, subscribeManagementChanges } from "../services/managementService";
 
 const todayJa = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
-const roleLabel = { admin: "管理者", sv: "SV", operator: "オペレーター" };
+const roleLabel = { owner: "オーナー", admin: "管理者", sv: "SV", operator: "オペレーター" };
 
 export default function KpiPanel() {
   const [date, setDate] = useState(todayJa());
