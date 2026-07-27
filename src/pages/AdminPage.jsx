@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
-import { fetchProfiles, updateProfile } from "../services/profileService";
+import { fetchProfiles } from "../services/profileService";
+import { createManagedUser, deleteManagedUser, resetManagedUserPassword, updateManagedUser } from "../services/userManagementService";
 import CsvImportPanel from "./CsvImportPanel";
 import AuditLogPanel from "./AuditLogPanel";
 import DashboardPanel from "./DashboardPanel";
@@ -15,6 +16,8 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState({ displayName: "", email: "", password: "", role: "operator", isActive: true, sendInvite: true });
 
   const activeAdminCount = useMemo(() => users.filter((u) => u.role === "admin" && u.isActive).length, [users]);
 
@@ -41,11 +44,40 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
     setSaving(true); setError("");
     try {
-      await updateProfile(editing);
+      await updateManagedUser({ userId: editing.id, displayName: editing.displayName, role: editing.role, isActive: editing.isActive });
       setEditing(null);
       await reload();
     } catch (e) { setError(e.message || "更新に失敗しました。"); }
     finally { setSaving(false); }
+  }
+
+  async function createUser() {
+    if (!newUser.displayName.trim() || !newUser.email.trim()) return window.alert("名前とメールアドレスを入力してください。");
+    if (!newUser.sendInvite && newUser.password.length < 8) return window.alert("初期パスワードは8文字以上で入力してください。");
+    setSaving(true); setError("");
+    try {
+      await createManagedUser(newUser);
+      setCreating(false);
+      setNewUser({ displayName: "", email: "", password: "", role: "operator", isActive: true, sendInvite: true });
+      await reload();
+      window.alert(newUser.sendInvite ? "招待メールを送信しました。" : "ユーザーを追加しました。");
+    } catch (e) { setError(e.message || "ユーザー追加に失敗しました。"); }
+    finally { setSaving(false); }
+  }
+
+  async function resetPassword(user) {
+    const password = window.prompt(`${user.displayName}さんの新しいパスワードを入力してください（8文字以上）`);
+    if (!password) return;
+    if (password.length < 8) return window.alert("パスワードは8文字以上で入力してください。");
+    try { await resetManagedUserPassword(user.id, password); window.alert("パスワードを変更しました。"); }
+    catch (e) { setError(e.message || "パスワード変更に失敗しました。"); }
+  }
+
+  async function removeUser(user) {
+    if (user.id === currentProfile?.id) return window.alert("自分自身は削除できません。");
+    if (!window.confirm(`${user.displayName}さんを削除しますか？この操作は元に戻せません。`)) return;
+    try { await deleteManagedUser(user.id); await reload(); }
+    catch (e) { setError(e.message || "削除に失敗しました。"); }
   }
 
   return <main className="app-page">
@@ -73,8 +105,8 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
       {activeTab === "dashboard" ? <DashboardPanel /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
         <div className="admin-panel-head">
-          <div><h2>ユーザー一覧</h2><p>Authユーザー作成後、自動生成されたプロフィールを編集できます。</p></div>
-          <button className="primary-button" type="button" onClick={() => window.alert("v0.1.0ではSupabase Authentication → Usersからユーザーを作成してください。")}>＋ ユーザー追加手順</button>
+          <div><h2>ユーザー一覧</h2><p>追加・権限変更・停止・パスワード変更・削除をDIALIX上で行えます。</p></div>
+          <button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={currentProfile?.role !== "admin"}>＋ ユーザー追加</button>
         </div>
         {error && <div className="admin-error">{error}</div>}
         {loading ? <div className="empty-state">読み込み中...</div> :
@@ -84,10 +116,22 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
             <td>{user.email || "―"}</td><td><span className={`role-badge ${user.role}`}>{roleLabels[user.role]}</span></td>
             <td><span className={`state-badge ${user.isActive ? "active" : "stopped"}`}>{user.isActive ? "有効" : "停止"}</span></td>
             <td>{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleString("ja-JP") : "未記録"}</td><td>{user.createdAt ? new Date(user.createdAt).toLocaleString("ja-JP") : "―"}</td>
-            <td><button className="table-action" type="button" onClick={() => beginEdit(user)} disabled={currentProfile?.role !== "admin"}>{currentProfile?.role === "admin" ? "編集" : "閲覧のみ"}</button></td>
+            <td><div className="user-action-group"><button className="table-action" type="button" onClick={() => beginEdit(user)} disabled={currentProfile?.role !== "admin"}>{currentProfile?.role === "admin" ? "編集" : "閲覧のみ"}</button>{currentProfile?.role === "admin" && <><button className="table-action" type="button" onClick={() => resetPassword(user)}>PW変更</button><button className="table-action danger" type="button" onClick={() => removeUser(user)} disabled={user.id === currentProfile?.id}>削除</button></>}</div></td>
           </tr>)}</tbody></table></div>}
       </section>}
     </section>
+
+    {creating && <div className="lock-overlay"><section className="edit-modal">
+      <h2>ユーザー追加</h2>
+      <label>名前<input value={newUser.displayName} onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })} /></label>
+      <label>メールアドレス<input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></label>
+      <label>権限<select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}><option value="admin">管理者</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label>
+      <label className="toggle-row"><input type="checkbox" checked={newUser.isActive} onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })} />アカウントを有効にする</label>
+      <label className="toggle-row"><input type="checkbox" checked={newUser.sendInvite} onChange={(e) => setNewUser({ ...newUser, sendInvite: e.target.checked })} />パスワード設定用の招待メールを送信する</label>
+      {!newUser.sendInvite && <label>初期パスワード<input type="password" minLength="8" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label>}
+      <p className="csv-note">招待メールを使う場合、パスワードをメール本文に記載せず、本人が安全に設定します。</p>
+      <div className="modal-actions"><button className="secondary-button" onClick={() => setCreating(false)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={createUser} disabled={saving}>{saving ? "登録中..." : "登録"}</button></div>
+    </section></div>}
 
     {editing && <div className="lock-overlay"><section className="edit-modal">
       <h2>ユーザー編集</h2>
