@@ -95,6 +95,6 @@ export default function CsvImportPanel({ currentProfile }) {
       </>}
     </section>
 
-    <section className="admin-panel csv-history"><h2>インポート履歴</h2>{history.length === 0 ? <div className="empty-state">履歴はありません。</div> : <div className="table-scroll"><table className="admin-table"><thead><tr><th>日時</th><th>ファイル</th><th>リスト</th><th>結果</th><th>実行者</th></tr></thead><tbody>{history.map((item) => <tr key={item.id}><td>{new Date(item.created_at).toLocaleString("ja-JP")}</td><td>{item.file_name}</td><td>{item.lists?.name || "―"}</td><td>新規 {item.inserted_rows}／履歴 {item.imported_history_rows || 0}／重複 {item.duplicate_rows}／エラー {item.error_rows}</td><td>{item.imported_by_name || "―"}</td></tr>)}</tbody></table></div>}</section>
+    <section className="admin-panel csv-history"><h2>インポート履歴</h2>{history.length === 0 ? <div className="empty-state">履歴はありません。</div> : <div className="table-scroll"><table className="admin-table"><thead><tr><th>日時</th><th>ファイル</th><th>リスト</th><th>結果</th><th>実行者</th></tr></thead><tbody>{history.map((item) => <tr key={item.id}><td>{new Date(item.created_at).toLocaleString("ja-JP")}</td><td>{item.file_name}</td><td>{item.lists?.name || "―"}</td><td>新規 {item.inserted_rows}／重複 {item.duplicate_rows}／エラー {item.error_rows}</td><td>{item.imported_by_name || "―"}</td></tr>)}</tbody></table></div>}</section>
   </div>;
 }

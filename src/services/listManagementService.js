@@ -2,16 +2,16 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { sampleLists, customersByList } from "../data/sampleData";
 
 const demoState = {
-  lists: sampleLists.map((list, index) => ({ ...list, description: "", updatedAt: new Date(Date.now() - index * 86400000).toISOString(), deletedAt: null })),
+  lists: sampleLists.map((list, index) => ({ ...list, updatedAt: new Date(Date.now() - index * 86400000).toISOString(), deletedAt: null })),
   trash: [],
 };
 
 function mapList(row) {
-  const deletedAt = row.deleted_at || null;
+  const active = row.is_active !== false;
+  const deletedAt = active ? null : (row.updated_at || row.created_at || null);
   return {
     id: row.id,
     name: row.name,
-    description: row.description || "",
     count: Number(row.customer_count || 0),
     updatedAt: row.updated_at || row.created_at || null,
     deletedAt,
@@ -21,20 +21,22 @@ function mapList(row) {
 
 export async function fetchManagedLists({ trash = false } = {}) {
   if (!isSupabaseConfigured) return (trash ? demoState.trash : demoState.lists).map((item) => ({ ...item }));
-  let query = supabase.from("lists").select("id,name,description,customer_count,created_at,updated_at,deleted_at").order(trash ? "deleted_at" : "updated_at", { ascending: false });
-  query = trash ? query.not("deleted_at", "is", null) : query.is("deleted_at", null);
-  const { data, error } = await query;
+  const { data, error } = await supabase
+    .from("lists")
+    .select("id,name,customer_count,is_active,created_at,updated_at")
+    .eq("is_active", !trash)
+    .order("updated_at", { ascending: false });
   if (error) throw error;
   return (data || []).map(mapList);
 }
 
-export async function renameList(listId, { name, description }) {
+export async function renameList(listId, { name }) {
   if (!isSupabaseConfigured) {
-    const list = demoState.lists.find((item) => item.id === listId);
-    if (list) Object.assign(list, { name, description, updatedAt: new Date().toISOString() });
+    const list = [...demoState.lists, ...demoState.trash].find((item) => item.id === listId);
+    if (list) Object.assign(list, { name, updatedAt: new Date().toISOString() });
     return;
   }
-  const { error } = await supabase.from("lists").update({ name, description: description || "", updated_at: new Date().toISOString() }).eq("id", listId);
+  const { error } = await supabase.from("lists").update({ name, updated_at: new Date().toISOString() }).eq("id", listId);
   if (error) throw error;
 }
 
@@ -43,13 +45,29 @@ export async function duplicateList(listId, newName) {
     const original = demoState.lists.find((item) => item.id === listId);
     if (!original) throw new Error("複製元のリストが見つかりません。");
     const id = `demo-copy-${Date.now()}`;
-    demoState.lists.push({ ...original, id, name: newName, updatedAt: new Date().toISOString(), count: original.count });
-    customersByList[id] = (customersByList[listId] || []).map((customer, index) => ({ ...customer, id: `${id}-${index + 1}` }));
+    const copied = (customersByList[listId] || []).map((customer, index) => ({ ...customer, id: `${id}-${index + 1}` }));
+    customersByList[id] = copied;
+    demoState.lists.push({ ...original, id, name: newName, count: copied.length, updatedAt: new Date().toISOString() });
     return;
   }
-  const { data, error } = await supabase.rpc("duplicate_dialix_list", { source_list_id: listId, new_list_name: newName });
-  if (error) throw error;
-  return data;
+  const now = new Date().toISOString();
+  const { data: newList, error: listError } = await supabase
+    .from("lists")
+    .insert({ name: newName, customer_count: 0, active_users: 0, is_active: true, created_at: now, updated_at: now })
+    .select("id")
+    .single();
+  if (listError) throw listError;
+
+  const { data: sourceCustomers, error: sourceError } = await supabase.from("customers").select("*").eq("list_id", listId);
+  if (sourceError) throw sourceError;
+  const copies = (sourceCustomers || []).map(({ id, created_at, updated_at, ...row }) => ({ ...row, list_id: newList.id, created_at: now, updated_at: now }));
+  for (let i = 0; i < copies.length; i += 200) {
+    const { error } = await supabase.from("customers").insert(copies.slice(i, i + 200));
+    if (error) throw error;
+  }
+  const { error: countError } = await supabase.from("lists").update({ customer_count: copies.length, updated_at: now }).eq("id", newList.id);
+  if (countError) throw countError;
+  return newList.id;
 }
 
 export async function moveListToTrash(listId) {
@@ -59,7 +77,7 @@ export async function moveListToTrash(listId) {
     if (index >= 0) demoState.trash.unshift({ ...demoState.lists.splice(index, 1)[0], deletedAt, expiresAt: new Date(Date.now() + 30 * 86400000).toISOString() });
     return;
   }
-  const { error } = await supabase.from("lists").update({ deleted_at: deletedAt, is_active: false, updated_at: deletedAt }).eq("id", listId);
+  const { error } = await supabase.from("lists").update({ is_active: false, updated_at: deletedAt }).eq("id", listId);
   if (error) throw error;
 }
 
@@ -69,8 +87,7 @@ export async function restoreList(listId) {
     if (index >= 0) demoState.lists.unshift({ ...demoState.trash.splice(index, 1)[0], deletedAt: null, expiresAt: null, updatedAt: new Date().toISOString() });
     return;
   }
-  const now = new Date().toISOString();
-  const { error } = await supabase.from("lists").update({ deleted_at: null, is_active: true, updated_at: now }).eq("id", listId);
+  const { error } = await supabase.from("lists").update({ is_active: true, updated_at: new Date().toISOString() }).eq("id", listId);
   if (error) throw error;
 }
 
@@ -80,7 +97,17 @@ export async function permanentlyDeleteList(listId) {
     delete customersByList[listId];
     return;
   }
-  const { error } = await supabase.rpc("permanently_delete_dialix_list", { target_list_id: listId });
+  const { data: customers, error: customerReadError } = await supabase.from("customers").select("id").eq("list_id", listId);
+  if (customerReadError) throw customerReadError;
+  const ids = (customers || []).map((row) => row.id);
+  for (let i = 0; i < ids.length; i += 500) {
+    const chunk = ids.slice(i, i + 500);
+    const { error: historyError } = await supabase.from("call_histories").delete().in("customer_id", chunk);
+    if (historyError) throw historyError;
+    const { error: customerError } = await supabase.from("customers").delete().in("id", chunk);
+    if (customerError) throw customerError;
+  }
+  const { error } = await supabase.from("lists").delete().eq("id", listId);
   if (error) throw error;
 }
 
@@ -92,8 +119,7 @@ export async function fetchListCustomers(listId) {
 }
 
 export async function bulkUpdateCustomers({ customerIds, status, reminderAt, destinationListId }) {
-  if (!customerIds.length) return;
-  if (!isSupabaseConfigured) return;
+  if (!customerIds.length || !isSupabaseConfigured) return;
   const changes = { updated_at: new Date().toISOString() };
   if (status !== undefined) changes.status = status;
   if (reminderAt !== undefined) changes.reminder_at = reminderAt || null;
@@ -104,6 +130,8 @@ export async function bulkUpdateCustomers({ customerIds, status, reminderAt, des
 
 export async function bulkDeleteCustomers(customerIds) {
   if (!customerIds.length || !isSupabaseConfigured) return;
+  const { error: historyError } = await supabase.from("call_histories").delete().in("customer_id", customerIds);
+  if (historyError) throw historyError;
   const { error } = await supabase.from("customers").delete().in("id", customerIds);
   if (error) throw error;
 }

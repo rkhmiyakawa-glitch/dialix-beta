@@ -88,7 +88,7 @@ export async function fetchImportProfiles() {
 }
 export async function fetchImportHistory() {
   if (!isSupabaseConfigured) return [];
-  const { data, error } = await supabase.from("import_batches").select("id,file_name,total_rows,inserted_rows,duplicate_rows,error_rows,imported_history_rows,imported_by_name,created_at,lists(name)").order("created_at", { ascending: false }).limit(30); if (error) throw error; return data || [];
+  const { data, error } = await supabase.from("import_batches").select("id,file_name,total_rows,inserted_rows,duplicate_rows,error_rows,created_at,lists(name)").order("created_at", { ascending: false }).limit(30); if (error) throw error; return data || [];
 }
 export async function importCustomers({ fileName, listMode, listId, newListName, rows, userId, userName }) {
   if (!isSupabaseConfigured) throw new Error("Supabase接続設定がありません。");
@@ -109,6 +109,6 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
     if (histories.length) { const { error: historyError } = await supabase.from("call_histories").insert(histories); if (historyError) throw historyError; importedHistoryRows += histories.length; }
   }
   const { error: refreshError } = await supabase.rpc("refresh_list_customer_count", { target_list_id: targetListId }); if (refreshError) throw refreshError;
-  const { error: batchError } = await supabase.from("import_batches").insert({ list_id: targetListId, file_name: fileName, total_rows: rows.length, inserted_rows: insertedRows, duplicate_rows: duplicateRows, error_rows: errorRows, imported_history_rows: importedHistoryRows, imported_by: userId || null, imported_by_name: userName || "" }); if (batchError) throw batchError;
+  const { error: batchError } = await supabase.from("import_batches").insert({ list_id: targetListId, file_name: fileName, total_rows: rows.length, inserted_rows: insertedRows, duplicate_rows: duplicateRows, error_rows: errorRows, imported_by: userId || null }); if (batchError) throw batchError;
   return { targetListId, totalRows: rows.length, insertedRows, duplicateRows, errorRows, importedHistoryRows };
 }
