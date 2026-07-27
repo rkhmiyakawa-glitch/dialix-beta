@@ -1206,3 +1206,21 @@ input,select,textarea,button{max-width:100%}
 
 /* Beta 1.0.16: ユーザー名はリンクではなく通常表示 */
 .header-user-name{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border:1px solid #d6deeb;border-radius:9px;background:#fff;color:#17233a;font-size:13px;font-weight:800;cursor:default;white-space:nowrap}.header-logout-button{height:38px;padding:0 12px;border:0;border-radius:9px;background:transparent;color:#69758b;font-size:13px;font-weight:700}.header-logout-button:hover{background:#f1f5fb;color:#253149}
+
+/* Beta 1.0.17: user-name mypage link and personal performance */
+.header-user-link{font-family:inherit;cursor:pointer!important;transition:background-color .15s,border-color .15s,color .15s}
+.header-user-link:hover,.header-user-link:focus-visible{background:#f1f5ff;border-color:#9db4ef;color:#1f4fd6;outline:none}
+.mypage-performance-stack{display:grid;gap:18px;margin-bottom:18px}
+.mypage-performance-panel{padding:24px 26px}
+.mypage-performance-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.mypage-performance-heading h2{margin:2px 0 0;font-size:21px}
+.mypage-performance-heading .eyebrow{margin:0}
+.mypage-kpi-loading{color:#6c788c;font-size:13px;font-weight:700}
+.mypage-kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.mypage-kpi-card{min-width:0;padding:18px 16px;border:1px solid #e0e7f1;border-radius:11px;background:#f8faff;text-align:center}
+.mypage-kpi-card span{display:block;color:#59667b;font-size:13px;font-weight:800;white-space:nowrap}
+.mypage-kpi-card strong{display:inline-block;margin-top:8px;color:#17233a;font-size:30px;line-height:1;font-weight:900}
+.mypage-kpi-card small{margin-left:4px;color:#748096;font-weight:700}
+.mypage-error{margin-bottom:16px;padding:13px 16px;border-radius:9px;background:#fff0f0;color:#a22d2d;font-weight:800}
+@media(max-width:900px){.mypage-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mypage-kpi-card:last-child{grid-column:1/-1}}
+@media(max-width:560px){.mypage-kpi-grid{grid-template-columns:1fr}.mypage-kpi-card:last-child{grid-column:auto}.mypage-performance-panel{padding:20px 16px}}

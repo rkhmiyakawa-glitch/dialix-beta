@@ -2,8 +2,33 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { updateMyDisplayName } from "../services/profileService";
 import { updateMyPassword } from "../services/authService";
+import { fetchMyPerformance } from "../services/dataService";
 
-const roleLabels = { admin: "管理者", sv: "SV", operator: "オペレーター" };
+const roleLabels = { admin: "管理者", sv: "SV", supervisor: "SV", operator: "オペレーター", 管理者: "管理者" };
+const emptyPerformance = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
+const metricItems = [
+  { key: "calls", label: "コール" },
+  { key: "valid", label: "有効" },
+  { key: "decisions", label: "決裁" },
+  { key: "prospects", label: "見込み" },
+  { key: "tossups", label: "トスアップ" },
+];
+
+function PerformancePanel({ title, values, loading }) {
+  return <section className="panel mypage-performance-panel">
+    <div className="mypage-performance-heading">
+      <div><p className="eyebrow">PERFORMANCE</p><h2>{title}</h2></div>
+      {loading && <span className="mypage-kpi-loading">集計中...</span>}
+    </div>
+    <div className="mypage-kpi-grid">
+      {metricItems.map((item) => <div className="mypage-kpi-card" key={item.key}>
+        <span>{item.label}</span>
+        <strong>{Number(values?.[item.key] || 0).toLocaleString("ja-JP")}</strong>
+        <small>件</small>
+      </div>)}
+    </div>
+  </section>;
+}
 
 export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoLists, onLogout, onOpenAdmin }) {
   const [displayName, setDisplayName] = useState(currentProfile?.displayName || "");
@@ -12,8 +37,22 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
   const [profileSaving, setProfileSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [performance, setPerformance] = useState({ today: emptyPerformance, month: emptyPerformance });
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [performanceError, setPerformanceError] = useState("");
 
   useEffect(() => setDisplayName(currentProfile?.displayName || ""), [currentProfile?.displayName]);
+
+  useEffect(() => {
+    let active = true;
+    setPerformanceLoading(true);
+    setPerformanceError("");
+    fetchMyPerformance(currentProfile?.id)
+      .then((next) => { if (active) setPerformance(next); })
+      .catch((error) => { if (active) setPerformanceError(error.message || "実績を取得できませんでした。"); })
+      .finally(() => { if (active) setPerformanceLoading(false); });
+    return () => { active = false; };
+  }, [currentProfile?.id]);
 
   async function saveProfile(event) {
     event.preventDefault();
@@ -48,16 +87,23 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
     <section className="content mypage-content">
       <div className="page-title"><div>
         <button className="back-button" type="button" onClick={onBack}>← 前の画面へ</button>
-        <p className="eyebrow">MY PAGE</p><h1>マイページ</h1><p>表示名とログインパスワードを変更できます。</p>
+        <p className="eyebrow">MY PAGE</p><h1>マイページ</h1><p>アカウント情報と自分の実績を確認できます。</p>
       </div></div>
       {message && <div className="mypage-success">{message}</div>}
+      {performanceError && <div className="mypage-error">{performanceError}</div>}
+
+      <div className="mypage-performance-stack">
+        <PerformancePanel title="今日の実績" values={performance.today} loading={performanceLoading} />
+        <PerformancePanel title="今月の実績" values={performance.month} loading={performanceLoading} />
+      </div>
+
       <div className="mypage-grid">
         <form className="panel mypage-panel" onSubmit={saveProfile}>
           <h2>プロフィール</h2>
           <label>表示名<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} /></label>
           <dl className="mypage-info">
             <div><dt>メールアドレス</dt><dd>{currentProfile?.email || "―"}</dd></div>
-            <div><dt>権限</dt><dd>{roleLabels[currentProfile?.role] || "オペレーター"}</dd></div>
+            <div><dt>権限</dt><dd>{roleLabels[String(currentProfile?.role || "").toLowerCase()] || "オペレーター"}</dd></div>
             <div><dt>アカウント状態</dt><dd>{currentProfile?.isActive === false ? "停止" : "有効"}</dd></div>
           </dl>
           <p className="mypage-note">メールアドレスと権限の変更は管理者が行います。</p>

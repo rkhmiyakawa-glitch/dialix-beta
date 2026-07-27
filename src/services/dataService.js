@@ -171,6 +171,53 @@ export async function saveCallResult({
   };
 }
 
+
+
+const VALID_STATUSES = ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"];
+const DECISION_STATUSES = ["決裁NG", "決裁見込み"];
+
+function summarizePerformance(rows = []) {
+  return {
+    calls: rows.length,
+    valid: rows.filter((row) => VALID_STATUSES.includes(row.status)).length,
+    decisions: rows.filter((row) => DECISION_STATUSES.includes(row.status)).length,
+    prospects: rows.filter((row) => String(row.status || "").includes("見込み")).length,
+    tossups: rows.filter((row) => row.status === "トスアップ").length,
+  };
+}
+
+export async function fetchMyPerformance(userId) {
+  const empty = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
+  if (!userId) return { today: empty, month: empty };
+
+  if (!isSupabaseConfigured) {
+    const today = {
+      calls: Number(todayKpi.find((item) => item.label === "コール数")?.value || 0),
+      valid: Number(todayKpi.find((item) => item.label === "有効数")?.value || 0),
+      decisions: Number(todayKpi.find((item) => item.label === "決裁数")?.value || 0),
+      prospects: Number(todayKpi.find((item) => item.label === "見込み")?.value || 0),
+      tossups: Number(todayKpi.find((item) => item.label === "トスアップ")?.value || 0),
+    };
+    return { today, month: today };
+  }
+
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const { data, error } = await withRetry(() => supabase
+    .from("call_histories")
+    .select("status,called_at")
+    .eq("user_id", userId)
+    .gte("called_at", monthStart.toISOString()));
+
+  if (error) throw error;
+  const monthRows = data || [];
+  const todayRows = monthRows.filter((row) => new Date(row.called_at).getTime() >= todayStart.getTime());
+  return { today: summarizePerformance(todayRows), month: summarizePerformance(monthRows) };
+}
+
 export async function fetchTodayKpi(userId) {
   if (!isSupabaseConfigured || !userId) return todayKpi;
 

@@ -18,11 +18,16 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
       </div>
       <div className="header-actions">
         <span className="top-metric">♟ 現在架電中 <b>—人</b></span>
-        {onOpenMyPage && <button className="header-quick-link" type="button" onClick={onOpenMyPage}>マイページ</button>}
         {canOpenAdmin && onOpenAdmin && <button className="header-quick-link" type="button" onClick={onOpenAdmin}>管理画面</button>}
-        <span className="header-user-name" aria-label="ログイン中のユーザー">
-          {currentProfile?.displayName || "オペレーター"}
-        </span>
+        {onOpenMyPage ? (
+          <button className="header-user-name header-user-link" type="button" onClick={onOpenMyPage} aria-label="マイページを開く">
+            {currentProfile?.displayName || "オペレーター"}
+          </button>
+        ) : (
+          <span className="header-user-name" aria-label="ログイン中のユーザー">
+            {currentProfile?.displayName || "オペレーター"}
+          </span>
+        )}
         <button className="header-logout-button" type="button" onClick={onLogout}>ログアウト</button>
       </div>
     </header>
