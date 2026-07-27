@@ -189,7 +189,7 @@ export default function CallPage({
           <button type="button" onClick={() => handleNavigate("next")} disabled={isSaving || navigationPosition >= navigationTotal}>次の顧客 →</button>
         </nav>
 
-        <div className="call-layout call-layout-v108">
+        <div className="call-layout call-layout-v110">
           <section className="call-column customer-column-v106">
             <CustomerInfoCard
               customer={selectedCustomer}
