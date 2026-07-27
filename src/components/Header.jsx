@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
-  const canOpenAdmin = currentProfile?.role === "admin" || currentProfile?.role === "sv";
+  const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
+  const canOpenAdmin = ["admin", "sv", "supervisor", "管理者"].includes(normalizedRole);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -28,6 +29,8 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
       </div>
       <div className="header-actions">
         <span className="top-metric">♟ 現在架電中 <b>—人</b></span>
+        <button className="header-quick-link" type="button" onClick={onOpenMyPage}>マイページ</button>
+        {canOpenAdmin && onOpenAdmin && <button className="header-quick-link" type="button" onClick={onOpenAdmin}>管理画面</button>}
         <div className="user-menu" ref={menuRef}>
           <button className="header-user-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen}>
             {currentProfile?.displayName || "オペレーター"}<span>⌄</span>

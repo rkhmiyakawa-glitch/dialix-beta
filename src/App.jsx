@@ -289,12 +289,12 @@ export default function App() {
 
 
 
-  if (showMyPage && currentProfile) {
+  if (showMyPage) {
     return <>
       {banner}
       {sessionNotice}
       <MyPage
-        currentProfile={currentProfile}
+        currentProfile={currentProfile || { displayName: userName, email: session?.user?.email || "", role: "operator", isActive: true }}
         onProfileUpdated={setCurrentProfile}
         onBack={closeMyPage}
         onGoLists={goToLists}
@@ -305,7 +305,10 @@ export default function App() {
     </>;
   }
 
-  if (showAdmin && currentProfile && ["admin", "sv"].includes(currentProfile.role)) {
+  const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
+  const canOpenAdmin = ["admin", "sv", "supervisor", "管理者"].includes(normalizedRole);
+
+  if (showAdmin && currentProfile && canOpenAdmin) {
     return <>
       {banner}
       {sessionNotice}
