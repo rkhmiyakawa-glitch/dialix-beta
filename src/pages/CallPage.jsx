@@ -189,8 +189,8 @@ export default function CallPage({
           <button type="button" onClick={() => handleNavigate("next")} disabled={isSaving || navigationPosition >= navigationTotal}>次の顧客 →</button>
         </nav>
 
-        <div className="call-layout call-layout-v1">
-          <section className="call-column customer-column">
+        <div className="call-layout call-layout-v106">
+          <section className="call-column customer-column-v106">
             <CustomerInfoCard
               customer={selectedCustomer}
               callState={callState}
@@ -198,10 +198,13 @@ export default function CallPage({
               onCopyField={handleCopyField}
               isSaving={isSaving}
             />
+          </section>
+
+          <section className="call-column last-contact-column-v106">
             <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.ap || "―", status: selectedCustomer.status || "未架電" }} />
           </section>
 
-          <section className="call-column result-column">
+          <section className="call-column status-column-v106">
             <StatusButtons
               statuses={statuses}
               selectedCategory={selectedCategory}
@@ -217,11 +220,11 @@ export default function CallPage({
             />
           </section>
 
-          <section className="call-column memo-column">
+          <section className="call-column memo-column-v106">
             <MemoBox value={memo} onChange={markDirty(setMemo)} disabled={isSaving} />
           </section>
 
-          <section className="call-column history-column history-full">
+          <section className="call-column history-column-v106">
             <HistoryTimeline history={selectedCustomer.history || []} />
           </section>
         </div>

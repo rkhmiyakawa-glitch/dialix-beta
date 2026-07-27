@@ -721,3 +721,86 @@ input,select,textarea,button{max-width:100%}
     grid-template-columns:78px minmax(0,1fr);
   }
 }
+
+
+/* Beta 1.0.6 customer page layout */
+.call-layout-v106{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);
+  grid-template-areas:
+    "customer customer"
+    "last-contact status"
+    "memo memo"
+    "history history";
+  gap:18px;
+  align-items:start;
+}
+.customer-column-v106{grid-area:customer}
+.last-contact-column-v106{grid-area:last-contact}
+.status-column-v106{grid-area:status}
+.memo-column-v106{grid-area:memo}
+.history-column-v106{grid-area:history}
+
+.call-layout-v106 > .call-column{
+  min-width:0;
+  display:block;
+}
+.call-layout-v106 .panel{
+  width:100%;
+}
+.last-contact-column-v106 .last-contact-card,
+.status-column-v106 .status-panel{
+  height:100%;
+}
+.memo-column-v106 .memo-box textarea{
+  min-height:230px;
+}
+.history-column-v106 .history-panel{
+  max-height:none;
+}
+
+/* 顧客情報は5項目を縦並びで表示 */
+.customer-details-v106{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:0!important;
+}
+.customer-details-v106 > div{
+  display:grid!important;
+  grid-template-columns:100px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:16px!important;
+  min-height:54px;
+  padding:10px 0;
+  border-bottom:1px solid #e8edf5;
+}
+.customer-details-v106 > div:last-child{
+  border-bottom:0;
+}
+.customer-details-v106 .customer-value-line{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-width:0;
+}
+.customer-details-v106 .phone-number-link{
+  white-space:nowrap;
+}
+
+@media(max-width:980px){
+  .call-layout-v106{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "customer"
+      "last-contact"
+      "status"
+      "memo"
+      "history";
+  }
+}
+@media(max-width:620px){
+  .customer-details-v106 > div{
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+  }
+}

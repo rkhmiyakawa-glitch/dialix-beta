@@ -63,7 +63,7 @@ export default function CustomerInfoCard({
         </div>
       </div>
 
-      <dl className="customer-details customer-details-v105">
+      <dl className="customer-details customer-details-v106">
         <DetailRow
           label="顧客ID"
           value={customer.id}
