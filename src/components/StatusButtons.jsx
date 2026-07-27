@@ -27,7 +27,7 @@ export default function StatusButtons({
   const details = detailOptions[selectedCategory] || [];
 
   return (
-    <section className="panel">
+    <section className="panel status-panel">
       <div className="section-heading">
         <h2>コールステータス</h2>
         <div className="status-heading-actions">

@@ -154,17 +154,17 @@ export default function CallPage({
     window.location.href = `tel:${phone}`;
   }
 
-  async function handleCopyPhone() {
-    const phone = String(selectedCustomer.phone || "").trim();
-    if (!phone) {
-      window.alert("電話番号が登録されていません。");
+  async function handleCopyField(value, label) {
+    const copyValue = String(value || "").trim();
+    if (!copyValue) {
+      window.alert(`${label}が登録されていません。`);
       return;
     }
     try {
-      await navigator.clipboard.writeText(phone);
-      showToast("電話番号をコピーしました。");
+      await navigator.clipboard.writeText(copyValue);
+      showToast(`${label}をコピーしました。`);
     } catch {
-      window.prompt("電話番号をコピーしてください。", phone);
+      window.prompt(`${label}をコピーしてください。`, copyValue);
     }
   }
 
@@ -195,7 +195,7 @@ export default function CallPage({
               customer={selectedCustomer}
               callState={callState}
               onZoomCall={handleZoomCall}
-              onCopyPhone={handleCopyPhone}
+              onCopyField={handleCopyField}
               isSaving={isSaving}
             />
             <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.ap || "―", status: selectedCustomer.status || "未架電" }} />
