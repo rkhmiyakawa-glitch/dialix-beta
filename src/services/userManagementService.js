@@ -3,7 +3,13 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 async function invokeAdminUsers(body) {
   if (!isSupabaseConfigured) throw new Error("Supabase接続設定がありません。");
   const { data, error } = await supabase.functions.invoke("admin-users", { body });
-  if (error) throw new Error(error.message || "ユーザー管理処理に失敗しました。");
+  if (error) {
+    const raw = error.message || "";
+    if (/Failed to send a request|fetch/i.test(raw)) {
+      throw new Error("SupabaseのEdge Function『admin-users』へ接続できません。Supabaseへ関数をデプロイしたか確認してください。");
+    }
+    throw new Error(raw || "ユーザー管理処理に失敗しました。");
+  }
   if (!data?.ok) throw new Error(data?.error || "ユーザー管理処理に失敗しました。");
   return data;
 }

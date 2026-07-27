@@ -1,100 +1,196 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+type Role = "admin" | "sv" | "operator";
+
+type RequestBody = {
+  action?: "create" | "update" | "reset_password" | "delete";
+  userId?: string;
+  displayName?: string;
+  email?: string;
+  password?: string;
+  role?: Role;
+  isActive?: boolean;
+  sendInvite?: boolean;
+};
+
+function json(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" },
+  });
+}
+
+function normalizeEmail(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function validateRole(value: unknown): Role {
+  if (value === "admin" || value === "sv" || value === "operator") return value;
+  return "operator";
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json({ ok: false, error: "POSTのみ利用できます。" }, 405);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) {
+    return json({ ok: false, error: "Edge FunctionのSupabase環境変数がありません。" }, 500);
+  }
+
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const accessToken = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!accessToken) return json({ ok: false, error: "ログイン情報がありません。再ログインしてください。" }, 401);
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
   try {
-    const url = Deno.env.get("SUPABASE_URL")!;
-    const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const authHeader = req.headers.get("Authorization") || "";
-    const callerClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
-    const adminClient = createClient(url, serviceRole, { auth: { autoRefreshToken: false, persistSession: false } });
+    const { data: callerData, error: callerError } = await admin.auth.getUser(accessToken);
+    const caller = callerData.user;
+    if (callerError || !caller) return json({ ok: false, error: "ログイン情報を確認できません。再ログインしてください。" }, 401);
 
-    const { data: authData, error: authError } = await callerClient.auth.getUser();
-    if (authError || !authData.user) return json({ ok: false, error: "ログインが必要です。" }, 401);
-    const { data: caller } = await adminClient.from("profiles").select("id,role,is_active").eq("id", authData.user.id).single();
-    if (!caller || caller.role !== "admin" || caller.is_active === false) return json({ ok: false, error: "管理者権限が必要です。" }, 403);
+    const { data: callerProfile, error: profileError } = await admin
+      .from("profiles")
+      .select("id,role,is_active")
+      .eq("id", caller.id)
+      .single();
 
-    const body = await req.json();
-    const action = String(body.action || "");
-
-    if (action === "create") {
-      const email = String(body.email || "").trim().toLowerCase();
-      const displayName = String(body.displayName || "").trim();
-      const role = ["admin", "sv", "operator"].includes(body.role) ? body.role : "operator";
-      const isActive = body.isActive !== false;
-      if (!email || !displayName) return json({ ok: false, error: "名前とメールアドレスは必須です。" }, 400);
-
-      let user;
-      if (body.sendInvite) {
-        const redirectTo = body.redirectTo || Deno.env.get("DIALIX_SITE_URL") || undefined;
-        const result = await adminClient.auth.admin.inviteUserByEmail(email, { redirectTo, data: { display_name: displayName } });
-        if (result.error) throw result.error;
-        user = result.data.user;
-      } else {
-        const password = String(body.password || "");
-        if (password.length < 8) return json({ ok: false, error: "初期パスワードは8文字以上必要です。" }, 400);
-        const result = await adminClient.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { display_name: displayName } });
-        if (result.error) throw result.error;
-        user = result.data.user;
-      }
-      if (!user) throw new Error("Authユーザーを作成できませんでした。");
-      const { error: profileError } = await adminClient.from("profiles").upsert({ id: user.id, email, display_name: displayName, role, is_active: isActive });
-      if (profileError) {
-        await adminClient.auth.admin.deleteUser(user.id);
-        throw profileError;
-      }
-      return json({ ok: true, userId: user.id });
+    if (profileError || !callerProfile) return json({ ok: false, error: "管理者プロフィールを確認できません。" }, 403);
+    if (callerProfile.role !== "admin" || callerProfile.is_active === false) {
+      return json({ ok: false, error: "この操作は有効な管理者だけが実行できます。" }, 403);
     }
 
-    const userId = String(body.userId || "");
-    if (!userId) return json({ ok: false, error: "対象ユーザーがありません。" }, 400);
-    const { data: target } = await adminClient.from("profiles").select("id,role,is_active").eq("id", userId).single();
-    if (!target) return json({ ok: false, error: "対象ユーザーが見つかりません。" }, 404);
+    const body = (await req.json()) as RequestBody;
+    const action = body.action;
+
+    if (action === "create") {
+      const email = normalizeEmail(body.email);
+      const displayName = String(body.displayName ?? "").trim();
+      const role = validateRole(body.role);
+      const isActive = body.isActive !== false;
+      const sendInvite = body.sendInvite !== false;
+
+      if (!email || !displayName) return json({ ok: false, error: "名前とメールアドレスは必須です。" }, 400);
+      if (!sendInvite && String(body.password ?? "").length < 8) {
+        return json({ ok: false, error: "初期パスワードは8文字以上にしてください。" }, 400);
+      }
+
+      const metadata = { display_name: displayName, role };
+      let createdUserId = "";
+
+      if (sendInvite) {
+        const siteUrl = Deno.env.get("DIALIX_SITE_URL")?.replace(/\/$/, "");
+        const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+          data: metadata,
+          ...(siteUrl ? { redirectTo: siteUrl } : {}),
+        });
+        if (error) throw error;
+        createdUserId = data.user?.id ?? "";
+      } else {
+        const { data, error } = await admin.auth.admin.createUser({
+          email,
+          password: String(body.password),
+          email_confirm: true,
+          user_metadata: metadata,
+        });
+        if (error) throw error;
+        createdUserId = data.user?.id ?? "";
+      }
+
+      if (!createdUserId) throw new Error("認証ユーザーIDを取得できませんでした。");
+
+      const { error: upsertError } = await admin.from("profiles").upsert(
+        {
+          id: createdUserId,
+          display_name: displayName,
+          email,
+          role,
+          is_active: isActive,
+        },
+        { onConflict: "id" },
+      );
+
+      if (upsertError) {
+        await admin.auth.admin.deleteUser(createdUserId).catch(() => undefined);
+        throw upsertError;
+      }
+
+      return json({ ok: true, userId: createdUserId });
+    }
+
+    const userId = String(body.userId ?? "").trim();
+    if (!userId) return json({ ok: false, error: "対象ユーザーIDがありません。" }, 400);
+
+    const { data: targetProfile, error: targetError } = await admin
+      .from("profiles")
+      .select("id,display_name,email,role,is_active")
+      .eq("id", userId)
+      .single();
+    if (targetError || !targetProfile) return json({ ok: false, error: "対象ユーザーが見つかりません。" }, 404);
+
+    const { count: activeAdminCount, error: countError } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin")
+      .eq("is_active", true);
+    if (countError) throw countError;
 
     if (action === "update") {
-      const nextRole = ["admin", "sv", "operator"].includes(body.role) ? body.role : target.role;
-      const nextActive = body.isActive !== false;
-      if (target.role === "admin" && (nextRole !== "admin" || !nextActive)) {
-        const { count } = await adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "admin").eq("is_active", true);
-        if ((count || 0) <= 1) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 400);
-      }
-      const { error } = await adminClient.from("profiles").update({ display_name: String(body.displayName || "").trim(), role: nextRole, is_active: nextActive }).eq("id", userId);
-      if (error) throw error;
-      await adminClient.auth.admin.updateUserById(userId, { user_metadata: { display_name: String(body.displayName || "").trim() }, ban_duration: nextActive ? "none" : "876000h" });
+      const displayName = String(body.displayName ?? targetProfile.display_name ?? "").trim();
+      const role = validateRole(body.role ?? targetProfile.role);
+      const isActive = body.isActive !== false;
+      const removesLastAdmin = targetProfile.role === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1 && (role !== "admin" || !isActive);
+      if (removesLastAdmin) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 409);
+      if (!displayName) return json({ ok: false, error: "名前を入力してください。" }, 400);
+
+      const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, {
+        user_metadata: { display_name: displayName, role },
+      });
+      if (authUpdateError) throw authUpdateError;
+
+      const { error: updateError } = await admin
+        .from("profiles")
+        .update({ display_name: displayName, role, is_active: isActive })
+        .eq("id", userId);
+      if (updateError) throw updateError;
+
       return json({ ok: true });
     }
 
     if (action === "reset_password") {
-      const password = String(body.password || "");
-      if (password.length < 8) return json({ ok: false, error: "パスワードは8文字以上必要です。" }, 400);
-      const { error } = await adminClient.auth.admin.updateUserById(userId, { password });
+      const password = String(body.password ?? "");
+      if (password.length < 8) return json({ ok: false, error: "パスワードは8文字以上にしてください。" }, 400);
+      const { error } = await admin.auth.admin.updateUserById(userId, { password });
       if (error) throw error;
       return json({ ok: true });
     }
 
     if (action === "delete") {
-      if (userId === authData.user.id) return json({ ok: false, error: "自分自身は削除できません。" }, 400);
-      if (target.role === "admin" && target.is_active) {
-        const { count } = await adminClient.from("profiles").select("id", { count: "exact", head: true }).eq("role", "admin").eq("is_active", true);
-        if ((count || 0) <= 1) return json({ ok: false, error: "最後の管理者は削除できません。" }, 400);
-      }
-      const { error } = await adminClient.auth.admin.deleteUser(userId);
-      if (error) throw error;
+      if (userId === caller.id) return json({ ok: false, error: "自分自身は削除できません。" }, 409);
+      const deletesLastAdmin = targetProfile.role === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1;
+      if (deletesLastAdmin) return json({ ok: false, error: "最後の管理者は削除できません。" }, 409);
+
+      const { error: deleteAuthError } = await admin.auth.admin.deleteUser(userId);
+      if (deleteAuthError) throw deleteAuthError;
+      // profiles.id が auth.users に外部キー設定されていない環境でも確実に消す。
+      const { error: deleteProfileError } = await admin.from("profiles").delete().eq("id", userId);
+      if (deleteProfileError) throw deleteProfileError;
       return json({ ok: true });
     }
 
-    return json({ ok: false, error: "不明な操作です。" }, 400);
+    return json({ ok: false, error: "未対応の操作です。" }, 400);
   } catch (error) {
-    return json({ ok: false, error: error instanceof Error ? error.message : "処理に失敗しました。" }, 500);
+    const message = error instanceof Error ? error.message : "ユーザー管理処理に失敗しました。";
+    console.error("admin-users error", error);
+    return json({ ok: false, error: message }, 500);
   }
 });
