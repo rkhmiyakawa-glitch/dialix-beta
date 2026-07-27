@@ -937,3 +937,262 @@ input,select,textarea,button{max-width:100%}
       "history"!important;
   }
 }
+
+
+/* Beta 1.0.9 customer page layout */
+.call-layout-v109{
+  display:grid!important;
+  grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr)!important;
+  grid-template-areas:
+    "customer last-contact"
+    "status memo"
+    ". history"!important;
+  gap:18px!important;
+  align-items:start!important;
+}
+.call-layout-v109 .customer-column-v106{grid-area:customer!important}
+.call-layout-v109 .last-contact-column-v106{grid-area:last-contact!important}
+.call-layout-v109 .status-column-v106{grid-area:status!important}
+.call-layout-v109 .memo-column-v106{grid-area:memo!important}
+.call-layout-v109 .history-column-v106{grid-area:history!important}
+
+.call-layout-v109 > .call-column{
+  display:block!important;
+  min-width:0!important;
+}
+.call-layout-v109 .panel,
+.call-layout-v109 .customer-panel,
+.call-layout-v109 .last-contact-card,
+.call-layout-v109 .status-panel,
+.call-layout-v109 .memo-box,
+.call-layout-v109 .history-panel{
+  width:100%!important;
+  max-width:none!important;
+}
+
+/* コールステータスはメモの左側で縦一列 */
+.call-layout-v109 .status-column-v106 .status-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+.call-layout-v109 .status-column-v106 .status-button{
+  width:100%!important;
+  min-height:46px!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+.call-layout-v109 .status-column-v106 .status-detail-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+
+/* メモと架電履歴は同じ右カラム幅 */
+.call-layout-v109 .memo-column-v106,
+.call-layout-v109 .history-column-v106{
+  width:100%!important;
+}
+.call-layout-v109 .memo-column-v106 .memo-box textarea{
+  min-height:230px!important;
+}
+.call-layout-v109 .history-column-v106 .history-panel{
+  max-height:none!important;
+}
+
+/* CUSTOMERと最終対応は上段で横並び */
+.call-layout-v109 .customer-column-v106 .customer-panel,
+.call-layout-v109 .last-contact-column-v106 .last-contact-card{
+  height:100%!important;
+}
+
+@media(max-width:980px){
+  .call-layout-v109{
+    grid-template-columns:1fr!important;
+    grid-template-areas:
+      "customer"
+      "last-contact"
+      "status"
+      "memo"
+      "history"!important;
+  }
+}
+
+
+/* Beta 1.0.10 final customer page layout */
+.call-layout-v110{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.28fr) minmax(280px,.72fr)!important;
+  grid-template-areas:
+    "customer last-contact"
+    "memo status"
+    "history ."!important;
+  gap:18px!important;
+  align-items:start!important;
+}
+.call-layout-v110 .customer-column-v106{grid-area:customer!important}
+.call-layout-v110 .last-contact-column-v106{grid-area:last-contact!important}
+.call-layout-v110 .memo-column-v106{grid-area:memo!important}
+.call-layout-v110 .status-column-v106{grid-area:status!important}
+.call-layout-v110 .history-column-v106{grid-area:history!important}
+
+.call-layout-v110 > .call-column{
+  display:block!important;
+  min-width:0!important;
+}
+.call-layout-v110 .panel,
+.call-layout-v110 .customer-panel,
+.call-layout-v110 .last-contact-card,
+.call-layout-v110 .status-panel,
+.call-layout-v110 .memo-box,
+.call-layout-v110 .history-panel{
+  width:100%!important;
+  max-width:none!important;
+}
+
+/* コールステータスは中段右で縦一列 */
+.call-layout-v110 .status-column-v106 .status-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+.call-layout-v110 .status-column-v106 .status-button{
+  width:100%!important;
+  min-height:46px!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+.call-layout-v110 .status-column-v106 .status-detail-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+
+/* メモと架電履歴は左カラムで同じ横幅 */
+.call-layout-v110 .memo-column-v106,
+.call-layout-v110 .history-column-v106{
+  width:100%!important;
+}
+.call-layout-v110 .memo-column-v106 .memo-box textarea{
+  min-height:230px!important;
+}
+.call-layout-v110 .history-column-v106 .history-panel{
+  max-height:none!important;
+}
+
+/* CUSTOMERと最終対応は上段で横並び */
+.call-layout-v110 .customer-column-v106 .customer-panel,
+.call-layout-v110 .last-contact-column-v106 .last-contact-card{
+  height:100%!important;
+}
+
+@media(max-width:980px){
+  .call-layout-v110{
+    grid-template-columns:1fr!important;
+    grid-template-areas:
+      "customer"
+      "last-contact"
+      "memo"
+      "status"
+      "history"!important;
+  }
+}
+
+
+/* Beta 1.0.11 compact vertical spacing */
+.call-layout-v110{
+  column-gap:18px!important;
+  row-gap:0!important;
+}
+
+/* 上下に連続するカードの余白を除去 */
+.call-layout-v110 .last-contact-column-v106,
+.call-layout-v110 .status-column-v106,
+.call-layout-v110 .memo-column-v106,
+.call-layout-v110 .history-column-v106{
+  margin-top:0!important;
+  margin-bottom:0!important;
+}
+
+.call-layout-v110 .last-contact-column-v106 .last-contact-card,
+.call-layout-v110 .status-column-v106 .status-panel,
+.call-layout-v110 .memo-column-v106 .memo-box,
+.call-layout-v110 .history-column-v106 .history-panel{
+  margin-top:0!important;
+  margin-bottom:0!important;
+}
+
+
+/* Beta 1.0.12 independent two-column customer page layout */
+.call-layout-v112{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.28fr) minmax(280px,.72fr)!important;
+  column-gap:18px!important;
+  align-items:start!important;
+}
+
+.call-layout-v112 .call-stack{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:18px!important;
+  min-width:0!important;
+}
+
+.call-layout-v112 .call-column{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+.call-layout-v112 .panel,
+.call-layout-v112 .customer-panel,
+.call-layout-v112 .last-contact-card,
+.call-layout-v112 .status-panel,
+.call-layout-v112 .memo-box,
+.call-layout-v112 .history-panel{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+
+/* 右カラム: 最終対応の直下にコールステータス */
+.call-layout-v112 .status-column-v106 .status-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+
+.call-layout-v112 .status-column-v106 .status-button{
+  width:100%!important;
+  min-height:46px!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+
+.call-layout-v112 .status-column-v106 .status-detail-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+
+/* 左カラム: CUSTOMER → メモ → 架電履歴を同じ間隔で配置 */
+.call-layout-v112 .memo-column-v106 .memo-box textarea{
+  min-height:230px!important;
+}
+
+.call-layout-v112 .history-column-v106 .history-panel{
+  max-height:none!important;
+}
+
+/*
+  左右を独立した縦スタックにすることで、
+  見込み等の詳細展開で右側ステータスが伸びても、
+  左側の架電履歴位置は移動しない。
+*/
+@media(max-width:980px){
+  .call-layout-v112{
+    grid-template-columns:1fr!important;
+    row-gap:18px!important;
+  }
+}
