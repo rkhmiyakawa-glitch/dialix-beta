@@ -110,12 +110,9 @@ export default function CustomerInfoCard({
           copyLabel="詳細"
         />
 
-        <DetailRow
-          label="AP"
-          value={customer.ap}
-          onCopy={onCopyField}
-          copyLabel="AP"
-        />
+        {(customer.status || customer.history?.length > 0) && customer.ap && (
+          <DetailRow label="AP" value={customer.ap} onCopy={onCopyField} copyLabel="AP" />
+        )}
       </dl>
     </section>
   );

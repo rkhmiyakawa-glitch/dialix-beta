@@ -5,6 +5,7 @@ import ListPage from "./pages/ListPage";
 import CustomerListPage from "./pages/CustomerListPage";
 import CallPage from "./pages/CallPage";
 import AdminPage from "./pages/AdminPage";
+import MyPage from "./pages/MyPage";
 import SystemBanner from "./components/SystemBanner";
 import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
@@ -31,13 +32,14 @@ export default function App() {
   const [dataError, setDataError] = useState("");
   const [currentProfile, setCurrentProfile] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showMyPage, setShowMyPage] = useState(false);
   const [tasks, setTasks] = useState({ reminders: [], dueToday: [], prospects: [], tossups: [] });
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
 
   const userId = session?.user?.id || "";
-  const userName = session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
+  const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
   const presence = useCustomerPresence({ listId: selectedList?.id, userId, userName });
 
   const lockedUsers = useMemo(
@@ -47,7 +49,7 @@ export default function App() {
 
   useLayoutEffect(() => {
     scrollPageTop();
-  }, [selectedList?.id, selectedCustomer?.id, showAdmin]);
+  }, [selectedList?.id, selectedCustomer?.id, showAdmin, showMyPage]);
 
   useEffect(() => {
     if (!session) return undefined;
@@ -143,6 +145,7 @@ export default function App() {
     // ロゴ・パンくず・各画面の「一覧へ戻る」は必ず同じ処理を通す。
     // 管理画面表示中でも先に管理画面を閉じ、リスト一覧へ確実に戻す。
     setShowAdmin(false);
+    setShowMyPage(false);
     scrollPageTop();
     await presence.clearCustomer();
     setSelectedCustomer(null);
@@ -154,12 +157,25 @@ export default function App() {
 
   function openAdmin() {
     scrollPageTop();
+    setShowMyPage(false);
     setShowAdmin(true);
+  }
+
+  function openMyPage() {
+    scrollPageTop();
+    setShowAdmin(false);
+    setShowMyPage(true);
+  }
+
+  function closeMyPage() {
+    scrollPageTop();
+    setShowMyPage(false);
   }
 
   function closeAdmin() {
     scrollPageTop();
     setShowAdmin(false);
+    setShowMyPage(false);
   }
 
   async function handleLogout() {
@@ -170,6 +186,7 @@ export default function App() {
     setCustomers([]);
     setCurrentProfile(null);
     setShowAdmin(false);
+    setShowMyPage(false);
   }
 
   async function handleSaveCall(payload) {
@@ -271,11 +288,28 @@ export default function App() {
   );
 
 
+
+  if (showMyPage && currentProfile) {
+    return <>
+      {banner}
+      {sessionNotice}
+      <MyPage
+        currentProfile={currentProfile}
+        onProfileUpdated={setCurrentProfile}
+        onBack={closeMyPage}
+        onGoLists={goToLists}
+        onLogout={handleLogout}
+        onOpenAdmin={openAdmin}
+        onOpenMyPage={openMyPage}
+      />
+    </>;
+  }
+
   if (showAdmin && currentProfile && ["admin", "sv"].includes(currentProfile.role)) {
     return <>
       {banner}
       {sessionNotice}
-      <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} />
+      <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} />
     </>;
   }
 
@@ -300,6 +334,7 @@ export default function App() {
         onLogout={handleLogout}
         currentProfile={currentProfile}
         onOpenAdmin={openAdmin}
+        onOpenMyPage={openMyPage}
       />
     </>;
   }
@@ -323,6 +358,7 @@ export default function App() {
         onLogout={handleLogout}
         currentProfile={currentProfile}
         onOpenAdmin={openAdmin}
+        onOpenMyPage={openMyPage}
       />
     </>;
   }
@@ -331,6 +367,6 @@ export default function App() {
     {banner}
     {sessionNotice}
     {dataLoading && <div className="data-loading">データ読込中...</div>}
-    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} />
+    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
   </>;
 }

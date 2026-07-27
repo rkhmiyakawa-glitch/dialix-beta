@@ -8,7 +8,7 @@ const taskTabs = [
   ["tossups", "トスアップ"],
 ];
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, tasks, onOpenTask, onSearchCustomers }) {
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -29,7 +29,7 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
   const taskItems = tasks?.[activeTask] || [];
 
   return <main className="app-page">
-    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle="リスト一覧" />
+    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" />
     <section className="content">
       <div className="page-title"><div><p className="eyebrow">TODAY</p><h1>今日のタスク</h1><p>優先対応が必要な顧客を確認できます。</p></div></div>
 

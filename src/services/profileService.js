@@ -49,3 +49,21 @@ export async function touchUserActivity() {
   const { error } = await supabase.rpc("touch_user_activity");
   if (error) throw error;
 }
+
+export async function updateMyDisplayName(displayName) {
+  if (!isSupabaseConfigured) return { ...demoProfile, displayName };
+  const { data: authData, error: authError } = await supabase.auth.updateUser({
+    data: { display_name: displayName },
+  });
+  if (authError) throw authError;
+  const userId = authData.user?.id;
+  if (!userId) throw new Error("ユーザー情報を取得できませんでした。");
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ display_name: displayName })
+    .eq("id", userId)
+    .select("id,display_name,email,role,is_active,created_at,last_active_at,last_login_at")
+    .single();
+  if (error) throw error;
+  return mapProfile(data);
+}

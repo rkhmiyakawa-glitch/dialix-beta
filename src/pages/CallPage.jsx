@@ -29,6 +29,7 @@ export default function CallPage({
   onCallStateChange,
   currentProfile,
   onOpenAdmin,
+  onOpenMyPage,
 }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -171,7 +172,7 @@ export default function CallPage({
   return (
     <main className="app-page">
       <CustomerLockModal customerName={selectedCustomer.companyName} lockedUsers={lockedUsers} onClose={onBack} />
-      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle={`${selectedList.name} / 顧客詳細`} />
+      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客詳細`} />
       <Toast message={message} />
 
       <section className="content call-content">
@@ -212,7 +213,7 @@ export default function CallPage({
 
           <div className="call-stack call-stack-right">
             <section className="call-column last-contact-column-v106">
-              <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.ap || "―", status: selectedCustomer.status || "未架電" }} />
+              <LastContactCard lastContact={{ at: selectedCustomer.lastCallAt || "未対応", ap: selectedCustomer.status || selectedCustomer.history?.length ? (selectedCustomer.ap || "") : "", status: selectedCustomer.status || "未架電" }} />
             </section>
 
             <section className="call-column status-column-v106">

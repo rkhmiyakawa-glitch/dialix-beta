@@ -15,27 +15,33 @@ function mapList(row) {
   };
 }
 
-function mapHistory(row) {
+function resolveOperatorName(row, profilesById, profilesByEmail) {
+  const byId = row.user_id ? profilesById.get(row.user_id) : "";
+  const raw = row.operator_name || "";
+  return byId || profilesByEmail.get(raw.toLowerCase()) || raw || "―";
+}
+
+function mapHistory(row, profilesById = new Map(), profilesByEmail = new Map()) {
   return {
     id: row.id,
     calledAt: row.called_at || "",
     at: row.called_at
       ? new Date(row.called_at).toLocaleString("ja-JP")
       : "",
-    ap: row.operator_name || "―",
+    ap: resolveOperatorName(row, profilesById, profilesByEmail),
     status: row.status || "未架電",
     memo: row.memo || "",
   };
 }
 
-function mapCustomer(row) {
+function mapCustomer(row, profilesById = new Map(), profilesByEmail = new Map()) {
   return {
     id: row.id,
     companyName: row.company_name,
     phone: row.phone,
     address: row.address || "",
     businessSubcategory: row.business_subcategory || "",
-    ap: row.ap_name || "",
+    ap: "",
     status: row.status || "",
     lastCallAt: row.last_called_at
       ? new Date(row.last_called_at).toLocaleString("ja-JP")
@@ -49,7 +55,7 @@ function mapCustomer(row) {
     presence: "idle",
     presenceUser: "",
     history: (row.call_histories || [])
-      .map(mapHistory)
+      .map((history) => mapHistory(history, profilesById, profilesByEmail))
       .sort((a, b) => new Date(b.calledAt || 0).getTime() - new Date(a.calledAt || 0).getTime()),
   };
 }
@@ -68,9 +74,9 @@ export async function fetchLists() {
 }
 
 export async function fetchCustomers(listId) {
-  if (!isSupabaseConfigured) return customersByList[listId] || [];
+  if (!isSupabaseConfigured) return (customersByList[listId] || []).map((customer) => ({ ...customer, ap: customer.status || customer.history?.length ? customer.ap : "" }));
 
-  const { data, error } = await withRetry(() => supabase
+  const [{ data, error }, profilesResult] = await Promise.all([withRetry(() => supabase
     .from("customers")
     .select(`
       id,
@@ -85,16 +91,28 @@ export async function fetchCustomers(listId) {
       call_histories (
         id,
         called_at,
+        user_id,
         operator_name,
         status,
         memo
       )
     `)
     .eq("list_id", listId)
-    .order("sort_order", { ascending: true }));
+    .order("sort_order", { ascending: true })),
+    withRetry(() => supabase.from("profiles").select("id,display_name,email")),
+  ]);
 
   if (error) throw error;
-  return (data || []).map(mapCustomer);
+  // profilesの参照権限がない環境でも顧客一覧自体は表示できるようにする。
+  const profileRows = profilesResult.error ? [] : (profilesResult.data || []);
+  const profilesById = new Map(profileRows.map((profile) => [profile.id, profile.display_name || profile.email || "名称未設定"]));
+  const profilesByEmail = new Map(profileRows.filter((profile) => profile.email).map((profile) => [profile.email.toLowerCase(), profile.display_name || profile.email]));
+  return (data || []).map((row) => {
+    const customer = mapCustomer(row, profilesById, profilesByEmail);
+    const latestHistory = customer.history[0];
+    const legacyName = profilesByEmail.get(String(row.ap_name || "").toLowerCase()) || row.ap_name || "";
+    return { ...customer, ap: customer.status || customer.history.length ? (latestHistory?.ap || legacyName) : "" };
+  });
 }
 
 export async function saveCallResult({

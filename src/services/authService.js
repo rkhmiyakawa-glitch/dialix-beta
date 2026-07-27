@@ -54,3 +54,10 @@ export function subscribeAuth(callback) {
 
   return () => subscription.unsubscribe();
 }
+
+export async function updateMyPassword(password) {
+  if (!isSupabaseConfigured) return { demoMode: true };
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+  return data;
+}

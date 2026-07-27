@@ -9,10 +9,9 @@ export default function LastContactCard({ lastContact }) {
           <dt>日時</dt>
           <dd>{lastContact.at}</dd>
         </div>
-        <div>
-          <dt>AP</dt>
-          <dd>{lastContact.ap}</dd>
-        </div>
+        {lastContact.ap && lastContact.at !== "未対応" && <div>
+          <dt>AP</dt><dd>{lastContact.ap}</dd>
+        </div>}
         <div>
           <dt>ステータス</dt>
           <dd>{lastContact.status}</dd>

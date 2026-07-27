@@ -8,7 +8,7 @@ import ReportsPanel from "./ReportsPanel";
 
 const roleLabels = { admin: "管理者", sv: "SV", operator: "オペレーター" };
 
-export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout }) {
+export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout, onOpenMyPage }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,7 +49,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout 
   }
 
   return <main className="app-page">
-    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={() => {}} />
+    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={() => {}} onOpenMyPage={onOpenMyPage} />
     <section className="content admin-content">
       <div className="page-title">
         <div>

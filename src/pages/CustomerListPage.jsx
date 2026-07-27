@@ -27,6 +27,7 @@ export default function CustomerListPage({
   presenceByCustomer = {},
   currentProfile,
   onOpenAdmin,
+  onOpenMyPage,
 }) {
   const [searchInput, setSearchInput] = useState("");
   const [query, setQuery] = useState("");
@@ -98,7 +99,7 @@ export default function CustomerListPage({
 
   return (
     <main className="app-page">
-      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle={`${selectedList.name} / 顧客一覧`} />
+      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客一覧`} />
 
       <section className="content customer-list-content">
         <div className="customer-list-heading">
@@ -230,7 +231,7 @@ export default function CustomerListPage({
                     </td>
                     <td>{customer.phone}</td>
                     <td>{customer.businessSubcategory || "―"}</td>
-                    <td>{customer.ap || "―"}</td>
+                    <td>{customer.status || customer.history?.length ? (customer.ap || "―") : ""}</td>
                     <td>
                       {customer.status ? (
                         <span className={`table-status ${statusTone[customer.status]}`}>
