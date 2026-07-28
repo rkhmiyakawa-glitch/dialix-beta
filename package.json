@@ -1,7 +1,7 @@
 {
   "name": "dialix",
   "private": true,
-  "version": "1.0.0-rc.6.15",
+  "version": "1.0.0-rc.6.17",
   "type": "module",
   "scripts": {
     "dev": "vite",

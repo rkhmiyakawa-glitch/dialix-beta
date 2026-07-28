@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ShiftCalendarEditor from "../components/ShiftCalendarEditor";
 import { fetchProfiles } from "../services/profileService";
-import { fetchAllAttendance, fetchAllShifts, saveShifts } from "../services/attendanceService";
+import { fetchAllAttendance, fetchAllShifts, saveShifts, fetchAttendanceCorrectionRequests, resolveAttendanceCorrectionRequest, updateAttendanceRecordAsManager } from "../services/attendanceService";
 
 const monthNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }).slice(0, 7);
 const dateNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
@@ -18,6 +18,10 @@ export default function ShiftManagementPanel({ currentProfile }) {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [now, setNow] = useState(Date.now());
+  const [correctionRequests, setCorrectionRequests] = useState([]);
+  const [editingAttendance, setEditingAttendance] = useState(null);
+  const [requestFilter, setRequestFilter] = useState("pending");
+  const [savingAttendance, setSavingAttendance] = useState(false);
   const today = dateNow();
   const selectedShifts = useMemo(() => shifts.filter((s) => s.user_id === selectedUserId), [shifts, selectedUserId]);
   const userMap = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
@@ -38,20 +42,46 @@ export default function ShiftManagementPanel({ currentProfile }) {
   async function reload() {
     setLoading(true); setError("");
     try {
-      const [nextUsers, nextShifts, nextAttendance] = await Promise.all([fetchProfiles(), fetchAllShifts(month), fetchAllAttendance(month)]);
+      const [nextUsers, nextShifts, nextAttendance, nextRequests] = await Promise.all([fetchProfiles(), fetchAllShifts(month), fetchAllAttendance(month), fetchAttendanceCorrectionRequests(requestFilter)]);
       const activeUsers = nextUsers.filter((u) => u.isActive);
-      setUsers(activeUsers); setShifts(nextShifts); setAttendance(nextAttendance);
+      setUsers(activeUsers); setShifts(nextShifts); setAttendance(nextAttendance); setCorrectionRequests(nextRequests);
       setSelectedUserId((current) => current || activeUsers[0]?.id || "");
     } catch (e) { setError(e.message || "シフトを取得できませんでした。SQLの適用状況を確認してください。"); }
     finally { setLoading(false); }
   }
-  useEffect(() => { reload(); }, [month]);
+  useEffect(() => { reload(); }, [month, requestFilter]);
   useEffect(() => { const timer = setInterval(() => { setNow(Date.now()); reload(); }, 60000); return () => clearInterval(timer); }, [month]);
 
   async function bulkSave(dates, settings) {
     if (!canManage || !selectedUserId) return;
     try { await saveShifts(selectedUserId, dates, settings); await reload(); }
     catch(e) { setError(e.message || "シフト登録に失敗しました。"); throw e; }
+  }
+
+  function openAttendanceEdit(row, request = null) {
+    const date = request?.work_date || today;
+    const record = attendance.find((a) => a.user_id === row.user.id && a.work_date === date);
+    const toTime = (value) => value ? new Date(value).toLocaleTimeString("ja-JP", { hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Asia/Tokyo" }) : "";
+    setEditingAttendance({
+      requestId: request?.id || null, userId: row.user.id, userName: row.user.displayName || row.user.email,
+      workDate: date,
+      clockIn: toTime(request?.requested_clock_in || record?.clock_in),
+      clockOut: toTime(request?.requested_clock_out || record?.clock_out),
+      breakMinutes: record?.break_minutes || 0,
+      managerNote: request ? `${request.reason_type}${request.reason_detail ? `：${request.reason_detail}` : ""}` : "管理者による直接修正",
+    });
+  }
+  async function saveAttendanceEdit(status = "approved") {
+    if (!editingAttendance) return;
+    setSavingAttendance(true); setError("");
+    try {
+      const toIso = (date, time) => time ? new Date(`${date}T${time}:00+09:00`).toISOString() : null;
+      const payload = { ...editingAttendance, clockIn: toIso(editingAttendance.workDate, editingAttendance.clockIn), clockOut: toIso(editingAttendance.workDate, editingAttendance.clockOut), managerId: currentProfile.id, status };
+      if (editingAttendance.requestId) await resolveAttendanceCorrectionRequest(payload);
+      else await updateAttendanceRecordAsManager({ ...payload, reason: editingAttendance.managerNote });
+      setEditingAttendance(null); await reload();
+    } catch(e) { setError(e.message || "勤怠修正に失敗しました。"); }
+    finally { setSavingAttendance(false); }
   }
 
   const counts = {
@@ -77,12 +107,20 @@ export default function ShiftManagementPanel({ currentProfile }) {
       <div className="shift-summary-cards">
         <div><span>出勤予定</span><strong>{counts.scheduled}</strong></div><div><span>出勤中</span><strong>{counts.working}</strong></div><div className={counts.late ? "danger" : ""}><span>未出勤</span><strong>{counts.late}</strong></div><div><span>退勤済み</span><strong>{counts.done}</strong></div><div><span>休み</span><strong>{counts.off}</strong></div>
       </div>
-      <div className="table-scroll"><table className="admin-table today-shift-table"><thead><tr><th>AP</th><th>シフト</th><th>出勤</th><th>退勤</th><th>状態</th></tr></thead><tbody>{filteredRows.map((r) => <tr key={r.user.id} className={r.status === "late" ? "late-row" : ""}><td>{r.user.displayName || r.user.email}</td><td>{!r.shift ? "未登録" : r.shift.is_off ? "休み" : `${r.shift.start_time?.slice(0,5)}〜${r.shift.end_time?.slice(0,5)}`}</td><td>{fmt(r.record?.clock_in)}</td><td>{fmt(r.record?.clock_out)}</td><td><span className={`shift-status ${r.status}`}>{({working:"出勤中",late:"未出勤",before:"勤務前",done:"退勤済み",off:"休み","no-shift":"未登録"})[r.status]}</span></td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table className="admin-table today-shift-table"><thead><tr><th>AP</th><th>シフト</th><th>出勤</th><th>退勤</th><th>状態</th><th>操作</th></tr></thead><tbody>{filteredRows.map((r) => <tr key={r.user.id} className={r.status === "late" ? "late-row" : ""}><td>{r.user.displayName || r.user.email}</td><td>{!r.shift ? "未登録" : r.shift.is_off ? "休み" : `${r.shift.start_time?.slice(0,5)}〜${r.shift.end_time?.slice(0,5)}`}</td><td>{fmt(r.record?.clock_in)}</td><td>{fmt(r.record?.clock_out)}</td><td><span className={`shift-status ${r.status}`}>{({working:"出勤中",late:"未出勤",before:"勤務前",done:"退勤済み",off:"休み","no-shift":"未登録"})[r.status]}</span></td><td><button className="table-action" type="button" onClick={()=>openAttendanceEdit(r)}>勤怠修正</button></td></tr>)}</tbody></table></div>
+    </section>
+
+
+    <section className="attendance-request-management">
+      <div className="today-shift-head"><div><h3>勤怠修正申請</h3><p>APから届いた申請を確認し、承認・修正・却下できます。</p></div><select value={requestFilter} onChange={(e)=>setRequestFilter(e.target.value)}><option value="pending">未対応</option><option value="approved">承認済み</option><option value="rejected">却下済み</option><option value="all">すべて</option></select></div>
+      {correctionRequests.length ? <div className="table-scroll"><table className="admin-table"><thead><tr><th>AP</th><th>対象日</th><th>希望時刻</th><th>理由</th><th>状態</th><th>操作</th></tr></thead><tbody>{correctionRequests.map((req)=>{ const user=userMap.get(req.user_id); const row={user:user||{id:req.user_id,displayName:"不明なユーザー"}}; return <tr key={req.id}><td>{user?.displayName || user?.email || "不明"}</td><td>{req.work_date}</td><td>{fmt(req.requested_clock_in)}〜{fmt(req.requested_clock_out)}</td><td>{req.reason_type}{req.reason_detail ? `：${req.reason_detail}` : ""}</td><td><span className={`request-status ${req.status}`}>{({pending:"未対応",approved:"承認",rejected:"却下"})[req.status]}</span></td><td>{req.status === "pending" ? <div className="user-action-group"><button className="table-action" onClick={()=>openAttendanceEdit(row,req)}>確認・修正</button><button className="table-action danger" onClick={()=>{openAttendanceEdit(row,req); setTimeout(()=>{},0)}}>却下は確認画面から</button></div> : "—"}</td></tr>})}</tbody></table></div> : <div className="empty-state">該当する申請はありません。</div>}
     </section>
 
     <section className="all-shifts-overview"><h3>全員の月間シフト一覧</h3><div className="table-scroll"><table className="admin-table monthly-shift-table"><thead><tr><th>日付</th><th>出勤者</th><th>人数</th></tr></thead><tbody>{Array.from({length:new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate()},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`).map((date) => { const rows=shifts.filter((s)=>s.shift_date===date&&!s.is_off); return <tr key={date}><td>{date}</td><td>{rows.length ? rows.map((s)=>`${userMap.get(s.user_id)?.displayName || userMap.get(s.user_id)?.email || "不明"} ${s.start_time?.slice(0,5)}〜${s.end_time?.slice(0,5)}`).join(" / ") : "—"}</td><td>{rows.length}名</td></tr>; })}</tbody></table></div></section>
 
     <div className="shift-user-selector"><label>登録・編集するAP<select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}><option value="">選択してください</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName || u.email}</option>)}</select></label></div>
     {loading ? <div className="empty-state">読み込み中...</div> : selectedUserId ? <ShiftCalendarEditor month={month} shifts={selectedShifts} onBulkSave={bulkSave} disabled={!canManage} /> : <div className="empty-state">APを選択してください。</div>}
+
+    {editingAttendance && <div className="lock-overlay"><section className="edit-modal attendance-edit-modal"><h2>勤怠修正</h2><p><strong>{editingAttendance.userName}</strong></p><label>対象日<input type="date" value={editingAttendance.workDate} onChange={(e)=>setEditingAttendance({...editingAttendance,workDate:e.target.value})} /></label><label>出勤時刻<input type="time" value={editingAttendance.clockIn} onChange={(e)=>setEditingAttendance({...editingAttendance,clockIn:e.target.value})} /></label><label>退勤時刻<input type="time" value={editingAttendance.clockOut} onChange={(e)=>setEditingAttendance({...editingAttendance,clockOut:e.target.value})} /></label><label>休憩時間（分）<input type="number" min="0" value={editingAttendance.breakMinutes} onChange={(e)=>setEditingAttendance({...editingAttendance,breakMinutes:e.target.value})} /></label><label>修正理由・管理メモ<textarea rows="3" value={editingAttendance.managerNote} onChange={(e)=>setEditingAttendance({...editingAttendance,managerNote:e.target.value})} /></label><div className="modal-actions">{editingAttendance.requestId && <button className="secondary-button danger" onClick={()=>saveAttendanceEdit("rejected")} disabled={savingAttendance}>却下</button>}<button className="secondary-button" onClick={()=>setEditingAttendance(null)} disabled={savingAttendance}>キャンセル</button><button className="primary-button" onClick={()=>saveAttendanceEdit("approved")} disabled={savingAttendance}>{savingAttendance ? "保存中..." : editingAttendance.requestId ? "承認して保存" : "修正を保存"}</button></div></section></div>}
   </section>;
 }

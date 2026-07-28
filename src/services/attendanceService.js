@@ -89,3 +89,75 @@ export async function fetchAllAttendance(month) {
   if (error) throw error;
   return data || [];
 }
+
+export async function submitAttendanceCorrectionRequest(payload) {
+  ensureClient();
+  const row = {
+    user_id: payload.userId,
+    work_date: payload.workDate,
+    requested_clock_in: payload.clockIn || null,
+    requested_clock_out: payload.clockOut || null,
+    reason_type: payload.reasonType,
+    reason_detail: payload.reasonDetail || "",
+    status: "pending",
+  };
+  const { data, error } = await supabase.from("attendance_correction_requests").insert(row).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchMyAttendanceCorrectionRequests(userId) {
+  ensureClient();
+  const { data, error } = await supabase.from("attendance_correction_requests").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function fetchAttendanceCorrectionRequests(status = "pending") {
+  ensureClient();
+  let query = supabase.from("attendance_correction_requests").select("*").order("created_at", { ascending: false });
+  if (status !== "all") query = query.eq("status", status);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
+export async function updateAttendanceRecordAsManager(payload) {
+  ensureClient();
+  const row = {
+    user_id: payload.userId,
+    work_date: payload.workDate,
+    clock_in: payload.clockIn || null,
+    clock_out: payload.clockOut || null,
+    break_minutes: Number(payload.breakMinutes || 0),
+    correction_reason: payload.reason || "管理者修正",
+    corrected_by: payload.managerId,
+    corrected_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabase.from("attendance_records").upsert(row, { onConflict: "user_id,work_date" }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function resolveAttendanceCorrectionRequest(payload) {
+  ensureClient();
+  if (payload.status === "approved") {
+    await updateAttendanceRecordAsManager({
+      userId: payload.userId,
+      workDate: payload.workDate,
+      clockIn: payload.clockIn,
+      clockOut: payload.clockOut,
+      breakMinutes: payload.breakMinutes,
+      reason: payload.managerNote || "勤怠修正申請を承認",
+      managerId: payload.managerId,
+    });
+  }
+  const { data, error } = await supabase.from("attendance_correction_requests").update({
+    status: payload.status,
+    manager_note: payload.managerNote || "",
+    reviewed_by: payload.managerId,
+    reviewed_at: new Date().toISOString(),
+  }).eq("id", payload.requestId).select().single();
+  if (error) throw error;
+  return data;
+}

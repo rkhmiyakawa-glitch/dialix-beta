@@ -1702,3 +1702,19 @@ input,select,textarea,button{max-width:100%}
 .today-shift-table tr.late-row td { background:#fff1f2; }
 .monthly-shift-table td:nth-child(2) { min-width:520px; white-space:normal; line-height:1.8; }
 @media (max-width:900px){.shift-summary-cards{grid-template-columns:repeat(2,1fr)}.today-shift-head{align-items:flex-start;flex-direction:column}}
+
+/* RC6.17 attendance correction requests */
+.attendance-correction-form { display:grid; grid-template-columns:repeat(4,minmax(130px,1fr)); gap:12px; align-items:end; margin-bottom:18px; }
+.attendance-correction-form label,.attendance-edit-modal label { display:flex; flex-direction:column; gap:6px; font-weight:700; font-size:13px; }
+.attendance-correction-form input,.attendance-correction-form select,.attendance-edit-modal input,.attendance-edit-modal textarea { min-height:42px; border:1px solid #cbd5e1; border-radius:9px; padding:8px 10px; background:#fff; }
+.attendance-correction-detail { grid-column:span 2; }
+.request-status { display:inline-flex; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:900; }
+.request-status.pending { background:#fef3c7; color:#92400e; }
+.request-status.approved { background:#dcfce7; color:#166534; }
+.request-status.rejected { background:#fee2e2; color:#b91c1c; }
+.attendance-request-management { margin:18px 0; padding:18px; border:1px solid #dbe3ef; border-radius:14px; background:#fff; }
+.attendance-request-management select { min-height:40px; border:1px solid #cbd5e1; border-radius:9px; padding:0 10px; background:#fff; }
+.attendance-edit-modal textarea { resize:vertical; }
+.secondary-button.danger { border-color:#dc2626; color:#b91c1c; }
+@media(max-width:900px){.attendance-correction-form{grid-template-columns:repeat(2,1fr)}.attendance-correction-detail{grid-column:span 2}}
+@media(max-width:600px){.attendance-correction-form{grid-template-columns:1fr}.attendance-correction-detail{grid-column:span 1}}
