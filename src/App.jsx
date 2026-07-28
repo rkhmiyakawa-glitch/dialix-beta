@@ -9,6 +9,7 @@ const AdminPage = lazy(() => import("./pages/AdminPage"));
 const MyPage = lazy(() => import("./pages/MyPage"));
 const AttendancePage = lazy(() => import("./pages/AttendancePage"));
 const LinksPage = lazy(() => import("./pages/LinksPage"));
+const ReminderListPage = lazy(() => import("./pages/ReminderListPage"));
 import SystemBanner from "./components/SystemBanner";
 import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
@@ -38,7 +39,7 @@ export default function App() {
   const [showMyPage, setShowMyPage] = useState(false);
   const [showAttendance, setShowAttendance] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
-  const [homeTaskKey, setHomeTaskKey] = useState("reminders");
+  const [reminderPage, setReminderPage] = useState("");
   const [tasks, setTasks] = useState({ reminders: [], dueToday: [], allReminders: [], prospects: [], tossups: [] });
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
@@ -58,7 +59,7 @@ export default function App() {
 
   useLayoutEffect(() => {
     scrollPageTop();
-  }, [selectedList?.id, selectedCustomer?.id, showAdmin, showMyPage, showAttendance, showLinks]);
+  }, [selectedList?.id, selectedCustomer?.id, showAdmin, showMyPage, showAttendance, showLinks, reminderPage]);
 
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function App() {
       setShowMyPage(false);
       setShowAttendance(false);
       setShowLinks(false);
+      setReminderPage("");
       presence.clearCustomer()?.catch?.(() => {});
       setSelectedCustomer(null);
 
@@ -82,11 +84,11 @@ export default function App() {
       } else if (destination === "today-reminders") {
         setSelectedList(null);
         setCustomers([]);
-        setHomeTaskKey("dueToday");
+        setReminderPage("today");
       } else if (destination === "reminders") {
         setSelectedList(null);
         setCustomers([]);
-        setHomeTaskKey("allReminders");
+        setReminderPage("all");
       }
       scrollPageTop();
     }
@@ -236,6 +238,7 @@ export default function App() {
     setShowMyPage(false);
     setShowAttendance(false);
     setShowLinks(false);
+    setReminderPage("");
     scrollPageTop();
     presence.clearCustomer()?.catch?.(() => {});
     setSelectedCustomer(null);
@@ -250,6 +253,7 @@ export default function App() {
     setShowMyPage(false);
     setShowAttendance(false);
     setShowLinks(false);
+    setReminderPage("");
     setShowAdmin(true);
   }
 
@@ -258,6 +262,7 @@ export default function App() {
     setShowAdmin(false);
     setShowAttendance(false);
     setShowLinks(false);
+    setReminderPage("");
     setShowMyPage(true);
   }
 
@@ -283,6 +288,7 @@ export default function App() {
     setShowMyPage(false);
     setShowAttendance(false);
     setShowLinks(false);
+    setReminderPage("");
   }
 
   async function handleSaveCall(payload) {
@@ -411,6 +417,26 @@ export default function App() {
 
 
 
+  if (reminderPage) {
+    return <>
+      {banner}
+      {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
+        <ReminderListPage
+          mode={reminderPage}
+          tasks={tasks}
+          currentProfile={currentProfile}
+          onLogout={handleLogout}
+          onGoLists={goToLists}
+          onOpenAdmin={openAdmin}
+          onOpenMyPage={openMyPage}
+          onOpenTask={openTaskCustomer}
+        />
+      </Suspense>
+    </>;
+  }
+
+
   if (showAttendance) {
     return <>
       {banner}
@@ -516,6 +542,6 @@ export default function App() {
     {banner}
     {sessionNotice}
     {dataLoading && <div className="data-loading">データ読込中...</div>}
-    <ListPage initialActiveTask={homeTaskKey} onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
   </>;
 }
