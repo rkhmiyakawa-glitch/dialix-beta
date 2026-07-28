@@ -63,12 +63,30 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
         <MetricCard label="期限超過" value={`${data.metrics.overdueCount}件`} sub="要対応リマインド" />
       </div>
 
-      <section className="dashboard-box dashboard-full-width">
-        <div className="dashboard-box-head"><h3>期限超過一覧</h3><span>{data.overdue.length}件表示</span></div>
+      <section className="dashboard-box dashboard-full-width dashboard-overdue-panel">
+        <div className="dashboard-box-head"><h3>期限超過リマインド</h3><span>{data.overdue.length}件表示</span></div>
         {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
-          <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>期限</th><th>状態</th></tr></thead><tbody>
-            {data.overdue.map((item) => <tr key={item.id} className="dashboard-clickable-row" onClick={() => onOpenOverdueCustomer?.(item, data.overdue)} tabIndex={0} role="button" onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpenOverdueCustomer?.(item, data.overdue); } }}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
-          </tbody></table></div>}
+          <div className="task-list dashboard-overdue-list">
+            {data.overdue.map((item) => (
+              <button
+                key={item.id}
+                className="task-row dashboard-overdue-row"
+                type="button"
+                onClick={() => onOpenOverdueCustomer?.(item, data.overdue)}
+              >
+                <div className="dashboard-overdue-customer">
+                  <strong>{item.companyName}</strong>
+                  <small>{item.listName}</small>
+                </div>
+                <div className="dashboard-overdue-details">
+                  <span><small>担当AP</small><b>{item.apName}</b></span>
+                  <span><small>期限</small><b>{fmtDateTime(item.reminderAt)}</b></span>
+                  <span><small>状態</small><b>{item.status || "未設定"}</b></span>
+                  <em>開く ›</em>
+                </div>
+              </button>
+            ))}
+          </div>}
       </section>
 
       <div className="dashboard-section-title"><h3>ランキング</h3><span>{data.rangeLabel}の実績</span></div>

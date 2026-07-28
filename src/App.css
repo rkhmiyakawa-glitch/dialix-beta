@@ -1523,3 +1523,98 @@ input,select,textarea,button{max-width:100%}
   .sidebar-nav button,
   .sidebar-logout { justify-content: center !important; padding: 0 !important; }
 }
+
+/* RC6.14.7: link ordering controls */
+.link-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.link-order-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.link-card .link-order-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link-card .link-order-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.link-card .link-order-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.link-card .link-delete-button {
+  color: #dc2626;
+}
+
+@media (max-width: 640px) {
+  .link-card {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .link-card-actions {
+    gap: 8px;
+  }
+}
+
+/* RC6.14.8: reminder navigation fix / admin overdue reminder unified card view */
+.dashboard-overdue-panel .dashboard-box-head{margin-bottom:0}
+.dashboard-overdue-list{border-top:1px solid #e7edf5}
+.dashboard-overdue-row{
+  width:100%;
+  display:grid;
+  grid-template-columns:minmax(220px,1.2fr) minmax(520px,2fr);
+  align-items:center;
+  gap:24px;
+  border:0;
+  border-bottom:1px solid #e7edf5;
+  border-radius:0;
+  background:#fff;
+  padding:16px 18px;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+  transition:background-color .15s ease;
+}
+.dashboard-overdue-row:last-child{border-bottom:0}
+.dashboard-overdue-row:hover{background:#f7f9ff}
+.dashboard-overdue-row:focus-visible{outline:2px solid #315efb;outline-offset:-2px;background:#f7f9ff}
+.dashboard-overdue-customer{display:grid;gap:5px;min-width:0}
+.dashboard-overdue-customer strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#17233a}
+.dashboard-overdue-customer small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#748096}
+.dashboard-overdue-details{display:grid;grid-template-columns:minmax(110px,.8fr) minmax(190px,1.25fr) minmax(110px,.8fr) auto;align-items:center;gap:18px;min-width:0}
+.dashboard-overdue-details span{display:grid;gap:4px;min-width:0}
+.dashboard-overdue-details small{color:#7d899b;font-size:11px;font-weight:700}
+.dashboard-overdue-details b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#27344a;font-size:13px}
+.dashboard-overdue-details em{color:#2457d6;font-size:13px;font-style:normal;font-weight:800;white-space:nowrap}
+@media(max-width:1050px){
+  .dashboard-overdue-row{grid-template-columns:1fr;gap:12px}
+  .dashboard-overdue-details{grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+}
+@media(max-width:700px){
+  .dashboard-overdue-details{grid-template-columns:1fr 1fr}
+  .dashboard-overdue-details em{justify-self:end}
+}

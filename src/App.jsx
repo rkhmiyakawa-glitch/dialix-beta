@@ -145,6 +145,14 @@ export default function App() {
   }, [session, currentProfile]);
 
   async function openTaskCustomer(task, contextItems = [task], contextLabel = "リスト") {
+    // リマインド専用ページ・管理画面などを閉じてから顧客画面へ遷移する。
+    // 先に表示状態を解除しないと、selectedList / selectedCustomer が更新されても
+    // 専用ページ側の return が優先され、案件を押しても画面が変わらない。
+    setShowAdmin(false);
+    setShowMyPage(false);
+    setShowAttendance(false);
+    setShowLinks(false);
+    setReminderPage("");
     setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
     setNavigationLabel(contextLabel);
     const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0 };
