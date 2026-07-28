@@ -1,21 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
 
-const taskTabs = [
-  ["reminders", "期限超過リマインド"],
-  ["dueToday", "本日のリマインド"],
-  ["prospects", "リマインド一覧"],
-  ["tossups", "トスアップ"],
-];
 
-export default function ListPage({ initialActiveTask = "reminders", lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
+
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [activeTask, setActiveTask] = useState(initialActiveTask);
-
-  useEffect(() => { setActiveTask(initialActiveTask); }, [initialActiveTask]);
 
   async function handleCustomerSearch(event) {
     event.preventDefault();
@@ -28,21 +20,15 @@ export default function ListPage({ initialActiveTask = "reminders", lists, onLog
     finally { setSearching(false); }
   }
 
-  const taskItems = tasks?.[activeTask] || [];
+  const taskItems = tasks?.reminders || [];
 
   return <main className="app-page">
     <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" />
     <section className="content">
-      <div className="page-title"><div><p className="eyebrow">TODAY</p><h1>今日のタスク</h1><p>優先対応が必要な顧客を確認できます。</p></div></div>
-
-      <section className="task-summary-grid">
-        {taskTabs.map(([key, label]) => <button key={key} className={`task-summary-card ${activeTask === key ? "active" : ""}`} onClick={() => setActiveTask(key)}>
-          <span>{label}</span><strong>{tasks?.[key]?.length || 0}</strong><small>件</small>
-        </button>)}
-      </section>
+      <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
 
       <section className="task-panel">
-        <div className="task-panel-head"><h2>{taskTabs.find(([key]) => key === activeTask)?.[1]}</h2><span>最大100件を表示</span></div>
+        <div className="task-panel-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
         {taskItems.length === 0 ? <div className="empty-state">現在、対象の顧客はいません。</div> : <div className="task-list">
           {taskItems.slice(0, 20).map((item) => <button className="task-row" key={item.id} onClick={() => onOpenTask(item, taskItems, "リスト")}>
             <div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div>
