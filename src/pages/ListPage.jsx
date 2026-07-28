@@ -4,7 +4,7 @@ import Header from "../components/Header";
 const taskTabs = [
   ["reminders", "期限超過リマインド"],
   ["dueToday", "本日のリマインド"],
-  ["prospects", "見込みフォロー"],
+  ["prospects", "リマインド一覧"],
   ["tossups", "トスアップ"],
 ];
 
