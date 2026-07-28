@@ -24,7 +24,15 @@ const demoTasks = {
   dueToday: [],
 };
 
-export async function fetchOperationalTasks() {
+function buildAssigneeFilter(currentUser = {}) {
+  const candidates = [currentUser.displayName, currentUser.email]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  if (!candidates.length) return null;
+  return candidates.map((value) => `ap_name.eq.${value.replace(/[(),]/g, "")}`).join(",");
+}
+
+export async function fetchOperationalTasks(currentUser = {}) {
   if (!isSupabaseConfigured) return demoTasks;
 
   const now = new Date();
@@ -32,11 +40,28 @@ export async function fetchOperationalTasks() {
   endOfToday.setHours(23, 59, 59, 999);
 
   const baseColumns = "id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)";
+  const assigneeFilter = buildAssigneeFilter(currentUser);
+  if (!assigneeFilter) return demoTasks;
+
+  const overdueQuery = supabase.from("customers").select(baseColumns)
+    .not("reminder_at", "is", null)
+    .or(assigneeFilter)
+    .lte("reminder_at", now.toISOString())
+    .order("reminder_at", { ascending: true })
+    .limit(100);
+  const todayQuery = supabase.from("customers").select(baseColumns)
+    .not("reminder_at", "is", null)
+    .or(assigneeFilter)
+    .gt("reminder_at", now.toISOString())
+    .lte("reminder_at", endOfToday.toISOString())
+    .order("reminder_at", { ascending: true })
+    .limit(100);
+
   const [reminderResult, prospectResult, tossupResult, todayResult] = await Promise.all([
-    supabase.from("customers").select(baseColumns).not("reminder_at", "is", null).lte("reminder_at", now.toISOString()).order("reminder_at", { ascending: true }).limit(100),
+    overdueQuery,
     supabase.from("customers").select(baseColumns).in("status", ["非決裁見込み", "決裁見込み", "見込み", "見込み留守"]).order("last_called_at", { ascending: true, nullsFirst: true }).limit(100),
     supabase.from("customers").select(baseColumns).eq("status", "トスアップ").order("last_called_at", { ascending: false, nullsFirst: false }).limit(100),
-    supabase.from("customers").select(baseColumns).not("reminder_at", "is", null).gt("reminder_at", now.toISOString()).lte("reminder_at", endOfToday.toISOString()).order("reminder_at", { ascending: true }).limit(100),
+    todayQuery,
   ]);
 
   const failed = [reminderResult, prospectResult, tossupResult, todayResult].find((result) => result.error);

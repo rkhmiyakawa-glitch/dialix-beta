@@ -18,20 +18,21 @@ const demo = {
   ranking: [
     { userId: "demo-1", displayName: "宮川", callCount: 18, validCount: 12, prospectCount: 3, tossupCount: 1 },
     { userId: "demo-2", displayName: "田中", callCount: 14, validCount: 9, prospectCount: 2, tossupCount: 1 },
-  ], overdue: [], recentCalls: [],
+  ], overdue: [], allReminders: [], recentCalls: [],
 };
 
 export async function fetchDashboardData(period = "today") {
   if (!isSupabaseConfigured) return demo;
   const { start, end, label } = periodRange(period);
   const historyColumns = "id,user_id,operator_name,status,memo,called_at,customers(company_name)";
-  const [historyResult, profilesResult, overdueResult, recentResult] = await Promise.all([
+  const [historyResult, profilesResult, overdueResult, allRemindersResult, recentResult] = await Promise.all([
     supabase.from("call_histories").select(historyColumns).gte("called_at", start.toISOString()).lte("called_at", end.toISOString()),
     supabase.from("profiles").select("id,display_name,role,is_active").eq("is_active", true),
-    supabase.from("customers").select("id,company_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(30),
+    supabase.from("customers").select("id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
+    supabase.from("customers").select("id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).order("reminder_at", { ascending: true }).limit(300),
     supabase.from("call_histories").select(historyColumns).order("called_at", { ascending: false }).limit(10),
   ]);
-  const failed = [historyResult, profilesResult, overdueResult, recentResult].find((r) => r.error);
+  const failed = [historyResult, profilesResult, overdueResult, allRemindersResult, recentResult].find((r) => r.error);
   if (failed?.error) throw failed.error;
 
   const histories = historyResult.data || [];
@@ -49,7 +50,9 @@ export async function fetchDashboardData(period = "today") {
   const ranking = [...byUser.values()].filter((r) => r.callCount > 0).sort((a, b) => b.callCount - a.callCount || a.displayName.localeCompare(b.displayName, "ja"));
   const validCount = histories.filter((h) => ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)).length;
   const decisionCount = histories.filter((h) => ["決裁NG", "決裁見込み"].includes(h.status)).length;
-  const overdue = (overdueResult.data || []).map((r) => ({ id: r.id, companyName: r.company_name, status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" }));
+  const mapReminder = (r) => ({ id: r.id, companyName: r.company_name, apName: r.ap_name || "未設定", status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" });
+  const overdue = (overdueResult.data || []).map(mapReminder);
+  const allReminders = (allRemindersResult.data || []).map(mapReminder);
   return {
     rangeLabel: label,
     metrics: {
@@ -63,7 +66,7 @@ export async function fetchDashboardData(period = "today") {
       activeOperatorCount: ranking.length,
       totalOperatorCount: profiles.length,
       overdueCount: overdue.length,
-    }, ranking, overdue,
+    }, ranking, overdue, allReminders,
     recentCalls: (recentResult.data || []).map((r) => ({ id: r.id, operatorName: r.operator_name, status: r.status, memo: r.memo, calledAt: r.called_at, companyName: r.customers?.company_name || "" })),
   };
 }

@@ -63,13 +63,22 @@ export default function DashboardPanel() {
         </section>
 
         <section className="dashboard-box">
-          <div className="dashboard-box-head"><h3>期限超過リマインド</h3><span>{data.overdue.length}件表示</span></div>
+          <div className="dashboard-box-head"><h3>期限超過一覧</h3><span>{data.overdue.length}件表示</span></div>
           {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
-            <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>期限</th><th>状態</th></tr></thead><tbody>
-              {data.overdue.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
+            <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>期限</th><th>状態</th></tr></thead><tbody>
+              {data.overdue.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
             </tbody></table></div>}
         </section>
       </div>
+
+
+      <section className="dashboard-box">
+        <div className="dashboard-box-head"><h3>全体リマインド一覧</h3><span>{data.allReminders.length}件表示</span></div>
+        {!data.allReminders.length ? <div className="empty-state">設定中のリマインドはありません。</div> :
+          <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>予定日時</th><th>状態</th></tr></thead><tbody>
+            {data.allReminders.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
+          </tbody></table></div>}
+      </section>
 
       <section className="dashboard-box">
         <div className="dashboard-box-head"><h3>直近の架電</h3><span>最新10件</span></div>

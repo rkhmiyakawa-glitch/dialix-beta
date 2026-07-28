@@ -61,8 +61,13 @@ export default function App() {
   useEffect(() => {
     if (!session) return;
     setDataLoading(true);
-    Promise.all([fetchLists(), fetchTodayKpi(session.user?.id), fetchMyProfile(session.user), fetchOperationalTasks()])
-      .then(([nextLists, nextKpi, nextProfile, nextTasks]) => {
+    Promise.all([fetchLists(), fetchTodayKpi(session.user?.id), fetchMyProfile(session.user)])
+      .then(async ([nextLists, nextKpi, nextProfile]) => {
+        const nextTasks = await fetchOperationalTasks({
+          userId: session.user?.id,
+          displayName: nextProfile?.displayName,
+          email: nextProfile?.email || session.user?.email,
+        });
         setLists(nextLists);
         setKpi(nextKpi);
         setCurrentProfile(nextProfile);
@@ -74,11 +79,17 @@ export default function App() {
 
 
   useEffect(() => {
-    if (!session) return undefined;
+    if (!session || !currentProfile) return undefined;
     return subscribeOperationalTasks(async () => {
-      try { setTasks(await fetchOperationalTasks()); } catch { /* next manual refresh will recover */ }
+      try {
+        setTasks(await fetchOperationalTasks({
+          userId: session.user?.id,
+          displayName: currentProfile?.displayName,
+          email: currentProfile?.email || session.user?.email,
+        }));
+      } catch { /* next manual refresh will recover */ }
     });
-  }, [session]);
+  }, [session, currentProfile]);
 
   async function openTaskCustomer(task, contextItems = [task], contextLabel = "リスト") {
     setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
@@ -226,7 +237,11 @@ export default function App() {
     setCustomers(refreshed);
     setSelectedCustomer(refreshed.find((c) => c.id === payload.customerId) || selectedCustomer);
     setKpi(await fetchTodayKpi(userId));
-    setTasks(await fetchOperationalTasks());
+    setTasks(await fetchOperationalTasks({
+      userId,
+      displayName: currentProfile?.displayName || userName,
+      email: currentProfile?.email || session?.user?.email,
+    }));
     return result;
   }
 
