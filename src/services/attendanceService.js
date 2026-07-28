@@ -79,3 +79,13 @@ export async function clockOut(userId) {
   if (error) throw error;
   return data;
 }
+
+export async function fetchAllAttendance(month) {
+  ensureClient();
+  const start = `${month}-01`;
+  const endDate = new Date(Number(month.slice(0,4)), Number(month.slice(5,7)), 0);
+  const end = `${month}-${String(endDate.getDate()).padStart(2,"0")}`;
+  const { data, error } = await supabase.from("attendance_records").select("*").gte("work_date", start).lte("work_date", end).order("work_date", { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
