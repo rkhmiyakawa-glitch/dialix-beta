@@ -59,7 +59,11 @@ export async function fetchOperationalTasks(currentUser = {}) {
 
   const [reminderResult, prospectResult, tossupResult, todayResult] = await Promise.all([
     overdueQuery,
-    supabase.from("customers").select(baseColumns).in("status", ["非決裁見込み", "決裁見込み", "見込み", "見込み留守"]).order("last_called_at", { ascending: true, nullsFirst: true }).limit(100),
+    supabase.from("customers").select(baseColumns)
+      .in("status", ["非決裁見込み", "決裁見込み", "見込み", "見込み留守"])
+      .or(assigneeFilter)
+      .order("last_called_at", { ascending: true, nullsFirst: true })
+      .limit(100),
     supabase.from("customers").select(baseColumns).eq("status", "トスアップ").order("last_called_at", { ascending: false, nullsFirst: false }).limit(100),
     todayQuery,
   ]);
