@@ -22,6 +22,7 @@ export default function ShiftManagementPanel({ currentProfile }) {
   const [editingAttendance, setEditingAttendance] = useState(null);
   const [requestFilter, setRequestFilter] = useState("pending");
   const [savingAttendance, setSavingAttendance] = useState(false);
+  const [overviewDate, setOverviewDate] = useState(dateNow());
   const today = dateNow();
   const selectedShifts = useMemo(() => shifts.filter((s) => s.user_id === selectedUserId), [shifts, selectedUserId]);
   const userMap = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
@@ -38,6 +39,37 @@ export default function ShiftManagementPanel({ currentProfile }) {
   }), [users, shifts, attendance, today, now]);
   const filteredRows = todayRows.filter((r) => filter === "all" || r.status === filter);
   const lateRows = todayRows.filter((r) => r.status === "late");
+  const monthDates = useMemo(() => {
+    const [year, monthNumber] = month.split("-").map(Number);
+    const days = new Date(year, monthNumber, 0).getDate();
+    const leading = new Date(year, monthNumber - 1, 1).getDay();
+    return [
+      ...Array.from({ length: leading }, () => null),
+      ...Array.from({ length: days }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`),
+    ];
+  }, [month]);
+  const selectedOverviewDate = overviewDate.startsWith(`${month}-`) ? overviewDate : `${month}-01`;
+  const overviewRows = useMemo(() => users.map((user) => {
+    const shift = shifts.find((item) => item.user_id === user.id && item.shift_date === selectedOverviewDate);
+    if (!shift) return null;
+    const record = attendance.find((item) => item.user_id === user.id && item.work_date === selectedOverviewDate);
+    let status = "before";
+    if (shift.is_off) status = "off";
+    else if (record?.clock_out) status = "done";
+    else if (record?.clock_in) status = "working";
+    else if (shift.start_time && now > new Date(`${selectedOverviewDate}T${shift.start_time}+09:00`).getTime()) status = "late";
+    return { user, shift, record, status, workDate: selectedOverviewDate };
+  }).filter(Boolean).sort((a, b) => {
+    if (a.shift.is_off !== b.shift.is_off) return a.shift.is_off ? 1 : -1;
+    return String(a.shift.start_time || "99:99").localeCompare(String(b.shift.start_time || "99:99"));
+  }), [users, shifts, attendance, selectedOverviewDate, now]);
+  const overviewCounts = useMemo(() => ({
+    scheduled: overviewRows.filter((row) => !row.shift.is_off).length,
+    working: overviewRows.filter((row) => row.status === "working").length,
+    late: overviewRows.filter((row) => row.status === "late").length,
+    done: overviewRows.filter((row) => row.status === "done").length,
+    off: overviewRows.filter((row) => row.status === "off").length,
+  }), [overviewRows]);
 
   async function reload() {
     setLoading(true); setError("");
@@ -50,6 +82,7 @@ export default function ShiftManagementPanel({ currentProfile }) {
     finally { setLoading(false); }
   }
   useEffect(() => { reload(); }, [month, requestFilter]);
+  useEffect(() => { setOverviewDate(month === monthNow() ? dateNow() : `${month}-01`); }, [month]);
   useEffect(() => { const timer = setInterval(() => { setNow(Date.now()); reload(); }, 60000); return () => clearInterval(timer); }, [month]);
 
   async function bulkSave(dates, settings) {
@@ -59,7 +92,7 @@ export default function ShiftManagementPanel({ currentProfile }) {
   }
 
   function openAttendanceEdit(row, request = null) {
-    const date = request?.work_date || today;
+    const date = request?.work_date || row.workDate || today;
     const record = attendance.find((a) => a.user_id === row.user.id && a.work_date === date);
     const toTime = (value) => value ? new Date(value).toLocaleTimeString("ja-JP", { hour:"2-digit", minute:"2-digit", hour12:false, timeZone:"Asia/Tokyo" }) : "";
     setEditingAttendance({
@@ -116,7 +149,28 @@ export default function ShiftManagementPanel({ currentProfile }) {
       {correctionRequests.length ? <div className="table-scroll"><table className="admin-table"><thead><tr><th>AP</th><th>対象日</th><th>希望時刻</th><th>理由</th><th>状態</th><th>操作</th></tr></thead><tbody>{correctionRequests.map((req)=>{ const user=userMap.get(req.user_id); const row={user:user||{id:req.user_id,displayName:"不明なユーザー"}}; return <tr key={req.id}><td>{user?.displayName || user?.email || "不明"}</td><td>{req.work_date}</td><td>{fmt(req.requested_clock_in)}〜{fmt(req.requested_clock_out)}</td><td>{req.reason_type}{req.reason_detail ? `：${req.reason_detail}` : ""}</td><td><span className={`request-status ${req.status}`}>{({pending:"未対応",approved:"承認",rejected:"却下"})[req.status]}</span></td><td>{req.status === "pending" ? <div className="user-action-group"><button className="table-action" onClick={()=>openAttendanceEdit(row,req)}>確認・修正</button><button className="table-action danger" onClick={()=>{openAttendanceEdit(row,req); setTimeout(()=>{},0)}}>却下は確認画面から</button></div> : "—"}</td></tr>})}</tbody></table></div> : <div className="empty-state">該当する申請はありません。</div>}
     </section>
 
-    <section className="all-shifts-overview"><h3>全員の月間シフト一覧</h3><div className="table-scroll"><table className="admin-table monthly-shift-table"><thead><tr><th>日付</th><th>出勤者</th><th>人数</th></tr></thead><tbody>{Array.from({length:new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate()},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`).map((date) => { const rows=shifts.filter((s)=>s.shift_date===date&&!s.is_off); return <tr key={date}><td>{date}</td><td>{rows.length ? rows.map((s)=>`${userMap.get(s.user_id)?.displayName || userMap.get(s.user_id)?.email || "不明"} ${s.start_time?.slice(0,5)}〜${s.end_time?.slice(0,5)}`).join(" / ") : "—"}</td><td>{rows.length}名</td></tr>; })}</tbody></table></div></section>
+    <section className="all-shifts-overview calendar-overview">
+      <div className="today-shift-head"><div><h3>月間シフト一覧</h3><p>日付を選択すると、その日のシフト一覧を確認できます。</p></div></div>
+      <div className="overview-layout">
+        <div className="overview-calendar-wrap">
+          <div className="overview-weekdays">{["日","月","火","水","木","金","土"].map((day)=><div key={day}>{day}</div>)}</div>
+          <div className="overview-calendar">{monthDates.map((date,index)=>{
+            if (!date) return <div key={`empty-${index}`} className="overview-day empty" />;
+            const dayShifts=shifts.filter((item)=>item.shift_date===date);
+            const scheduled=dayShifts.filter((item)=>!item.is_off);
+            const dayAttendance=attendance.filter((item)=>item.work_date===date);
+            const hasLate=scheduled.some((item)=>item.start_time && now > new Date(`${date}T${item.start_time}+09:00`).getTime() && !dayAttendance.some((record)=>record.user_id===item.user_id && record.clock_in));
+            const allClocked=scheduled.length>0 && scheduled.every((item)=>dayAttendance.some((record)=>record.user_id===item.user_id && record.clock_in));
+            const className=["overview-day",date===selectedOverviewDate?"selected":"",date===today?"today":"",hasLate?"has-late":"",allClocked?"all-clocked":""].filter(Boolean).join(" ");
+            return <button type="button" key={date} className={className} onClick={()=>setOverviewDate(date)}><span className="overview-day-number">{Number(date.slice(-2))}</span><strong>{scheduled.length}名</strong>{hasLate&&<small>未打刻あり</small>}</button>;
+          })}</div>
+        </div>
+        <div className="overview-day-panel">
+          <div className="overview-day-head"><div><h4>{selectedOverviewDate}</h4><p>選択日のシフト・勤怠状況</p></div><div className="overview-mini-counts"><span>予定 <b>{overviewCounts.scheduled}</b></span><span className={overviewCounts.late?"danger":""}>未打刻 <b>{overviewCounts.late}</b></span><span>休み <b>{overviewCounts.off}</b></span></div></div>
+          {overviewRows.length ? <div className="table-scroll"><table className="admin-table overview-day-table"><thead><tr><th>AP</th><th>シフト</th><th>出勤</th><th>退勤</th><th>状態</th><th>操作</th></tr></thead><tbody>{overviewRows.map((row)=><tr key={row.user.id} className={row.status==="late"?"late-row":""}><td>{row.user.displayName || row.user.email}</td><td>{row.shift.is_off?"休み":`${row.shift.start_time?.slice(0,5)}〜${row.shift.end_time?.slice(0,5)}`}</td><td>{fmt(row.record?.clock_in)}</td><td>{fmt(row.record?.clock_out)}</td><td><span className={`shift-status ${row.status}`}>{({working:"出勤中",late:"未出勤",before:"勤務前",done:"退勤済み",off:"休み"})[row.status]}</span></td><td><button className="table-action" type="button" onClick={()=>openAttendanceEdit(row)}>勤怠修正</button></td></tr>)}</tbody></table></div> : <div className="empty-state">この日のシフト登録はありません。</div>}
+        </div>
+      </div>
+    </section>
 
     <div className="shift-user-selector"><label>登録・編集するAP<select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}><option value="">選択してください</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName || u.email}</option>)}</select></label></div>
     {loading ? <div className="empty-state">読み込み中...</div> : selectedUserId ? <ShiftCalendarEditor month={month} shifts={selectedShifts} onBulkSave={bulkSave} disabled={!canManage} /> : <div className="empty-state">APを選択してください。</div>}

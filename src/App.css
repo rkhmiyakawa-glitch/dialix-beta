@@ -1718,3 +1718,30 @@ input,select,textarea,button{max-width:100%}
 .secondary-button.danger { border-color:#dc2626; color:#b91c1c; }
 @media(max-width:900px){.attendance-correction-form{grid-template-columns:repeat(2,1fr)}.attendance-correction-detail{grid-column:span 2}}
 @media(max-width:600px){.attendance-correction-form{grid-template-columns:1fr}.attendance-correction-detail{grid-column:span 1}}
+
+/* RC6.18 monthly shift calendar overview */
+.overview-layout { display:grid; grid-template-columns:minmax(500px, .95fr) minmax(560px, 1.2fr); gap:18px; align-items:start; }
+.overview-calendar-wrap,.overview-day-panel { border:1px solid #e2e8f0; border-radius:14px; background:#f8fafc; padding:14px; }
+.overview-weekdays,.overview-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:7px; }
+.overview-weekdays { margin-bottom:7px; text-align:center; color:#64748b; font-size:12px; font-weight:900; }
+.overview-weekdays>div { padding:5px 0; }
+.overview-day { min-height:84px; border:1px solid #dbe3ef; border-radius:11px; background:#fff; padding:8px; display:flex; flex-direction:column; align-items:flex-start; gap:5px; text-align:left; color:#334155; }
+button.overview-day { cursor:pointer; transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease; }
+button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; box-shadow:0 5px 14px rgba(37,99,235,.10); }
+.overview-day.empty { border-color:transparent; background:transparent; }
+.overview-day.selected { border:2px solid #2563eb; background:#dbeafe; box-shadow:0 0 0 2px rgba(37,99,235,.10); }
+.overview-day.today { outline:3px solid #f59e0b; outline-offset:-2px; }
+.overview-day.has-late { border-color:#ef4444; background:#fff1f2; }
+.overview-day.all-clocked:not(.selected) { border-color:#22c55e; background:#f0fdf4; }
+.overview-day-number { font-size:16px; font-weight:900; }
+.overview-day strong { font-size:13px; }
+.overview-day small { color:#b91c1c; font-size:10px; font-weight:900; }
+.overview-day-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:12px; }
+.overview-day-head h4 { margin:0; font-size:19px; }
+.overview-day-head p { margin:4px 0 0; color:#64748b; font-size:13px; }
+.overview-mini-counts { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+.overview-mini-counts span { display:inline-flex; gap:5px; align-items:center; padding:6px 9px; border-radius:999px; background:#fff; border:1px solid #dbe3ef; font-size:12px; font-weight:800; }
+.overview-mini-counts span.danger { color:#b91c1c; border-color:#fca5a5; background:#fef2f2; }
+.overview-day-table tr.late-row td { background:#fff1f2; }
+@media(max-width:1250px){.overview-layout{grid-template-columns:1fr}.overview-calendar-wrap,.overview-day-panel{min-width:0}}
+@media(max-width:700px){.overview-calendar-wrap{overflow-x:auto}.overview-weekdays,.overview-calendar{min-width:620px}.overview-day-head{flex-direction:column}.overview-mini-counts{justify-content:flex-start}}
