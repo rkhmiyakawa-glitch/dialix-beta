@@ -32,6 +32,20 @@ export async function saveShift(payload) {
   return data;
 }
 
+export async function saveShifts(userId, dates, settings) {
+  ensureClient();
+  const rows = dates.map((shiftDate) => ({
+    user_id: userId, shift_date: shiftDate,
+    start_time: settings.isOff ? null : settings.startTime,
+    end_time: settings.isOff ? null : settings.endTime,
+    break_minutes: Number(settings.breakMinutes || 0),
+    memo: settings.memo || "", is_off: Boolean(settings.isOff),
+  }));
+  const { data, error } = await supabase.from("shifts").upsert(rows, { onConflict: "user_id,shift_date" }).select();
+  if (error) throw error;
+  return data || [];
+}
+
 export async function deleteShift(id) {
   ensureClient();
   const { error } = await supabase.from("shifts").delete().eq("id", id);

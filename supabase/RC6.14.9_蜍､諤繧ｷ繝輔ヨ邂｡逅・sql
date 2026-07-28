@@ -42,3 +42,18 @@ drop policy if exists "attendance_self_insert" on public.attendance_records;
 create policy "attendance_self_insert" on public.attendance_records for insert with check (user_id=auth.uid());
 drop policy if exists "attendance_self_update" on public.attendance_records;
 create policy "attendance_self_update" on public.attendance_records for update using (user_id=auth.uid()) with check (user_id=auth.uid());
+
+-- RC6.15: AP本人による自分のシフト登録・編集・削除を許可
+-- 管理者・オーナーは従来どおり全APを管理可能です。
+drop policy if exists "shifts_self_insert" on public.shifts;
+create policy "shifts_self_insert" on public.shifts for insert
+with check (user_id = auth.uid());
+
+drop policy if exists "shifts_self_update" on public.shifts;
+create policy "shifts_self_update" on public.shifts for update
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
+
+drop policy if exists "shifts_self_delete" on public.shifts;
+create policy "shifts_self_delete" on public.shifts for delete
+using (user_id = auth.uid());

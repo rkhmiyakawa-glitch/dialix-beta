@@ -1630,3 +1630,42 @@ input,select,textarea,button{max-width:100%}
 .shift-form-actions { display:flex; gap:10px; align-items:end; justify-content:flex-end; grid-column:span 5; }
 @media (max-width: 1100px) { .shift-form { grid-template-columns:repeat(2,minmax(0,1fr)); } .shift-form .shift-memo,.shift-form-actions { grid-column:span 2; } }
 @media (max-width: 640px) { .shift-form { grid-template-columns:1fr; } .shift-form .shift-memo,.shift-form-actions { grid-column:span 1; } }
+
+/* RC6.15 calendar shift editor */
+.shift-calendar-editor { display:flex; flex-direction:column; gap:16px; }
+.shift-calendar-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.shift-calendar-toolbar span { margin-left:auto; font-weight:700; color:#475569; }
+.shift-calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(92px,1fr)); gap:8px; }
+.shift-calendar-grid.weekday-row { gap:8px; text-align:center; font-weight:800; color:#64748b; }
+.shift-calendar-grid.weekday-row > div { padding:6px; }
+.shift-day { min-height:112px; border:1px solid #dbe3ef; border-radius:12px; background:#fff; overflow:hidden; display:flex; flex-direction:column; }
+.shift-day.empty { border-color:transparent; background:transparent; }
+.shift-day.selected { outline:3px solid #2563eb; border-color:#2563eb; }
+.shift-day.registered { background:#f8fafc; }
+.shift-day-select { flex:1; width:100%; border:0; background:transparent; padding:10px; text-align:left; display:flex; flex-direction:column; gap:10px; cursor:pointer; color:inherit; }
+.shift-day-select:disabled { cursor:default; }
+.shift-day-number { font-weight:900; font-size:17px; }
+.shift-day-summary { font-size:12px; line-height:1.4; color:#475569; word-break:keep-all; }
+.shift-day-edit { border:0; border-top:1px solid #e2e8f0; background:#fff; padding:7px; color:#2563eb; font-weight:700; cursor:pointer; }
+.shift-bulk-box { border:1px solid #dbe3ef; border-radius:14px; padding:16px; background:#f8fafc; }
+.shift-bulk-box h3 { margin:0 0 12px; }
+.shift-inline-form { display:grid; grid-template-columns:repeat(3,minmax(110px,1fr)) 2fr auto auto; gap:12px; align-items:end; }
+.shift-inline-form label { display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:700; }
+.shift-inline-form input { min-height:42px; border:1px solid #cbd5e1; border-radius:9px; padding:0 10px; background:#fff; }
+.shift-inline-form .toggle-row { flex-direction:row; align-items:center; min-height:42px; }
+.shift-inline-form .toggle-row input { min-height:auto; }
+.shift-user-selector { max-width:420px; margin:16px 0; }
+.shift-user-selector label { display:flex; flex-direction:column; gap:7px; font-weight:800; }
+.shift-user-selector select { min-height:44px; border:1px solid #cbd5e1; border-radius:9px; padding:0 10px; background:#fff; }
+.shift-edit-modal .toggle-row { flex-direction:row; align-items:center; }
+@media (max-width: 1100px) {
+  .shift-calendar-grid { grid-template-columns:repeat(7,minmax(70px,1fr)); }
+  .shift-inline-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .shift-inline-memo { grid-column:span 2; }
+}
+@media (max-width: 760px) {
+  .shift-calendar-editor { overflow-x:auto; }
+  .shift-calendar-grid { min-width:720px; }
+  .shift-calendar-toolbar { min-width:720px; }
+  .shift-bulk-box { min-width:680px; }
+}
