@@ -39,7 +39,7 @@ export default function App() {
   const [showAttendance, setShowAttendance] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
   const [homeTaskKey, setHomeTaskKey] = useState("reminders");
-  const [tasks, setTasks] = useState({ reminders: [], dueToday: [], prospects: [], tossups: [] });
+  const [tasks, setTasks] = useState({ reminders: [], dueToday: [], allReminders: [], prospects: [], tossups: [] });
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
@@ -86,7 +86,7 @@ export default function App() {
       } else if (destination === "reminders") {
         setSelectedList(null);
         setCustomers([]);
-        setHomeTaskKey("prospects");
+        setHomeTaskKey("allReminders");
       }
       scrollPageTop();
     }

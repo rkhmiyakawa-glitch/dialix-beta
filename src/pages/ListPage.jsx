@@ -3,7 +3,7 @@ import Header from "../components/Header";
 
 
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers, initialActiveTask = "reminders" }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -20,17 +20,23 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
     finally { setSearching(false); }
   }
 
-  const taskItems = tasks?.reminders || [];
+  const taskConfig = {
+    reminders: { eyebrow: "OVERDUE", title: "期限超過リマインド", description: "期限を過ぎている顧客を確認できます。", listTitle: "期限超過リマインド一覧", items: tasks?.reminders || [] },
+    dueToday: { eyebrow: "TODAY", title: "本日のリマインド", description: "本日対応予定のリマインド案件を確認できます。", listTitle: "本日のリマインド一覧", items: tasks?.dueToday || [] },
+    allReminders: { eyebrow: "REMINDERS", title: "リマインド一覧", description: "本日以降に設定されているリマインド案件を確認できます。", listTitle: "リマインド一覧", items: tasks?.allReminders || [] },
+  };
+  const activeTask = taskConfig[initialActiveTask] || taskConfig.reminders;
+  const taskItems = activeTask.items;
 
   return <main className="app-page">
     <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" />
     <section className="content">
-      <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
+      <div className="page-title"><div><p className="eyebrow">{activeTask.eyebrow}</p><h1>{activeTask.title}</h1><p>{activeTask.description}</p></div></div>
 
       <section className="task-panel">
-        <div className="task-panel-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
+        <div className="task-panel-head"><h2>{activeTask.listTitle}</h2><span>最大{initialActiveTask === "allReminders" ? 300 : 100}件を表示</span></div>
         {taskItems.length === 0 ? <div className="empty-state">現在、対象の顧客はいません。</div> : <div className="task-list">
-          {taskItems.slice(0, 20).map((item) => <button className="task-row" key={item.id} onClick={() => onOpenTask(item, taskItems, "リスト")}>
+          {taskItems.map((item) => <button className="task-row" key={item.id} onClick={() => onOpenTask(item, taskItems, "リスト")}>
             <div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div>
             <div className="task-row-meta"><span>{item.reminderAt || item.status || "未架電"}</span><b>開く ›</b></div>
           </button>)}

@@ -22,6 +22,7 @@ const demoTasks = {
   prospects: [],
   tossups: [],
   dueToday: [],
+  allReminders: [],
 };
 
 function buildAssigneeFilter(currentUser = {}) {
@@ -36,6 +37,8 @@ export async function fetchOperationalTasks(currentUser = {}) {
   if (!isSupabaseConfigured) return demoTasks;
 
   const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date(now);
   endOfToday.setHours(23, 59, 59, 999);
 
@@ -52,12 +55,18 @@ export async function fetchOperationalTasks(currentUser = {}) {
   const todayQuery = supabase.from("customers").select(baseColumns)
     .not("reminder_at", "is", null)
     .or(assigneeFilter)
-    .gt("reminder_at", now.toISOString())
+    .gte("reminder_at", startOfToday.toISOString())
     .lte("reminder_at", endOfToday.toISOString())
     .order("reminder_at", { ascending: true })
     .limit(100);
+  const allReminderQuery = supabase.from("customers").select(baseColumns)
+    .not("reminder_at", "is", null)
+    .or(assigneeFilter)
+    .gte("reminder_at", startOfToday.toISOString())
+    .order("reminder_at", { ascending: true })
+    .limit(300);
 
-  const [reminderResult, prospectResult, tossupResult, todayResult] = await Promise.all([
+  const [reminderResult, prospectResult, tossupResult, todayResult, allReminderResult] = await Promise.all([
     overdueQuery,
     supabase.from("customers").select(baseColumns)
       .in("status", ["非決裁見込み", "決裁見込み", "見込み", "見込み留守"])
@@ -66,9 +75,10 @@ export async function fetchOperationalTasks(currentUser = {}) {
       .limit(100),
     supabase.from("customers").select(baseColumns).eq("status", "トスアップ").order("last_called_at", { ascending: false, nullsFirst: false }).limit(100),
     todayQuery,
+    allReminderQuery,
   ]);
 
-  const failed = [reminderResult, prospectResult, tossupResult, todayResult].find((result) => result.error);
+  const failed = [reminderResult, prospectResult, tossupResult, todayResult, allReminderResult].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
   return {
@@ -76,6 +86,7 @@ export async function fetchOperationalTasks(currentUser = {}) {
     prospects: (prospectResult.data || []).map(mapTask),
     tossups: (tossupResult.data || []).map(mapTask),
     dueToday: (todayResult.data || []).map(mapTask),
+    allReminders: (allReminderResult.data || []).map(mapTask),
   };
 }
 
