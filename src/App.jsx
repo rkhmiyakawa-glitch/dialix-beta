@@ -39,6 +39,8 @@ export default function App() {
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
   const taskRefreshTimerRef = useRef(null);
+  const customerDetailCacheRef = useRef(new Map());
+  const customerRequestIdRef = useRef(0);
 
   const userId = session?.user?.id || "";
   const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
@@ -141,6 +143,15 @@ export default function App() {
     }
   }
 
+  function prefetchCustomerDetails(customerId) {
+    if (!customerId || customerDetailCacheRef.current.has(customerId)) return;
+    fetchCustomerDetails(customerId)
+      .then((detail) => {
+        if (detail) customerDetailCacheRef.current.set(customerId, detail);
+      })
+      .catch(() => {});
+  }
+
   async function openCustomer(customer, sequence = null, label = "リスト") {
     scrollPageTop();
     if (sequence) {
@@ -152,23 +163,30 @@ export default function App() {
       window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
-    setDataLoading(true);
-    try {
-      const detailedCustomer = await fetchCustomerDetails(customer.id);
-      if (!detailedCustomer) throw new Error("顧客が見つかりませんでした。");
-      setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
-      setSelectedCustomer(detailedCustomer);
-      await presence.trackCustomer(customer.id);
-    } catch (error) {
-      setDataError(error.message || "顧客詳細の取得に失敗しました。");
-    } finally {
-      setDataLoading(false);
-    }
+
+    // 画面遷移を通信待ちにしない。キャッシュまたは一覧データを即時表示し、詳細は後から差し替える。
+    const cached = customerDetailCacheRef.current.get(customer.id);
+    setSelectedCustomer(cached || customer);
+    presence.trackCustomer(customer.id)?.catch?.(() => {});
+
+    const requestId = ++customerRequestIdRef.current;
+    fetchCustomerDetails(customer.id)
+      .then((detailedCustomer) => {
+        if (!detailedCustomer) throw new Error("顧客が見つかりませんでした。");
+        customerDetailCacheRef.current.set(customer.id, detailedCustomer);
+        setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
+        if (customerRequestIdRef.current === requestId) setSelectedCustomer(detailedCustomer);
+      })
+      .catch((error) => setDataError(error.message || "顧客詳細の取得に失敗しました。"));
+
+    const items = sequence || navigationItems;
+    const index = items.findIndex((item) => item.id === customer.id);
+    [items[index - 1], items[index + 1]].forEach((item) => item && prefetchCustomerDetails(item.id));
   }
 
-  async function closeCustomer() {
+  function closeCustomer() {
     scrollPageTop();
-    await presence.clearCustomer();
+    presence.clearCustomer()?.catch?.(() => {});
     setSelectedCustomer(null);
   }
 
@@ -178,7 +196,7 @@ export default function App() {
     setShowAdmin(false);
     setShowMyPage(false);
     scrollPageTop();
-    await presence.clearCustomer();
+    presence.clearCustomer()?.catch?.(() => {});
     setSelectedCustomer(null);
     setSelectedList(null);
     setCustomers([]);
@@ -253,8 +271,22 @@ export default function App() {
       return result;
     }
 
-    // 保存後はリスト全件を再取得せず、保存した顧客だけ更新する。
-    const [refreshedCustomer, nextKpi, nextTasks] = await Promise.all([
+    // 保存完了後は画面遷移を優先。表示は即時更新し、詳細・KPI・リマインドは裏で同期する。
+    const savedAtLabel = new Date(result.savedAt).toLocaleString("ja-JP");
+    const optimistic = {
+      ...selectedCustomer,
+      ap: userName,
+      status: payload.status,
+      lastCallAt: savedAtLabel,
+      reminderAt: payload.reminderDate && payload.reminderTime
+        ? new Date(`${payload.reminderDate}T${payload.reminderTime}`).toLocaleString("ja-JP")
+        : "",
+    };
+    customerDetailCacheRef.current.set(payload.customerId, optimistic);
+    setCustomers((current) => current.map((customer) => customer.id === payload.customerId ? optimistic : customer));
+    setSelectedCustomer((current) => current?.id === payload.customerId ? optimistic : current);
+
+    Promise.all([
       fetchCustomerDetails(payload.customerId),
       fetchTodayKpi(userId),
       fetchOperationalTasks({
@@ -262,13 +294,15 @@ export default function App() {
         displayName: currentProfile?.displayName || userName,
         email: currentProfile?.email || session?.user?.email,
       }),
-    ]);
-    if (refreshedCustomer) {
-      setCustomers((current) => current.map((customer) => customer.id === payload.customerId ? refreshedCustomer : customer));
-      setSelectedCustomer(refreshedCustomer);
-    }
-    setKpi(nextKpi);
-    setTasks(nextTasks);
+    ]).then(([refreshedCustomer, nextKpi, nextTasks]) => {
+      if (refreshedCustomer) {
+        customerDetailCacheRef.current.set(payload.customerId, refreshedCustomer);
+        setCustomers((current) => current.map((customer) => customer.id === payload.customerId ? refreshedCustomer : customer));
+        setSelectedCustomer((current) => current?.id === payload.customerId ? refreshedCustomer : current);
+      }
+      setKpi(nextKpi);
+      setTasks(nextTasks);
+    }).catch(() => {});
     return result;
   }
 
@@ -280,7 +314,7 @@ export default function App() {
     if (targetIndex < 0 || targetIndex >= navigationItems.length) return;
     const target = navigationItems[targetIndex];
 
-    await presence.clearCustomer();
+    presence.clearCustomer()?.catch?.(() => {});
     if (target.listId && target.listId !== selectedList?.id) {
       const list = lists.find((item) => item.id === target.listId) || { id: target.listId, name: "検索結果", count: 0, activeUsers: 0 };
       setDataLoading(true);
@@ -304,7 +338,7 @@ export default function App() {
       window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
-    await openCustomer(next);
+    openCustomer(next);
     scrollPageTop();
   }
 

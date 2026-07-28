@@ -176,32 +176,33 @@ export async function saveCallResult({
 
   const calledAt = new Date().toISOString();
 
-  const { error: updateError } = await supabase
-    .from("customers")
-    .update({
-      status,
-      last_called_at: calledAt,
-      reminder_at: reminderAt,
-      ap_name: operatorName || "",
-      updated_at: calledAt,
-    })
-    .eq("id", customerId);
+  // 顧客更新と履歴追加は互いに依存しないため並列実行し、保存待ち時間を短縮する。
+  const [updateResult, historyResult] = await Promise.all([
+    supabase
+      .from("customers")
+      .update({
+        status,
+        last_called_at: calledAt,
+        reminder_at: reminderAt,
+        ap_name: operatorName || "",
+        updated_at: calledAt,
+      })
+      .eq("id", customerId),
+    supabase
+      .from("call_histories")
+      .insert({
+        customer_id: customerId,
+        called_at: calledAt,
+        user_id: userId || null,
+        operator_name: operatorName,
+        status,
+        memo: memo || "",
+        reminder_at: reminderAt,
+      }),
+  ]);
 
-  if (updateError) throw updateError;
-
-  const { error: historyError } = await supabase
-    .from("call_histories")
-    .insert({
-      customer_id: customerId,
-      called_at: calledAt,
-      user_id: userId || null,
-      operator_name: operatorName,
-      status,
-      memo: memo || "",
-      reminder_at: reminderAt,
-    });
-
-  if (historyError) throw historyError;
+  if (updateResult.error) throw updateResult.error;
+  if (historyResult.error) throw historyResult.error;
 
   return {
     savedAt: calledAt,

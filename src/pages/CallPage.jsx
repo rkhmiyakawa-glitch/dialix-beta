@@ -112,11 +112,11 @@ export default function CallPage({
 
       setIsDirty(false);
       setCallState("room");
-      await onCallStateChange?.("room");
+      onCallStateChange?.("room");
 
       if (moveNext && onOpenNext) {
         showToast("保存しました。次の顧客を開きます。");
-        await onOpenNext();
+        onOpenNext();
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         showToast("保存しました。");
@@ -132,8 +132,8 @@ export default function CallPage({
   async function handleNavigate(direction) {
     if (isSaving) return;
     if (isDirty && !window.confirm("保存されていない内容があります。破棄して移動しますか？")) return;
-    if (direction === "previous") await onOpenPrevious?.();
-    else await onOpenNext?.();
+    if (direction === "previous") onOpenPrevious?.();
+    else onOpenNext?.();
   }
 
   function handleBack() {
