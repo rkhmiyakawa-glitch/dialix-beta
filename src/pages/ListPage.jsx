@@ -56,10 +56,14 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
       <section className="list-grid" aria-label="架電リスト">
         {lists.map((list) => (
           <button className="list-card" type="button" key={list.id} onClick={() => onOpenCall(list)}>
-            <span className="list-name">{list.name}</span>
-            <span className="list-status-count"><small>未架電</small><strong>{(list.uncontactedCount || 0).toLocaleString()}</strong><small>件</small></span>
-            <span className="list-status-count"><small>留守</small><strong>{(list.absenceCount || 0).toLocaleString()}</strong><small>件</small></span>
-            <span className="list-status-count"><small>再コール</small><strong>{(list.recallCount || 0).toLocaleString()}</strong><small>件</small></span>
+            <span className="list-info">
+              <span className="list-name">{list.name}</span>
+              <span className="list-progress-summary">
+                <span>未架電 <strong>{(list.uncontactedCount || 0).toLocaleString()}</strong>件</span>
+                <span>留守 <strong>{(list.absenceCount || 0).toLocaleString()}</strong>件</span>
+                <span>再コール <strong>{(list.recallCount || 0).toLocaleString()}</strong>件</span>
+              </span>
+            </span>
             <span className="list-count"><strong>{list.count.toLocaleString()}</strong><span>件</span><span className="arrow">›</span></span>
           </button>
         ))}
