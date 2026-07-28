@@ -10,7 +10,7 @@ import ListManagementPanel from "./ListManagementPanel";
 
 const roleLabels = { owner: "オーナー", admin: "管理者", sv: "SV", operator: "オペレーター" };
 
-export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout, onOpenMyPage }) {
+export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout, onOpenMyPage, onOpenOverdueCustomer }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -116,7 +116,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
         <button className={`admin-tab ${activeTab === "audit" ? "active" : ""}`} onClick={() => setActiveTab("audit")}>監査ログ</button>
       </div>
 
-      {activeTab === "dashboard" ? <DashboardPanel /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
+      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
         {!ownerExists && currentRole === "admin" && <div className="owner-claim-box owner-claim-box-compact"><button className="primary-button" type="button" onClick={claimOwner} disabled={saving}>{saving ? "設定中..." : "自分をオーナーに設定"}</button></div>}
         <div className="admin-panel-head"><div><h2>ユーザー一覧</h2></div><button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={!canManageUsers}>＋ ユーザー追加</button></div>
         {error && <div className="admin-error">{error}</div>}

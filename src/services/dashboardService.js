@@ -36,7 +36,7 @@ export async function fetchDashboardData(period = "today") {
   const [historyResult, profilesResult, overdueResult] = await Promise.all([
     supabase.from("call_histories").select(historyColumns).gte("called_at", start.toISOString()).lte("called_at", end.toISOString()),
     supabase.from("profiles").select("id,display_name,role,is_active").eq("is_active", true),
-    supabase.from("customers").select("id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
+    supabase.from("customers").select("id,list_id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
   ]);
   const failed = [historyResult, profilesResult, overdueResult].find((r) => r.error);
   if (failed?.error) throw failed.error;
@@ -62,7 +62,7 @@ export async function fetchDashboardData(period = "today") {
   const tossupRanking = sortRanking("tossupCount");
   const validCount = histories.filter((h) => ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)).length;
   const decisionCount = histories.filter((h) => ["決裁NG", "決裁見込み"].includes(h.status)).length;
-  const mapReminder = (r) => ({ id: r.id, companyName: r.company_name, apName: r.ap_name || "未設定", status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" });
+  const mapReminder = (r) => ({ id: r.id, listId: r.list_id, companyName: r.company_name, apName: r.ap_name || "未設定", status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" });
   const overdue = (overdueResult.data || []).map(mapReminder);
 
   return {

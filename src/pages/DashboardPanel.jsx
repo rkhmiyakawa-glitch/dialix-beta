@@ -23,7 +23,7 @@ function RankingBox({ title, rows, metricKey, emptyText }) {
   </section>;
 }
 
-export default function DashboardPanel() {
+export default function DashboardPanel({ onOpenOverdueCustomer }) {
   const [period, setPeriod] = useState("today");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ export default function DashboardPanel() {
         <div className="dashboard-box-head"><h3>期限超過一覧</h3><span>{data.overdue.length}件表示</span></div>
         {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
           <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>期限</th><th>状態</th></tr></thead><tbody>
-            {data.overdue.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
+            {data.overdue.map((item) => <tr key={item.id} className="dashboard-clickable-row" onClick={() => onOpenOverdueCustomer?.(item, data.overdue)} tabIndex={0} role="button" onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpenOverdueCustomer?.(item, data.overdue); } }}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
           </tbody></table></div>}
       </section>
 

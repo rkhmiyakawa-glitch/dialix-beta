@@ -390,7 +390,7 @@ export default function App() {
       {banner}
       {sessionNotice}
       <Suspense fallback={<main className="loading-screen">管理画面を読み込んでいます...</main>}>
-        <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} />
+        <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} onOpenOverdueCustomer={(item, items) => { setShowAdmin(false); openTaskCustomer(item, items, "期限超過一覧").catch((error) => setDataError(error.message || "顧客を開けませんでした。")); }} />
       </Suspense>
     </>;
   }
