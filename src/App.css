@@ -1458,3 +1458,68 @@ input,select,textarea,button{max-width:100%}
     width: calc(100% - 76px) !important;
   }
 }
+
+/* RC6.14.3 サイドメニュー横書き・幅拡張 */
+:root { --dialix-sidebar-width: 268px; }
+.app-sidebar {
+  width: var(--dialix-sidebar-width) !important;
+  min-width: var(--dialix-sidebar-width) !important;
+}
+.sidebar-brand {
+  padding: 0 24px !important;
+  justify-content: flex-start !important;
+  white-space: nowrap !important;
+  writing-mode: horizontal-tb !important;
+}
+.sidebar-brand strong,
+.sidebar-nav button span,
+.sidebar-logout span {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+.sidebar-nav button,
+.sidebar-logout {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-height: 48px !important;
+  padding: 0 16px !important;
+  gap: 12px !important;
+  line-height: 1.2 !important;
+}
+.sidebar-nav button span:last-child,
+.sidebar-logout span:last-child {
+  display: inline-block !important;
+  width: auto !important;
+  flex: 1 1 auto !important;
+}
+.sidebar-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  flex: 0 0 24px !important;
+}
+.app-page {
+  padding-left: var(--dialix-sidebar-width) !important;
+}
+.app-header.sidebar-header {
+  left: var(--dialix-sidebar-width) !important;
+  width: calc(100% - var(--dialix-sidebar-width)) !important;
+}
+.save-bar {
+  left: var(--dialix-sidebar-width) !important;
+}
+@media (max-width: 720px) {
+  :root { --dialix-sidebar-width: 76px; }
+  .sidebar-brand { padding: 0 !important; justify-content: center !important; }
+  .sidebar-brand strong,
+  .sidebar-nav button span:last-child,
+  .sidebar-logout span:last-child { display: none !important; }
+  .sidebar-nav button,
+  .sidebar-logout { justify-content: center !important; padding: 0 !important; }
+}
