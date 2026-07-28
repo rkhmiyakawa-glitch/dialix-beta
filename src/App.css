@@ -1745,3 +1745,36 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .overview-day-table tr.late-row td { background:#fff1f2; }
 @media(max-width:1250px){.overview-layout{grid-template-columns:1fr}.overview-calendar-wrap,.overview-day-panel{min-width:0}}
 @media(max-width:700px){.overview-calendar-wrap{overflow-x:auto}.overview-weekdays,.overview-calendar{min-width:620px}.overview-day-head{flex-direction:column}.overview-mini-counts{justify-content:flex-start}}
+
+/* RC6.19 two-column attendance / shift editor */
+.shift-editor-layout { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr); gap:20px; align-items:start; }
+.shift-editor-calendar-pane { min-width:0; }
+.shift-editor-side-pane { position:sticky; top:92px; display:flex; flex-direction:column; gap:14px; min-width:0; }
+.shift-side-section,.attendance-side-card { border:1px solid #dbe3ef; border-radius:14px; background:#f8fafc; padding:16px; }
+.shift-side-heading { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px; }
+.shift-side-heading h3,.shift-side-section h3 { margin:0; }
+.shift-side-heading span { font-size:13px; font-weight:800; color:#475569; }
+.shift-side-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.shift-side-actions .secondary-button { width:100%; min-height:42px; }
+.shift-side-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end; }
+.shift-side-form label { display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:700; }
+.shift-side-form input,.shift-side-form select { min-height:42px; border:1px solid #cbd5e1; border-radius:9px; padding:0 10px; background:#fff; min-width:0; }
+.shift-side-form label:nth-child(4),.shift-side-form .toggle-row,.shift-save-button { grid-column:1 / -1; }
+.shift-side-form .toggle-row { flex-direction:row; align-items:center; min-height:auto; }
+.shift-side-form .toggle-row input { min-height:auto; width:auto; }
+.shift-save-button { width:100%; min-height:44px; }
+.shift-bulk-box { margin:0; }
+.shift-user-selector { max-width:none; margin:0; }
+.shift-user-selector select { width:100%; }
+.shift-side-help { margin:10px 0 0; color:#64748b; font-size:13px; line-height:1.6; }
+.attendance-side-card { background:#fff; display:flex; flex-direction:column; gap:16px; }
+.attendance-side-date { display:flex; flex-direction:column; gap:5px; }
+.attendance-side-date strong { font-size:20px; }
+.attendance-side-date small { color:#64748b; }
+.attendance-side-card .attendance-times { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.attendance-side-card .attendance-times span { border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; padding:12px; }
+.attendance-side-card .attendance-times b { font-size:22px; }
+.attendance-side-card .attendance-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.attendance-side-card .attendance-actions button { width:100%; padding:0 12px; }
+@media(max-width:1180px){.shift-editor-layout{grid-template-columns:1fr}.shift-editor-side-pane{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-side-card{grid-column:1/-1}}
+@media(max-width:760px){.shift-editor-layout{display:block}.shift-editor-calendar-pane{overflow-x:auto;margin-bottom:16px}.shift-editor-side-pane{display:flex}.shift-calendar-grid{min-width:720px}.shift-side-actions,.shift-side-form{grid-template-columns:1fr}.shift-side-form label:nth-child(4),.shift-side-form .toggle-row,.shift-save-button{grid-column:auto}}
