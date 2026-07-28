@@ -9,6 +9,8 @@ const statusTone = {
   非決裁NG: "slate",
   決裁NG: "red",
   再コール: "blue",
+  対象外: "slate",
+  現アナ: "purple",
   再コール留守: "blue",
   見込み留守: "green",
   非決裁見込み: "green",
@@ -151,6 +153,8 @@ export default function CustomerListPage({
               <option value="非決裁NG">非決裁NG</option>
               <option value="決裁NG">決裁NG</option>
               <option value="再コール">再コール</option>
+              <option value="対象外">対象外</option>
+              <option value="現アナ">現アナ</option>
               <option value="再コール留守">再コール留守</option>
               <option value="非決裁見込み">非決裁見込み</option>
               <option value="決裁見込み">決裁見込み</option>

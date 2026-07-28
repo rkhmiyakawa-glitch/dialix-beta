@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { bulkDeleteCustomers, bulkUpdateCustomers, downloadCustomersCsv, duplicateList, fetchListCustomers, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, restoreList } from "../services/listManagementService";
 
-const STATUSES = ["", "留守", "非決裁NG", "決裁NG", "再コール", "再コール留守", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ"];
+const STATUSES = ["", "留守", "非決裁NG", "決裁NG", "対象外", "現アナ", "再コール", "再コール留守", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ"];
 const dateText = (value) => value ? new Date(value).toLocaleString("ja-JP") : "―";
 const daysLeft = (value) => Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86400000));
 

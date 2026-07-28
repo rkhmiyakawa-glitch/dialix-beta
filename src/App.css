@@ -1237,3 +1237,54 @@ input,select,textarea,button{max-width:100%}
 .list-management-stack{display:grid;gap:20px}.list-manager-search{min-width:240px;border:1px solid var(--border,#d8dee9);border-radius:10px;padding:10px 12px;background:#fff}.list-description{display:block;margin-top:4px;color:#6b7280}.bulk-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}.bulk-toolbar select,.bulk-toolbar input{min-height:40px;border:1px solid #d8dee9;border-radius:9px;padding:8px 10px;background:#fff}.danger-button{border:1px solid #dc2626;background:#fff;color:#dc2626;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}.danger-button:hover{background:#fef2f2}.edit-modal textarea{width:100%;box-sizing:border-box;border:1px solid #d8dee9;border-radius:10px;padding:10px;resize:vertical}
 
 .role-badge.owner{background:#fff2cc;color:#7a5200;border:1px solid #e6c35c}.owner-protection-note{margin:12px 0;padding:12px 14px;border:1px solid #e6c35c;border-radius:10px;background:#fffaf0;color:#664d00;font-weight:700}.owner-claim-box{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px;padding:14px 16px;border:1px solid #e6c35c;border-radius:12px;background:#fffaf0}.owner-claim-box p{margin:4px 0 0;color:#6a5a2d}.protected-label{font-size:12px;color:#9a6a00;font-weight:800}
+
+
+/* RC6.6: call statuses + right-side detail/reminder layout */
+.status-panel .status-workspace{
+  display:grid;
+  grid-template-columns:minmax(150px,.82fr) minmax(190px,1.18fr);
+  gap:16px;
+  align-items:start;
+}
+.status-panel .status-workspace > .status-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:9px!important;
+}
+.status-panel .status-workspace .status-button{
+  width:100%!important;
+  min-height:44px!important;
+}
+.status-panel .status-side-area{
+  min-width:0;
+  padding-left:16px;
+  border-left:1px solid #e4e9f1;
+}
+.status-panel .status-detail-area{
+  margin-top:0;
+  padding-top:0;
+  border-top:0;
+}
+.status-panel .status-detail-grid{
+  grid-template-columns:1fr!important;
+}
+.status-panel .status-reminder-area{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #e4e9f1;
+}
+.status-panel .status-side-placeholder{
+  padding:14px;
+  border:1px dashed #d6deeb;
+  border-radius:9px;
+  background:#f8faff;
+  color:#7a8699;
+  font-size:12px;
+  line-height:1.6;
+}
+.status-button.purple{background:#f1eafe;border-color:#c9b5f5;color:#6036a6}
+.status-button.purple.is-selected{background:#7046b7;border-color:#7046b7;color:#fff}
+@media(max-width:560px){
+  .status-panel .status-workspace{grid-template-columns:1fr}
+  .status-panel .status-side-area{padding-left:0;padding-top:16px;border-left:0;border-top:1px solid #e4e9f1}
+}

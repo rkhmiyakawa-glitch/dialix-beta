@@ -71,7 +71,7 @@ export default function CallPage({
   }
 
   function handleSelectCategory(category) {
-    const directStatuses = ["留守", "再コール", "再コール留守", "見込み留守", "トスアップ"];
+    const directStatuses = ["留守", "対象外", "現アナ", "再コール", "再コール留守", "見込み留守", "トスアップ"];
     const isProspectCategory = category === "見込み" || category === "見込み留守";
 
     setSelectedCategory(category);

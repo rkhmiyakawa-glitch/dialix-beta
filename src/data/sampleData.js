@@ -250,6 +250,8 @@ export const customersByList = {
 export const statuses = [
   { name: "留守", tone: "gray" },
   { name: "NG", tone: "red" },
+  { name: "対象外", tone: "slate" },
+  { name: "現アナ", tone: "purple" },
   { name: "再コール", tone: "blue" },
   { name: "再コール留守", tone: "blue" },
   { name: "見込み", tone: "green" },

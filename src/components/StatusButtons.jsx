@@ -45,69 +45,69 @@ export default function StatusButtons({
         </div>
       </div>
 
-      <div className="status-grid">
-        {statuses.map((status) => (
-          <button
-            key={status.name}
-            type="button"
-            className={
-              selectedCategory === status.name
-                ? `status-button ${status.tone} is-selected`
-                : `status-button ${status.tone}`
-            }
-            onClick={() => onSelectCategory(status.name)}
-            disabled={disabled}
-          >
-            {status.name}
-          </button>
-        ))}
-      </div>
-
-      {details.length > 0 && (
-        <div className="status-detail-area">
-          <p className="status-detail-label">詳細ステータスを選択してください</p>
-          <div className="status-detail-grid">
-            {details.map((detail) => (
-              <button
-                key={detail.name}
-                type="button"
-                className={
-                  selectedStatus === detail.name
-                    ? `status-button status-detail-button ${detail.tone} is-selected`
-                    : `status-button status-detail-button ${detail.tone}`
-                }
-                onClick={() => onSelectStatus(detail.name)}
-                disabled={disabled}
-              >
-                {detail.name}
-              </button>
-            ))}
-          </div>
-          {selectedCategory === "見込み" && (
-            <ReminderPanel
-              reminderDate={reminderDate}
-              reminderTime={reminderTime}
-              onDateChange={onReminderDateChange}
-              onTimeChange={onReminderTimeChange}
+      <div className="status-workspace">
+        <div className="status-grid">
+          {statuses.map((status) => (
+            <button
+              key={status.name}
+              type="button"
+              className={
+                selectedCategory === status.name
+                  ? `status-button ${status.tone} is-selected`
+                  : `status-button ${status.tone}`
+              }
+              onClick={() => onSelectCategory(status.name)}
               disabled={disabled}
-              embedded
-            />
+            >
+              {status.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="status-side-area">
+          {details.length > 0 && (
+            <div className="status-detail-area">
+              <p className="status-detail-label">詳細ステータスを選択してください</p>
+              <div className="status-detail-grid">
+                {details.map((detail) => (
+                  <button
+                    key={detail.name}
+                    type="button"
+                    className={
+                      selectedStatus === detail.name
+                        ? `status-button status-detail-button ${detail.tone} is-selected`
+                        : `status-button status-detail-button ${detail.tone}`
+                    }
+                    onClick={() => onSelectStatus(detail.name)}
+                    disabled={disabled}
+                  >
+                    {detail.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(selectedCategory === "見込み" || selectedCategory === "見込み留守") && (
+            <div className="status-reminder-area">
+              <ReminderPanel
+                reminderDate={reminderDate}
+                reminderTime={reminderTime}
+                onDateChange={onReminderDateChange}
+                onTimeChange={onReminderTimeChange}
+                disabled={disabled}
+                embedded
+              />
+            </div>
+          )}
+
+          {!details.length && selectedCategory !== "見込み留守" && (
+            <div className="status-side-placeholder">
+              ステータスを選択すると、必要な詳細項目がここに表示されます。
+            </div>
           )}
         </div>
-      )}
-
-      {selectedCategory === "見込み留守" && (
-        <div className="status-detail-area">
-          <ReminderPanel
-            reminderDate={reminderDate}
-            reminderTime={reminderTime}
-            onDateChange={onReminderDateChange}
-            onTimeChange={onReminderTimeChange}
-            disabled={disabled}
-            embedded
-          />
-        </div>
-      )}
+      </div>
     </section>
   );
 }
