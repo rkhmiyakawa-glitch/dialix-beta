@@ -38,8 +38,8 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
   useEffect(() => { reload(); }, [userId, month]);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(timer); }, []);
 
-  async function handleClockIn() { try { await clockIn(userId); await reload(); } catch (e) { setError(e.message || "出勤登録に失敗しました。"); } }
-  async function handleClockOut() { try { await clockOut(userId); await reload(); } catch (e) { setError(e.message || "退勤登録に失敗しました。"); } }
+  async function handleClockIn() { try { await clockIn(userId); await reload(); window.dispatchEvent(new CustomEvent("dialix:attendance-updated")); } catch (e) { setError(e.message || "出勤登録に失敗しました。"); } }
+  async function handleClockOut() { try { await clockOut(userId); await reload(); window.dispatchEvent(new CustomEvent("dialix:attendance-updated")); } catch (e) { setError(e.message || "退勤登録に失敗しました。"); } }
   async function bulkSave(dates, settings) { try { await saveShifts(userId, dates, settings); await reload(); } catch(e) { setError(e.message || "シフト登録に失敗しました。"); throw e; } }
   async function submitCorrection(e) {
     e.preventDefault();
@@ -59,15 +59,8 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
     <section className="content">
       <div className="page-title"><div><p className="eyebrow">ATTENDANCE</p><h1>勤怠</h1><p>出退勤の登録と、自分のシフト登録・確認ができます。</p></div></div>
       {error && <div className="admin-error">{error}</div>}
-      {missedClockIn && <div className="attendance-alert"><strong>出勤打刻が必要です</strong><span>本日の勤務開始時刻（{todayShift.start_time?.slice(0,5)}）を過ぎています。出勤ボタンを押してください。</span></div>}
       <section className="simple-panel"><div className="admin-panel-head"><div><h2>シフト登録・確認</h2><p>カレンダーで日付を選び、右側から出退勤・シフト登録を操作できます。</p></div><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div>
-        {loading ? <div className="empty-state">読み込み中...</div> : <ShiftCalendarEditor month={month} shifts={shifts} onBulkSave={bulkSave} sideTop={
-          <section className={`attendance-side-card ${missedClockIn ? "attendance-card-alert" : ""}`}>
-            <div className="attendance-side-date"><span>本日</span><strong>{today}</strong><small>{todayShift ? (todayShift.is_off ? "休み" : `シフト ${todayShift.start_time?.slice(0,5)}〜${todayShift.end_time?.slice(0,5)}`) : "シフト未登録"}</small></div>
-            <div className="attendance-times"><span>出勤 <b>{fmtTime(todayRecord?.clock_in)}</b></span><span>退勤 <b>{fmtTime(todayRecord?.clock_out)}</b></span></div>
-            <div className="attendance-actions"><button type="button" onClick={handleClockIn} disabled={loading || Boolean(todayRecord?.clock_in)}>出勤</button><button type="button" onClick={handleClockOut} disabled={loading || !todayRecord?.clock_in || Boolean(todayRecord?.clock_out)}>退勤</button></div>
-          </section>
-        } />}
+        {loading ? <div className="empty-state">読み込み中...</div> : <ShiftCalendarEditor month={month} shifts={shifts} onBulkSave={bulkSave} />}
       </section>
 
       <section className="simple-panel attendance-correction-panel"><div className="admin-panel-head"><div><h2>勤怠修正申請</h2><p>打刻忘れや時刻間違いがある場合は、管理者へ修正を申請してください。</p></div></div>

@@ -1778,3 +1778,41 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .attendance-side-card .attendance-actions button { width:100%; padding:0 12px; }
 @media(max-width:1180px){.shift-editor-layout{grid-template-columns:1fr}.shift-editor-side-pane{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-side-card{grid-column:1/-1}}
 @media(max-width:760px){.shift-editor-layout{display:block}.shift-editor-calendar-pane{overflow-x:auto;margin-bottom:16px}.shift-editor-side-pane{display:flex}.shift-calendar-grid{min-width:720px}.shift-side-actions,.shift-side-form{grid-template-columns:1fr}.shift-side-form label:nth-child(4),.shift-side-form .toggle-row,.shift-save-button{grid-column:auto}}
+
+/* RC6.20 sidebar attendance panel */
+:root { --dialix-sidebar-width: 304px; }
+.app-sidebar { overflow-y:auto; }
+.sidebar-nav { flex:0 0 auto; }
+.sidebar-bottom-area { margin-top:auto; padding:0 12px 16px; display:flex; flex-direction:column; gap:10px; }
+.sidebar-attendance { border:1px solid rgba(255,255,255,.16); border-radius:14px; background:rgba(255,255,255,.07); padding:14px; display:flex; flex-direction:column; gap:11px; }
+.sidebar-attendance-block { display:flex; flex-direction:column; gap:3px; }
+.sidebar-attendance-label { color:#a9bdd8; font-size:11px; font-weight:800; letter-spacing:.06em; }
+.sidebar-attendance-block strong { color:#fff; font-size:14px; }
+.sidebar-current-time { color:#fff; font-size:25px; line-height:1.1; letter-spacing:.03em; }
+.sidebar-work-status { display:flex; align-items:center; gap:8px; min-height:34px; padding:7px 9px; border-radius:9px; background:rgba(255,255,255,.08); font-size:13px; }
+.sidebar-status-dot { width:9px; height:9px; border-radius:50%; background:#94a3b8; box-shadow:0 0 0 3px rgba(148,163,184,.16); }
+.sidebar-work-status.working .sidebar-status-dot { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.18); }
+.sidebar-work-status.done .sidebar-status-dot { background:#60a5fa; }
+.sidebar-work-status.missed-in .sidebar-status-dot,.sidebar-work-status.missed-out .sidebar-status-dot { background:#f87171; box-shadow:0 0 0 3px rgba(248,113,113,.18); }
+.sidebar-attendance-alert { padding:8px 9px; border-radius:8px; background:#7f1d1d; color:#fee2e2; font-size:12px; font-weight:900; line-height:1.45; }
+.sidebar-clock-summary { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.sidebar-clock-summary span { display:flex; flex-direction:column; gap:2px; padding:8px; border-radius:8px; background:rgba(255,255,255,.07); color:#b9c9dc; font-size:10px; }
+.sidebar-clock-summary b { color:#fff; font-size:15px; }
+.sidebar-attendance-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.sidebar-attendance-actions button { min-height:40px; border:0; border-radius:9px; color:#fff; font-weight:900; cursor:pointer; }
+.sidebar-attendance-actions .clock-in { background:#16a34a; }
+.sidebar-attendance-actions .clock-out { background:#dc2626; }
+.sidebar-attendance-actions button:disabled { background:#52647a; color:#9fb0c5; cursor:not-allowed; }
+.sidebar-attendance-error { color:#fecaca; line-height:1.4; }
+.sidebar-logout { margin:0 !important; width:100% !important; border-top:1px solid rgba(255,255,255,.12) !important; padding-top:14px !important; }
+@media(max-height:820px){
+  .sidebar-brand{height:60px}.sidebar-nav{padding-top:10px;padding-bottom:10px;gap:2px}.sidebar-nav button{min-height:40px!important}
+  .sidebar-attendance{gap:8px;padding:11px}.sidebar-current-time{font-size:21px}.sidebar-clock-summary{display:none}
+}
+@media(max-width:720px){
+  :root { --dialix-sidebar-width: 76px; }
+  .sidebar-bottom-area{padding:0 8px 12px}.sidebar-attendance{padding:8px;align-items:center}
+  .sidebar-attendance-block,.sidebar-work-status strong,.sidebar-attendance-alert,.sidebar-clock-summary,.sidebar-attendance-error{display:none}
+  .sidebar-work-status{padding:6px;min-height:28px}.sidebar-attendance-actions{grid-template-columns:1fr;gap:6px;width:100%}
+  .sidebar-attendance-actions button{font-size:11px;padding:0;min-height:34px}.sidebar-logout{justify-content:center!important}
+}
