@@ -231,9 +231,9 @@ export async function fetchMyPerformance(userId) {
 
   if (!isSupabaseConfigured) {
     const today = {
-      calls: Number(todayKpi.find((item) => item.label === "コール数")?.value || 0),
-      valid: Number(todayKpi.find((item) => item.label === "有効数")?.value || 0),
-      decisions: Number(todayKpi.find((item) => item.label === "決裁数")?.value || 0),
+      calls: Number(todayKpi.find((item) => ["コール", "コール数"].includes(item.label))?.value || 0),
+      valid: Number(todayKpi.find((item) => ["有効", "有効数"].includes(item.label))?.value || 0),
+      decisions: Number(todayKpi.find((item) => ["決裁", "決裁数"].includes(item.label))?.value || 0),
       prospects: Number(todayKpi.find((item) => item.label === "見込み")?.value || 0),
       tossups: Number(todayKpi.find((item) => item.label === "トスアップ")?.value || 0),
     };
@@ -273,14 +273,14 @@ export async function fetchTodayKpi(userId) {
 
   const rows = data || [];
   return [
-    { label: "コール数", value: rows.length, unit: "件" },
+    { label: "コール", value: rows.length, unit: "件" },
     {
-      label: "有効数",
+      label: "有効",
       value: rows.filter((row) => ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(row.status)).length,
       unit: "件",
     },
     {
-      label: "決裁数",
+      label: "決裁",
       value: rows.filter((row) => ["決裁NG", "決裁見込み"].includes(row.status)).length,
       unit: "件",
     },

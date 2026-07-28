@@ -1288,3 +1288,12 @@ input,select,textarea,button{max-width:100%}
   .status-panel .status-workspace{grid-template-columns:1fr}
   .status-panel .status-side-area{padding-left:0;padding-top:16px;border-left:0;border-top:1px solid #e4e9f1}
 }
+
+/* RC6.9 dashboard layout */
+.dashboard-full-width{width:100%;margin-bottom:18px}
+.dashboard-section-title{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}
+.dashboard-section-title h3{margin:0;font-size:18px;color:#172033}
+.dashboard-section-title span{font-size:12px;color:#8892a3}
+.dashboard-ranking-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.ranking-box{min-width:0}
+@media(max-width:1100px){.dashboard-ranking-grid{grid-template-columns:1fr}}

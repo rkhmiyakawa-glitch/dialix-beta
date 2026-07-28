@@ -32,7 +32,7 @@ function csvCell(value) {
 }
 
 export function downloadOperatorReportCsv(rows, fileName = "dialix_report.csv") {
-  const header = ["日付", "担当者", "権限", "コール数", "有効数", "有効率", "決裁数", "決裁者率", "再コール", "見込み", "トスアップ"];
+  const header = ["日付", "担当者", "権限", "コール", "有効", "有効率", "決裁", "決裁者率", "再コール", "見込み", "トスアップ"];
   const body = rows.map((row) => {
     const validRate = row.callCount ? `${Math.round((row.validCount / row.callCount) * 100)}%` : "0%";
     const decisionRate = row.validCount ? `${Math.round((row.decisionCount / row.validCount) * 100)}%` : "0%";

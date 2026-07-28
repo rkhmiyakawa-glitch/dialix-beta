@@ -260,9 +260,9 @@ export const statuses = [
 ];
 
 export const todayKpi = [
-  { label: "コール数", value: 126, unit: "件" },
-  { label: "有効数", value: 34, unit: "件" },
-  { label: "決裁数", value: 8, unit: "件" },
+  { label: "コール", value: 126, unit: "件" },
+  { label: "有効", value: 34, unit: "件" },
+  { label: "決裁", value: 8, unit: "件" },
   { label: "見込み", value: 6, unit: "件" },
   { label: "トスアップ", value: 2, unit: "件" },
 ];

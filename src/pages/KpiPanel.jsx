@@ -35,8 +35,8 @@ export default function KpiPanel() {
     </div>
     {error && <div className="admin-error">{error}</div>}
     <div className="management-kpi-cards">
-      <article><span>コール数</span><strong>{totals.callCount}</strong><small>件</small></article>
-      <article><span>有効数</span><strong>{totals.validCount}</strong><small>件</small></article>
+      <article><span>コール</span><strong>{totals.callCount}</strong><small>件</small></article>
+      <article><span>有効</span><strong>{totals.validCount}</strong><small>件</small></article>
       <article><span>見込み</span><strong>{totals.prospectCount}</strong><small>件</small></article>
       <article><span>トスアップ</span><strong>{totals.tossupCount}</strong><small>件</small></article>
     </div>

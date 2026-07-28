@@ -9,6 +9,20 @@ function fmtDateTime(value) {
   return value ? new Date(value).toLocaleString("ja-JP") : "―";
 }
 
+function RankingBox({ title, rows, metricKey, emptyText }) {
+  const maxValue = useMemo(() => Math.max(1, ...rows.map((row) => row[metricKey] || 0)), [rows, metricKey]);
+  return <section className="dashboard-box ranking-box">
+    <div className="dashboard-box-head"><h3>{title}</h3><span>上位順</span></div>
+    {!rows.length ? <div className="empty-state">{emptyText}</div> :
+      <div className="ranking-list">{rows.map((row, index) => <div className="ranking-row" key={row.userId || row.displayName}>
+        <span className="ranking-rank">{index + 1}</span>
+        <div className="ranking-main"><div><strong>{row.displayName}</strong><span>{row[metricKey]}件</span></div>
+          <div className="ranking-bar"><i style={{ width: `${Math.max(4, row[metricKey] / maxValue * 100)}%` }} /></div>
+        </div>
+      </div>)}</div>}
+  </section>;
+}
+
 export default function DashboardPanel() {
   const [period, setPeriod] = useState("today");
   const [data, setData] = useState(null);
@@ -25,8 +39,6 @@ export default function DashboardPanel() {
   useEffect(() => { reload(); }, [period]);
   useEffect(() => subscribeDashboardChanges(reload), [period]);
 
-  const maxCalls = useMemo(() => Math.max(1, ...(data?.ranking || []).map((row) => row.callCount)), [data]);
-
   if (loading && !data) return <section className="admin-panel"><div className="empty-state">ダッシュボードを読み込み中...</div></section>;
 
   return <section className="admin-panel dashboard-panel">
@@ -42,51 +54,29 @@ export default function DashboardPanel() {
     {error && <div className="admin-error">{error}</div>}
     {data && <>
       <div className="dashboard-grid">
-        <MetricCard label="コール数" value={data.metrics.callCount.toLocaleString()} sub={`${data.rangeLabel}の合計`} />
-        <MetricCard label="有効数" value={data.metrics.validCount.toLocaleString()} sub={`有効率 ${data.metrics.validRate}%`} />
-        <MetricCard label="決裁数" value={data.metrics.decisionCount.toLocaleString()} sub={`決裁者率 ${data.metrics.decisionRate}%`} />
-        <MetricCard label="見込み" value={data.metrics.prospectCount.toLocaleString()} sub="フォロー対象" />
+        <MetricCard label="コール" value={data.metrics.callCount.toLocaleString()} sub={`${data.rangeLabel}の合計`} />
+        <MetricCard label="有効" value={data.metrics.validCount.toLocaleString()} sub={`有効率 ${data.metrics.validRate}%`} />
+        <MetricCard label="決裁" value={data.metrics.decisionCount.toLocaleString()} sub={`決裁者率 ${data.metrics.decisionRate}%`} />
+        <MetricCard label="見込み" value={data.metrics.prospectCount.toLocaleString()} sub="決裁・非決裁の合計" />
         <MetricCard label="トスアップ" value={data.metrics.tossupCount.toLocaleString()} sub="商談連携対象" />
         <MetricCard label="稼働実績者" value={`${data.metrics.activeOperatorCount}人`} sub={`登録 ${data.metrics.totalOperatorCount}人`} />
         <MetricCard label="期限超過" value={`${data.metrics.overdueCount}件`} sub="要対応リマインド" />
       </div>
 
-      <div className="dashboard-two-column">
-        <section className="dashboard-box">
-          <div className="dashboard-box-head"><h3>KPIランキング</h3><span>コール数順</span></div>
-          {!data.ranking.length ? <div className="empty-state">対象期間の架電実績はありません。</div> :
-            <div className="ranking-list">{data.ranking.map((row, index) => <div className="ranking-row" key={row.userId || row.displayName}>
-              <span className="ranking-rank">{index + 1}</span>
-              <div className="ranking-main"><div><strong>{row.displayName}</strong><span>{row.callCount}件 / 見込み{row.prospectCount} / トス{row.tossupCount}</span></div>
-              <div className="ranking-bar"><i style={{ width: `${Math.max(4, row.callCount / maxCalls * 100)}%` }} /></div></div>
-            </div>)}</div>}
-        </section>
+      <section className="dashboard-box dashboard-full-width">
+        <div className="dashboard-box-head"><h3>期限超過一覧</h3><span>{data.overdue.length}件表示</span></div>
+        {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
+          <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>期限</th><th>状態</th></tr></thead><tbody>
+            {data.overdue.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
+          </tbody></table></div>}
+      </section>
 
-        <section className="dashboard-box">
-          <div className="dashboard-box-head"><h3>期限超過一覧</h3><span>{data.overdue.length}件表示</span></div>
-          {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
-            <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>期限</th><th>状態</th></tr></thead><tbody>
-              {data.overdue.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
-            </tbody></table></div>}
-        </section>
+      <div className="dashboard-section-title"><h3>ランキング</h3><span>{data.rangeLabel}の実績</span></div>
+      <div className="dashboard-ranking-grid">
+        <RankingBox title="コールランキング" rows={data.callRanking} metricKey="callCount" emptyText="対象期間のコール実績はありません。" />
+        <RankingBox title="見込みランキング" rows={data.prospectRanking} metricKey="prospectCount" emptyText="対象期間の見込み実績はありません。" />
+        <RankingBox title="トスアップランキング" rows={data.tossupRanking} metricKey="tossupCount" emptyText="対象期間のトスアップ実績はありません。" />
       </div>
-
-
-      <section className="dashboard-box">
-        <div className="dashboard-box-head"><h3>全体リマインド一覧</h3><span>{data.allReminders.length}件表示</span></div>
-        {!data.allReminders.length ? <div className="empty-state">設定中のリマインドはありません。</div> :
-          <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>顧客名</th><th>担当AP</th><th>予定日時</th><th>状態</th></tr></thead><tbody>
-            {data.allReminders.map((item) => <tr key={item.id}><td><strong>{item.companyName}</strong><small>{item.listName}</small></td><td>{item.apName}</td><td>{fmtDateTime(item.reminderAt)}</td><td>{item.status || "未設定"}</td></tr>)}
-          </tbody></table></div>}
-      </section>
-
-      <section className="dashboard-box">
-        <div className="dashboard-box-head"><h3>直近の架電</h3><span>最新10件</span></div>
-        {!data.recentCalls.length ? <div className="empty-state">架電履歴はありません。</div> :
-          <div className="dashboard-table-wrap"><table className="dashboard-table"><thead><tr><th>日時</th><th>担当</th><th>顧客</th><th>結果</th><th>メモ</th></tr></thead><tbody>
-            {data.recentCalls.map((item) => <tr key={item.id}><td>{fmtDateTime(item.calledAt)}</td><td>{item.operatorName || "―"}</td><td>{item.companyName || "―"}</td><td><span className="state-badge active">{item.status}</span></td><td className="memo-cell">{item.memo || "―"}</td></tr>)}
-          </tbody></table></div>}
-      </section>
     </>}
   </section>;
 }
