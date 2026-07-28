@@ -17,7 +17,6 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
         <div className="topbar-breadcrumb"><button type="button" onClick={goHome}>リスト一覧</button><span>›</span><strong>{pageTitle}</strong></div>
       </div>
       <div className="header-actions">
-        <span className="top-metric">♟ 現在架電中 <b>—人</b></span>
         {canOpenAdmin && onOpenAdmin && <button className="header-quick-link" type="button" onClick={onOpenAdmin}>管理画面</button>}
         {onOpenMyPage ? (
           <button className="header-user-name header-user-link" type="button" onClick={onOpenMyPage} aria-label="マイページを開く">
