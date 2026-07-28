@@ -1,34 +1,61 @@
+function emitNavigation(destination) {
+  window.dispatchEvent(new CustomEvent("dialix:navigate", { detail: destination }));
+}
+
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
   const canOpenAdmin = ["owner", "admin", "sv", "supervisor", "管理者", "オーナー"].includes(normalizedRole);
+  const displayName = currentProfile?.displayName || "マイページ";
 
-  async function goHome() {
+  async function goLists() {
     await onGoLists?.();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
   }
 
   return (
-    <header className="app-header">
-      <div className="header-left">
-        <button className="header-brand" type="button" onClick={goHome} aria-label="リスト一覧へ戻る">
-          <span className="header-mark">D</span><strong>DIALIX</strong><span className="beta-badge">RC5</span>
+    <>
+      <aside className="app-sidebar" aria-label="メインメニュー">
+        <button className="sidebar-brand" type="button" onClick={goLists} aria-label="リスト一覧へ戻る">
+          <span className="sidebar-brand-mark">D</span>
+          <strong>DIALIX</strong>
         </button>
-        <div className="topbar-breadcrumb"><button type="button" onClick={goHome}>リスト一覧</button><span>›</span><strong>{pageTitle}</strong></div>
-      </div>
-      <div className="header-actions">
-        {canOpenAdmin && onOpenAdmin && <button className="header-quick-link" type="button" onClick={onOpenAdmin}>管理画面</button>}
-        {onOpenMyPage ? (
-          <button className="header-user-name header-user-link" type="button" onClick={onOpenMyPage} aria-label="マイページを開く">
-            {currentProfile?.displayName || "オペレーター"}
+
+        <nav className="sidebar-nav">
+          <button type="button" onClick={onOpenMyPage}>
+            <span className="sidebar-icon">👤</span><span>{displayName}</span>
           </button>
-        ) : (
-          <span className="header-user-name" aria-label="ログイン中のユーザー">
-            {currentProfile?.displayName || "オペレーター"}
-          </span>
-        )}
-        <button className="header-logout-button" type="button" onClick={onLogout}>ログアウト</button>
-      </div>
-    </header>
+          <button type="button" onClick={() => emitNavigation("attendance")}>
+            <span className="sidebar-icon">◷</span><span>勤怠</span>
+          </button>
+          <button type="button" onClick={goLists}>
+            <span className="sidebar-icon">☷</span><span>リスト一覧</span>
+          </button>
+          <button type="button" onClick={() => emitNavigation("today-reminders")}>
+            <span className="sidebar-icon">⏰</span><span>本日のリマインド</span>
+          </button>
+          <button type="button" onClick={() => emitNavigation("reminders")}>
+            <span className="sidebar-icon">✓</span><span>リマインド一覧</span>
+          </button>
+          <button type="button" onClick={() => emitNavigation("links")}>
+            <span className="sidebar-icon">↗</span><span>リンク</span>
+          </button>
+          {canOpenAdmin && onOpenAdmin && (
+            <button type="button" onClick={onOpenAdmin}>
+              <span className="sidebar-icon">⚙</span><span>管理画面</span>
+            </button>
+          )}
+        </nav>
+
+        <button className="sidebar-logout" type="button" onClick={onLogout}>
+          <span className="sidebar-icon">⇥</span><span>ログアウト</span>
+        </button>
+      </aside>
+
+      <header className="app-header sidebar-header">
+        <div className="header-left">
+          <div className="topbar-breadcrumb"><button type="button" onClick={goLists}>リスト一覧</button><span>›</span><strong>{pageTitle}</strong></div>
+        </div>
+      </header>
+    </>
   );
 }

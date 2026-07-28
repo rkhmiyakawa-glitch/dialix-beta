@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 
 const taskTabs = [
@@ -8,12 +8,14 @@ const taskTabs = [
   ["tossups", "トスアップ"],
 ];
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
+export default function ListPage({ initialActiveTask = "reminders", lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [activeTask, setActiveTask] = useState("reminders");
+  const [activeTask, setActiveTask] = useState(initialActiveTask);
+
+  useEffect(() => { setActiveTask(initialActiveTask); }, [initialActiveTask]);
 
   async function handleCustomerSearch(event) {
     event.preventDefault();

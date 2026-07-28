@@ -1322,3 +1322,112 @@ input,select,textarea,button{max-width:100%}
   .list-card .list-count{margin-left:auto}
 }
 
+
+/* RC6.14 左サイドメニュー */
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 232px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f2746;
+  color: #fff;
+  z-index: 1000;
+  box-shadow: 4px 0 18px rgba(15, 39, 70, .12);
+}
+.sidebar-brand {
+  height: 72px;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  background: transparent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 22px;
+  cursor: pointer;
+  font-size: 22px;
+}
+.sidebar-brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #2563eb;
+  font-weight: 800;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px 12px;
+}
+.sidebar-nav button,
+.sidebar-logout {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #eef5ff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar-nav button:hover,
+.sidebar-logout:hover { background: rgba(255,255,255,.11); }
+.sidebar-icon { width: 22px; text-align: center; opacity: .95; }
+.sidebar-logout {
+  margin: auto 12px 18px;
+  width: calc(100% - 24px);
+  border-top: 1px solid rgba(255,255,255,.12);
+  border-radius: 0;
+  padding-top: 14px;
+}
+.app-page { padding-left: 232px; }
+.sidebar-header { left: 232px; width: calc(100% - 232px); }
+.header-actions { display: none !important; }
+
+.attendance-card,
+.simple-panel,
+.link-add-form,
+.link-card {
+  background: #fff;
+  border: 1px solid #dce5f0;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(15,39,70,.06);
+}
+.attendance-card { padding: 24px; display: grid; gap: 20px; }
+.attendance-card > div:first-child { display:flex; justify-content:space-between; align-items:center; }
+.attendance-times { display:flex; gap:32px; }
+.attendance-times span { display:flex; flex-direction:column; gap:6px; }
+.attendance-times b { font-size:28px; }
+.attendance-actions { display:flex; gap:12px; }
+.attendance-actions button,
+.link-add-form button { min-height:44px; padding:0 24px; border:0; border-radius:9px; background:#2563eb; color:#fff; font-weight:700; cursor:pointer; }
+.attendance-actions button:disabled { background:#b7c1ce; cursor:not-allowed; }
+.simple-panel { margin-top:20px; padding:22px; }
+.attendance-table > div { display:grid; grid-template-columns:1fr 120px 120px; padding:12px 4px; border-bottom:1px solid #edf1f5; }
+.link-add-form { display:grid; grid-template-columns:220px 1fr auto; gap:10px; padding:16px; }
+.link-add-form input { min-height:44px; border:1px solid #cdd8e5; border-radius:8px; padding:0 12px; }
+.links-grid { display:grid; gap:12px; margin-top:18px; }
+.link-card { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; }
+.link-card a { min-width:0; display:flex; flex-direction:column; gap:4px; color:inherit; text-decoration:none; }
+.link-card small { color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.link-card button { border:0; background:transparent; color:#dc2626; cursor:pointer; }
+
+@media (max-width: 820px) {
+  .app-sidebar { width: 76px; }
+  .sidebar-brand { padding:0; justify-content:center; }
+  .sidebar-brand strong, .sidebar-nav button span:last-child, .sidebar-logout span:last-child { display:none; }
+  .sidebar-nav button, .sidebar-logout { justify-content:center; padding:0; }
+  .app-page { padding-left:76px; }
+  .sidebar-header { left:76px; width:calc(100% - 76px); }
+  .link-add-form { grid-template-columns:1fr; }
+}

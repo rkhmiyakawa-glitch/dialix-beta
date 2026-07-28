@@ -7,6 +7,8 @@ import CallPage from "./pages/CallPage";
 
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const MyPage = lazy(() => import("./pages/MyPage"));
+const AttendancePage = lazy(() => import("./pages/AttendancePage"));
+const LinksPage = lazy(() => import("./pages/LinksPage"));
 import SystemBanner from "./components/SystemBanner";
 import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
@@ -34,6 +36,9 @@ export default function App() {
   const [currentProfile, setCurrentProfile] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showMyPage, setShowMyPage] = useState(false);
+  const [showAttendance, setShowAttendance] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
+  const [homeTaskKey, setHomeTaskKey] = useState("reminders");
   const [tasks, setTasks] = useState({ reminders: [], dueToday: [], prospects: [], tossups: [] });
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
@@ -53,7 +58,41 @@ export default function App() {
 
   useLayoutEffect(() => {
     scrollPageTop();
-  }, [selectedList?.id, selectedCustomer?.id, showAdmin, showMyPage]);
+  }, [selectedList?.id, selectedCustomer?.id, showAdmin, showMyPage, showAttendance, showLinks]);
+
+
+  useEffect(() => {
+    function handleNavigation(event) {
+      const destination = event.detail;
+      setShowAdmin(false);
+      setShowMyPage(false);
+      setShowAttendance(false);
+      setShowLinks(false);
+      presence.clearCustomer()?.catch?.(() => {});
+      setSelectedCustomer(null);
+
+      if (destination === "attendance") {
+        setSelectedList(null);
+        setCustomers([]);
+        setShowAttendance(true);
+      } else if (destination === "links") {
+        setSelectedList(null);
+        setCustomers([]);
+        setShowLinks(true);
+      } else if (destination === "today-reminders") {
+        setSelectedList(null);
+        setCustomers([]);
+        setHomeTaskKey("dueToday");
+      } else if (destination === "reminders") {
+        setSelectedList(null);
+        setCustomers([]);
+        setHomeTaskKey("prospects");
+      }
+      scrollPageTop();
+    }
+    window.addEventListener("dialix:navigate", handleNavigation);
+    return () => window.removeEventListener("dialix:navigate", handleNavigation);
+  }, [presence]);
 
   useEffect(() => {
     if (!session) return undefined;
@@ -195,6 +234,8 @@ export default function App() {
     // 管理画面表示中でも先に管理画面を閉じ、リスト一覧へ確実に戻す。
     setShowAdmin(false);
     setShowMyPage(false);
+    setShowAttendance(false);
+    setShowLinks(false);
     scrollPageTop();
     presence.clearCustomer()?.catch?.(() => {});
     setSelectedCustomer(null);
@@ -207,12 +248,16 @@ export default function App() {
   function openAdmin() {
     scrollPageTop();
     setShowMyPage(false);
+    setShowAttendance(false);
+    setShowLinks(false);
     setShowAdmin(true);
   }
 
   function openMyPage() {
     scrollPageTop();
     setShowAdmin(false);
+    setShowAttendance(false);
+    setShowLinks(false);
     setShowMyPage(true);
   }
 
@@ -236,6 +281,8 @@ export default function App() {
     setCurrentProfile(null);
     setShowAdmin(false);
     setShowMyPage(false);
+    setShowAttendance(false);
+    setShowLinks(false);
   }
 
   async function handleSaveCall(payload) {
@@ -364,6 +411,26 @@ export default function App() {
 
 
 
+  if (showAttendance) {
+    return <>
+      {banner}
+      {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
+        <AttendancePage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+      </Suspense>
+    </>;
+  }
+
+  if (showLinks) {
+    return <>
+      {banner}
+      {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
+        <LinksPage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+      </Suspense>
+    </>;
+  }
+
   if (showMyPage) {
     return <>
       {banner}
@@ -449,6 +516,6 @@ export default function App() {
     {banner}
     {sessionNotice}
     {dataLoading && <div className="data-loading">データ読込中...</div>}
-    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+    <ListPage initialActiveTask={homeTaskKey} onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
   </>;
 }
