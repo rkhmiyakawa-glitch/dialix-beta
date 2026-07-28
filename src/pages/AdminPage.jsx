@@ -7,6 +7,7 @@ import AuditLogPanel from "./AuditLogPanel";
 import DashboardPanel from "./DashboardPanel";
 import ReportsPanel from "./ReportsPanel";
 import ListManagementPanel from "./ListManagementPanel";
+import ShiftManagementPanel from "./ShiftManagementPanel";
 
 const roleLabels = { owner: "オーナー", admin: "管理者", sv: "SV", operator: "オペレーター" };
 
@@ -113,10 +114,11 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
         <button className={`admin-tab ${activeTab === "csv" ? "active" : ""}`} onClick={() => setActiveTab("csv")}>CSVインポート</button>
         <button className={`admin-tab ${activeTab === "lists" ? "active" : ""}`} onClick={() => setActiveTab("lists")}>リスト管理</button>
         <button className={`admin-tab ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>レポート</button>
+        {canManageUsers && <button className={`admin-tab ${activeTab === "shifts" ? "active" : ""}`} onClick={() => setActiveTab("shifts")}>シフト管理</button>}
         <button className={`admin-tab ${activeTab === "audit" ? "active" : ""}`} onClick={() => setActiveTab("audit")}>監査ログ</button>
       </div>
 
-      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
+      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "shifts" ? <ShiftManagementPanel currentProfile={currentProfile} /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
         {!ownerExists && currentRole === "admin" && <div className="owner-claim-box owner-claim-box-compact"><button className="primary-button" type="button" onClick={claimOwner} disabled={saving}>{saving ? "設定中..." : "自分をオーナーに設定"}</button></div>}
         <div className="admin-panel-head"><div><h2>ユーザー一覧</h2></div><button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={!canManageUsers}>＋ ユーザー追加</button></div>
         {error && <div className="admin-error">{error}</div>}
