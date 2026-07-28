@@ -1,16 +1,17 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import LoginPage from "./pages/LoginPage";
 import ListPage from "./pages/ListPage";
 import CustomerListPage from "./pages/CustomerListPage";
 import CallPage from "./pages/CallPage";
-import AdminPage from "./pages/AdminPage";
-import MyPage from "./pages/MyPage";
+
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const MyPage = lazy(() => import("./pages/MyPage"));
 import SystemBanner from "./components/SystemBanner";
 import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
-import { fetchCustomers, fetchLists, fetchTodayKpi, saveCallResult } from "./services/dataService";
+import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, saveCallResult } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
 import { fetchOperationalTasks, searchCustomersAcrossLists, subscribeOperationalTasks } from "./services/operationsService";
 
@@ -37,6 +38,7 @@ export default function App() {
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
+  const taskRefreshTimerRef = useRef(null);
 
   const userId = session?.user?.id || "";
   const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
@@ -80,15 +82,23 @@ export default function App() {
 
   useEffect(() => {
     if (!session || !currentProfile) return undefined;
-    return subscribeOperationalTasks(async () => {
-      try {
-        setTasks(await fetchOperationalTasks({
-          userId: session.user?.id,
-          displayName: currentProfile?.displayName,
-          email: currentProfile?.email || session.user?.email,
-        }));
-      } catch { /* next manual refresh will recover */ }
+    const unsubscribe = subscribeOperationalTasks(() => {
+      // CSV取込などの連続更新で再取得が多発しないよう、短時間の変更を1回にまとめる。
+      window.clearTimeout(taskRefreshTimerRef.current);
+      taskRefreshTimerRef.current = window.setTimeout(async () => {
+        try {
+          setTasks(await fetchOperationalTasks({
+            userId: session.user?.id,
+            displayName: currentProfile?.displayName,
+            email: currentProfile?.email || session.user?.email,
+          }));
+        } catch { /* next manual refresh will recover */ }
+      }, 500);
     });
+    return () => {
+      window.clearTimeout(taskRefreshTimerRef.current);
+      unsubscribe();
+    };
   }, [session, currentProfile]);
 
   async function openTaskCustomer(task, contextItems = [task], contextLabel = "リスト") {
@@ -142,8 +152,18 @@ export default function App() {
       window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
-    setSelectedCustomer(customer);
-    await presence.trackCustomer(customer.id);
+    setDataLoading(true);
+    try {
+      const detailedCustomer = await fetchCustomerDetails(customer.id);
+      if (!detailedCustomer) throw new Error("顧客が見つかりませんでした。");
+      setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
+      setSelectedCustomer(detailedCustomer);
+      await presence.trackCustomer(customer.id);
+    } catch (error) {
+      setDataError(error.message || "顧客詳細の取得に失敗しました。");
+    } finally {
+      setDataLoading(false);
+    }
   }
 
   async function closeCustomer() {
@@ -233,15 +253,22 @@ export default function App() {
       return result;
     }
 
-    const refreshed = await fetchCustomers(selectedList.id);
-    setCustomers(refreshed);
-    setSelectedCustomer(refreshed.find((c) => c.id === payload.customerId) || selectedCustomer);
-    setKpi(await fetchTodayKpi(userId));
-    setTasks(await fetchOperationalTasks({
-      userId,
-      displayName: currentProfile?.displayName || userName,
-      email: currentProfile?.email || session?.user?.email,
-    }));
+    // 保存後はリスト全件を再取得せず、保存した顧客だけ更新する。
+    const [refreshedCustomer, nextKpi, nextTasks] = await Promise.all([
+      fetchCustomerDetails(payload.customerId),
+      fetchTodayKpi(userId),
+      fetchOperationalTasks({
+        userId,
+        displayName: currentProfile?.displayName || userName,
+        email: currentProfile?.email || session?.user?.email,
+      }),
+    ]);
+    if (refreshedCustomer) {
+      setCustomers((current) => current.map((customer) => customer.id === payload.customerId ? refreshedCustomer : customer));
+      setSelectedCustomer(refreshedCustomer);
+    }
+    setKpi(nextKpi);
+    setTasks(nextTasks);
     return result;
   }
 
@@ -277,8 +304,7 @@ export default function App() {
       window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
-    await presence.trackCustomer(next.id);
-    setSelectedCustomer(next);
+    await openCustomer(next);
     scrollPageTop();
   }
 
@@ -308,6 +334,7 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
       <MyPage
         currentProfile={currentProfile || { displayName: userName, email: session?.user?.email || "", role: "operator", isActive: true }}
         onProfileUpdated={setCurrentProfile}
@@ -317,6 +344,7 @@ export default function App() {
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
       />
+      </Suspense>
     </>;
   }
 
@@ -327,7 +355,9 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
-      <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} />
+      <Suspense fallback={<main className="loading-screen">管理画面を読み込んでいます...</main>}>
+        <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} />
+      </Suspense>
     </>;
   }
 

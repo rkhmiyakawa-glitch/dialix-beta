@@ -76,43 +76,81 @@ export async function fetchLists() {
 export async function fetchCustomers(listId) {
   if (!isSupabaseConfigured) return (customersByList[listId] || []).map((customer) => ({ ...customer, ap: customer.status || customer.history?.length ? customer.ap : "" }));
 
-  const [{ data, error }, profilesResult] = await Promise.all([withRetry(() => supabase
+  // 顧客一覧では履歴を取得しない。大量リストでの初回表示を優先し、履歴は顧客を開いた時だけ取得する。
+  const { data, error } = await withRetry(() => supabase
     .from("customers")
-    .select(`
-      id,
-      company_name,
-      phone,
-      address,
-      business_subcategory,
-      ap_name,
-      status,
-      last_called_at,
-      reminder_at,
-      call_histories (
-        id,
-        called_at,
-        user_id,
-        operator_name,
-        status,
-        memo
-      )
-    `)
+    .select("id,company_name,phone,address,business_subcategory,ap_name,status,last_called_at,reminder_at")
     .eq("list_id", listId)
-    .order("sort_order", { ascending: true })),
-    withRetry(() => supabase.from("profiles").select("id,display_name,email")),
-  ]);
+    .order("sort_order", { ascending: true }));
 
   if (error) throw error;
-  // profilesの参照権限がない環境でも顧客一覧自体は表示できるようにする。
-  const profileRows = profilesResult.error ? [] : (profilesResult.data || []);
-  const profilesById = new Map(profileRows.map((profile) => [profile.id, profile.display_name || profile.email || "名称未設定"]));
-  const profilesByEmail = new Map(profileRows.filter((profile) => profile.email).map((profile) => [profile.email.toLowerCase(), profile.display_name || profile.email]));
-  return (data || []).map((row) => {
-    const customer = mapCustomer(row, profilesById, profilesByEmail);
-    const latestHistory = customer.history[0];
-    const legacyName = profilesByEmail.get(String(row.ap_name || "").toLowerCase()) || row.ap_name || "";
-    return { ...customer, ap: customer.status || customer.history.length ? (latestHistory?.ap || legacyName) : "" };
-  });
+  return (data || []).map((row) => ({
+    ...mapCustomer({ ...row, call_histories: [] }),
+    ap: row.status ? (row.ap_name || "") : "",
+  }));
+}
+
+let profileCache = { rows: [], expiresAt: 0 };
+async function fetchProfileMaps() {
+  const now = Date.now();
+  if (profileCache.expiresAt > now) {
+    const rows = profileCache.rows;
+    return {
+      byId: new Map(rows.map((profile) => [profile.id, profile.display_name || profile.email || "名称未設定"])),
+      byEmail: new Map(rows.filter((profile) => profile.email).map((profile) => [profile.email.toLowerCase(), profile.display_name || profile.email])),
+    };
+  }
+  const result = await withRetry(() => supabase.from("profiles").select("id,display_name,email"));
+  const rows = result.error ? [] : (result.data || []);
+  profileCache = { rows, expiresAt: now + 5 * 60 * 1000 };
+  return {
+    byId: new Map(rows.map((profile) => [profile.id, profile.display_name || profile.email || "名称未設定"])),
+    byEmail: new Map(rows.filter((profile) => profile.email).map((profile) => [profile.email.toLowerCase(), profile.display_name || profile.email])),
+  };
+}
+
+export async function fetchCustomerDetails(customerId) {
+  if (!isSupabaseConfigured) {
+    const customer = Object.values(customersByList).flat().find((item) => item.id === customerId);
+    return customer ? { ...customer } : null;
+  }
+
+  const [customerResult, profileMaps] = await Promise.all([
+    withRetry(() => supabase
+      .from("customers")
+      .select(`
+        id,
+        company_name,
+        phone,
+        address,
+        business_subcategory,
+        ap_name,
+        status,
+        last_called_at,
+        reminder_at,
+        call_histories (
+          id,
+          called_at,
+          user_id,
+          operator_name,
+          status,
+          memo
+        )
+      `)
+      .eq("id", customerId)
+      .order("called_at", { foreignTable: "call_histories", ascending: false })
+      .limit(50, { foreignTable: "call_histories" })
+      .maybeSingle()),
+    fetchProfileMaps(),
+  ]);
+
+  if (customerResult.error) throw customerResult.error;
+  if (!customerResult.data) return null;
+  const row = customerResult.data;
+  const customer = mapCustomer(row, profileMaps.byId, profileMaps.byEmail);
+  const latestHistory = customer.history[0];
+  const legacyName = profileMaps.byEmail.get(String(row.ap_name || "").toLowerCase()) || row.ap_name || "";
+  return { ...customer, ap: customer.status || customer.history.length ? (latestHistory?.ap || legacyName) : "" };
 }
 
 export async function saveCallResult({
