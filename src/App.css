@@ -1302,3 +1302,26 @@ input,select,textarea,button{max-width:100%}
 .dashboard-clickable-row:hover { background:#f4f7ff; }
 .dashboard-clickable-row:focus-visible { outline:2px solid #315efb; outline-offset:-2px; background:#f4f7ff; }
 .dashboard-clickable-row strong { color:#234fd1; text-decoration:underline; text-underline-offset:2px; }
+
+
+/* RC6.12 list progress columns */
+.list-card{
+  display:grid!important;
+  grid-template-columns:minmax(240px,1fr) repeat(3,minmax(105px,140px)) minmax(105px,140px)!important;
+  gap:18px;
+  align-items:center!important;
+}
+.list-status-count{display:flex;align-items:baseline;justify-content:flex-end;gap:4px;white-space:nowrap}
+.list-status-count small{color:#718098;font-size:12px}
+.list-status-count strong{font-size:19px;color:#27344a}
+.list-card .list-count{justify-content:flex-end}
+@media(max-width:900px){
+  .list-card{grid-template-columns:minmax(180px,1fr) repeat(2,minmax(90px,1fr))!important}
+  .list-card .list-count{grid-column:3;grid-row:2}
+}
+@media(max-width:620px){
+  .list-card{grid-template-columns:1fr 1fr!important;gap:12px!important}
+  .list-name{grid-column:1/-1}
+  .list-status-count{justify-content:flex-start}
+  .list-card .list-count{grid-column:2;grid-row:auto;justify-content:flex-end}
+}

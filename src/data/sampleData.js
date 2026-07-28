@@ -1,8 +1,8 @@
 export const sampleLists = [
-  { id: "food-01", name: "飲食_2026-07①", count: 8, activeUsers: 8 },
-  { id: "beauty-01", name: "理美容_2026-07①", count: 6, activeUsers: 5 },
-  { id: "construction-kanto", name: "建設_関東", count: 5, activeUsers: 2 },
-  { id: "realestate-01", name: "不動産_2026-07", count: 5, activeUsers: 6 },
+  { id: "food-01", name: "飲食_2026-07①", count: 8, uncontactedCount: 0, absenceCount: 1, recallCount: 1 },
+  { id: "beauty-01", name: "理美容_2026-07①", count: 6, uncontactedCount: 0, absenceCount: 1, recallCount: 1 },
+  { id: "construction-kanto", name: "建設_関東", count: 5, uncontactedCount: 1, absenceCount: 0, recallCount: 1 },
+  { id: "realestate-01", name: "不動産_2026-07", count: 5, uncontactedCount: 1, absenceCount: 1, recallCount: 0 },
 ];
 
 const commonHistory = [
@@ -251,7 +251,7 @@ export const statuses = [
   { name: "留守", tone: "gray" },
   { name: "NG", tone: "red" },
   { name: "対象外", tone: "slate" },
-  { name: "現アナ", tone: "purple" },
+  { name: "現アナ", tone: "gray" },
   { name: "再コール", tone: "blue" },
   { name: "再コール留守", tone: "blue" },
   { name: "見込み", tone: "green" },

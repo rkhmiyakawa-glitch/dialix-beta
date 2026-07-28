@@ -53,7 +53,18 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
       <form className="search-panel" onSubmit={handleCustomerSearch}><label htmlFor="customer-search">検索</label><div className="search-row"><input id="customer-search" type="search" placeholder="顧客名または電話番号を入力" value={customerQuery} onChange={(e) => setCustomerQuery(e.target.value)} /><button type="submit" disabled={searching}>{searching ? "検索中" : "検索"}</button></div><p>すべてのリストを対象に顧客を検索します。</p></form>
       {searchResults.length > 0 && <section className="task-panel search-result-panel"><div className="task-panel-head"><h2>検索結果</h2><span>{searchResults.length}件</span></div><div className="task-list">{searchResults.map((item) => <button className="task-row" key={item.id} onClick={() => onOpenTask(item, searchResults, "検索結果")}><div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div><div className="task-row-meta"><span>{item.status || "未架電"}</span><b>開く ›</b></div></button>)}</div></section>}
       {hasSearched && !searching && searchResults.length === 0 && <div className="empty-state search-empty-state">検索条件に一致する顧客はいません。</div>}
-      <section className="list-grid" aria-label="架電リスト">{lists.map((list) => <button className="list-card" type="button" key={list.id} onClick={() => onOpenCall(list)}><div><span className="list-name">{list.name}</span><span className="list-meta">現在架電中：{list.activeUsers}人</span></div><div className="list-count"><strong>{list.count.toLocaleString()}</strong><span>件</span><span className="arrow">›</span></div></button>)}{lists.length === 0 && <div className="empty-state">利用できるリストがありません。</div>}</section>
+      <section className="list-grid" aria-label="架電リスト">
+        {lists.map((list) => (
+          <button className="list-card" type="button" key={list.id} onClick={() => onOpenCall(list)}>
+            <span className="list-name">{list.name}</span>
+            <span className="list-status-count"><small>未架電</small><strong>{(list.uncontactedCount || 0).toLocaleString()}</strong><small>件</small></span>
+            <span className="list-status-count"><small>留守</small><strong>{(list.absenceCount || 0).toLocaleString()}</strong><small>件</small></span>
+            <span className="list-status-count"><small>再コール</small><strong>{(list.recallCount || 0).toLocaleString()}</strong><small>件</small></span>
+            <span className="list-count"><strong>{list.count.toLocaleString()}</strong><span>件</span><span className="arrow">›</span></span>
+          </button>
+        ))}
+        {lists.length === 0 && <div className="empty-state">利用できるリストがありません。</div>}
+      </section>
     </section>
   </main>;
 }

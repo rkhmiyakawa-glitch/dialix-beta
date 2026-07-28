@@ -106,7 +106,7 @@ export default function App() {
   async function openTaskCustomer(task, contextItems = [task], contextLabel = "リスト") {
     setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
     setNavigationLabel(contextLabel);
-    const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0, activeUsers: 0 };
+    const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0 };
     setDataLoading(true);
     try {
       const nextCustomers = await fetchCustomers(list.id);
@@ -316,7 +316,7 @@ export default function App() {
 
     presence.clearCustomer()?.catch?.(() => {});
     if (target.listId && target.listId !== selectedList?.id) {
-      const list = lists.find((item) => item.id === target.listId) || { id: target.listId, name: "検索結果", count: 0, activeUsers: 0 };
+      const list = lists.find((item) => item.id === target.listId) || { id: target.listId, name: "検索結果", count: 0 };
       setDataLoading(true);
       try {
         const nextCustomers = await fetchCustomers(target.listId);

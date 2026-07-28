@@ -6,12 +6,14 @@ import {
   todayKpi,
 } from "../data/sampleData";
 
-function mapList(row) {
+function mapList(row, statusCounts = {}) {
   return {
     id: row.id,
     name: row.name,
     count: row.customer_count ?? 0,
-    activeUsers: row.active_users ?? 0,
+    uncontactedCount: statusCounts.uncontactedCount ?? 0,
+    absenceCount: statusCounts.absenceCount ?? 0,
+    recallCount: statusCounts.recallCount ?? 0,
   };
 }
 
@@ -65,12 +67,32 @@ export async function fetchLists() {
 
   const { data, error } = await withRetry(() => supabase
     .from("lists")
-    .select("id,name,customer_count,active_users")
+    .select("id,name,customer_count")
     .eq("is_active", true)
     .order("created_at", { ascending: true }));
 
   if (error) throw error;
-  return (data || []).map(mapList);
+  const rows = data || [];
+  if (!rows.length) return [];
+
+  // リスト一覧で必要な最低限の列だけを1回取得し、未架電・留守・再コールを集計する。
+  const { data: customers, error: customerError } = await withRetry(() => supabase
+    .from("customers")
+    .select("list_id,status")
+    .in("list_id", rows.map((row) => row.id)));
+
+  if (customerError) throw customerError;
+  const countsByList = new Map();
+  for (const customer of customers || []) {
+    const current = countsByList.get(customer.list_id) || { uncontactedCount: 0, absenceCount: 0, recallCount: 0 };
+    const status = String(customer.status || "").trim();
+    if (!status || status === "未架電") current.uncontactedCount += 1;
+    if (status === "留守") current.absenceCount += 1;
+    if (status === "再コール") current.recallCount += 1;
+    countsByList.set(customer.list_id, current);
+  }
+
+  return rows.map((row) => mapList(row, countsByList.get(row.id)));
 }
 
 export async function fetchCustomers(listId) {

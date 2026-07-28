@@ -10,7 +10,7 @@ const statusTone = {
   決裁NG: "red",
   再コール: "blue",
   対象外: "slate",
-  現アナ: "purple",
+  現アナ: "gray",
   再コール留守: "blue",
   見込み留守: "green",
   非決裁見込み: "green",
@@ -112,7 +112,7 @@ export default function CustomerListPage({
             <p className="eyebrow">CUSTOMERS</p>
             <h1>{selectedList.name}</h1>
             <p>
-              全{customers.length}件・現在架電中{selectedList.activeUsers}人
+              全{customers.length}件
             </p>
           </div>
 
