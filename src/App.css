@@ -2666,3 +2666,45 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
     grid-template-columns: 1fr !important;
   }
 }
+
+/* RC6.32: dashboard spacing, framed shift registration, and 2x2 date selection controls */
+.dashboard-ranking-grid {
+  margin-bottom: 18px !important;
+}
+.dashboard-overdue-panel {
+  margin-top: 0 !important;
+}
+
+.shift-registration-section {
+  margin: 18px 0 !important;
+  padding: 18px !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+/* Applies to both the admin shift-registration screen and the AP attendance screen. */
+.shift-date-selector .shift-side-actions,
+.shift-registration-controls .shift-date-selector .shift-side-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  align-content: start !important;
+}
+.shift-date-selector .shift-side-actions .secondary-button,
+.shift-registration-controls .shift-date-selector .secondary-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 7px 10px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 560px) {
+  .shift-date-selector .shift-side-actions,
+  .shift-registration-controls .shift-date-selector .shift-side-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
