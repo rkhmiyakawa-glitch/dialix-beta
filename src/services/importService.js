@@ -107,18 +107,22 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
   for (let i = 0; i < phones.length; i += 500) { const { data, error } = await supabase.from("customers").select("phone").in("phone", phones.slice(i, i + 500)); if (error) throw error; (data || []).forEach((r) => existingPhones.add(r.phone)); }
   const insertable = validRows.filter((row) => !existingPhones.has(row.phone)); const duplicateRows = validRows.length - insertable.length;
   let insertedRows = 0; let importedHistoryRows = 0;
+  const postProcessWarnings = [];
   for (let i = 0; i < insertable.length; i += 200) {
     const chunk = insertable.slice(i, i + 200);
     const payload = chunk.map((row) => ({ list_id: targetListId, company_name: row.companyName, phone: row.phone, address: row.address, business_subcategory: row.businessSubcategory || null, ap_name: row.apName || "", status: row.status || null, last_called_at: row.lastCalledAt, reminder_at: row.reminderAt }));
     const { data, error } = await supabase.from("customers").insert(payload).select("id,phone"); if (error) throw error;
     insertedRows += (data || []).length; const byPhone = new Map((data || []).map((r) => [r.phone, r.id]));
     const histories = chunk.filter((row) => row.status || row.memo || row.rawApName || row.lastCalledAt).map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "CSVインポート", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
-    if (histories.length) { const { error: historyError } = await supabase.from("call_histories").insert(histories); if (historyError) throw historyError; importedHistoryRows += histories.length; }
+    if (histories.length) {
+      const { error: historyError } = await supabase.from("call_histories").insert(histories);
+      if (historyError) postProcessWarnings.push(`架電履歴: ${historyError.message}`);
+      else importedHistoryRows += histories.length;
+    }
   }
   // 顧客本体の登録後に行う集計・履歴処理は、古いDB関数の権限判定で
   // owner が除外されている環境でもインポート全体を失敗扱いにしない。
   // まず既存RPCを試し、失敗時は直接件数を集計して更新する。
-  const postProcessWarnings = [];
   const { error: refreshError } = await supabase.rpc("refresh_list_customer_count", { target_list_id: targetListId });
   if (refreshError) {
     const { count, error: countError } = await supabase

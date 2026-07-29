@@ -75,24 +75,31 @@ export async function fetchLists() {
   const rows = data || [];
   if (!rows.length) return [];
 
-  // リスト一覧で必要な最低限の列だけを1回取得し、未架電・留守・再コールを集計する。
-  const { data: customers, error: customerError } = await withRetry(() => supabase
-    .from("customers")
-    .select("list_id,status")
-    .in("list_id", rows.map((row) => row.id)));
+  // customer_count がRLSや旧DB関数の影響で更新されない環境でも、
+  // リスト一覧には customers の実件数を表示する。Supabaseの取得上限に
+  // 影響されないよう、各リストを count: exact / head で集計する。
+  const countRows = await Promise.all(rows.map(async (row) => {
+    const [totalResult, uncontactedResult, absenceResult, recallResult] = await Promise.all([
+      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id)),
+      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).or("status.is.null,status.eq.未架電,status.eq.")),
+      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).eq("status", "留守")),
+      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).eq("status", "再コール")),
+    ]);
+    const firstError = totalResult.error || uncontactedResult.error || absenceResult.error || recallResult.error;
+    if (firstError) throw firstError;
+    return [row.id, {
+      totalCount: totalResult.count ?? Number(row.customer_count || 0),
+      uncontactedCount: uncontactedResult.count ?? 0,
+      absenceCount: absenceResult.count ?? 0,
+      recallCount: recallResult.count ?? 0,
+    }];
+  }));
+  const countsByList = new Map(countRows);
 
-  if (customerError) throw customerError;
-  const countsByList = new Map();
-  for (const customer of customers || []) {
-    const current = countsByList.get(customer.list_id) || { uncontactedCount: 0, absenceCount: 0, recallCount: 0 };
-    const status = String(customer.status || "").trim();
-    if (!status || status === "未架電") current.uncontactedCount += 1;
-    if (status === "留守") current.absenceCount += 1;
-    if (status === "再コール") current.recallCount += 1;
-    countsByList.set(customer.list_id, current);
-  }
-
-  return rows.map((row) => mapList(row, countsByList.get(row.id)));
+  return rows.map((row) => {
+    const counts = countsByList.get(row.id) || {};
+    return mapList({ ...row, customer_count: counts.totalCount ?? row.customer_count }, counts);
+  });
 }
 
 export async function fetchCustomers(listId) {
