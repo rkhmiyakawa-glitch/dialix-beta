@@ -2397,3 +2397,173 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
     min-height: 0;
   }
 }
+
+/* RC6.30: definitive calendar/control layout fix */
+.shift-editor-layout {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+.shift-editor-calendar-pane {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  background: #f8fafc !important;
+  padding: 14px !important;
+}
+.shift-editor-side-pane {
+  position: static !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+.shift-top-controls,
+.shift-top-controls.has-user-selector {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+}
+.shift-top-controls.single-control {
+  grid-template-columns: 1fr !important;
+}
+.shift-top-controls > .shift-side-section,
+.shift-top-controls.has-user-selector > .shift-side-section {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+.shift-user-selector label {
+  flex: 0 0 auto !important;
+}
+.shift-user-selector select {
+  width: 100% !important;
+}
+.shift-side-help {
+  margin: 8px 0 0 !important;
+}
+.shift-date-selector .shift-side-heading {
+  margin-bottom: 10px !important;
+}
+.shift-date-selector .shift-side-actions,
+.shift-side-actions {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+}
+.shift-side-actions .secondary-button {
+  min-width: 0 !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+}
+.shift-bulk-box {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.shift-side-form {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: end !important;
+}
+.shift-side-form > label,
+.shift-side-form > button,
+.shift-side-form label:nth-child(4),
+.shift-side-form .toggle-row,
+.shift-save-button {
+  grid-column: auto !important;
+  min-width: 0 !important;
+}
+.shift-side-form .toggle-row,
+.shift-save-button {
+  min-height: 42px !important;
+}
+
+/* Registration and monthly overview calendars use identical sizing and registered-state styling. */
+.overview-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+}
+.overview-calendar-wrap.shift-editor-calendar-pane {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.shift-calendar-grid.weekday-row,
+.shift-calendar-grid:not(.weekday-row) {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(92px, 1fr)) !important;
+  gap: 8px !important;
+}
+.shift-calendar-grid.weekday-row {
+  margin-bottom: 0 !important;
+}
+.shift-day,
+.overview-shift-day {
+  min-height: 112px !important;
+  border: 1px solid #dbe3ef !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+.shift-day.registered,
+.overview-shift-day.registered,
+.overview-shift-day.has-late:not(.selected),
+.overview-shift-day.all-clocked:not(.selected):not(.has-late) {
+  background: linear-gradient(145deg,#dbeafe,#bfdbfe) !important;
+  border: 2px solid #2563eb !important;
+  box-shadow: 0 5px 14px rgba(37,99,235,.18) !important;
+}
+.shift-day.selected,
+.overview-shift-day.selected {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 0 !important;
+  border-color: #2563eb !important;
+}
+.shift-day.today,
+.overview-shift-day.today {
+  box-shadow: 0 0 0 3px #f59e0b, 0 5px 14px rgba(245,158,11,.2) !important;
+}
+.overview-shift-day .shift-day-select,
+.shift-day .shift-day-select {
+  min-height: 110px !important;
+  padding: 10px !important;
+  gap: 10px !important;
+}
+
+@media (max-width: 900px) {
+  .shift-top-controls,
+  .shift-top-controls.has-user-selector {
+    grid-template-columns: 1fr !important;
+  }
+  .shift-side-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 760px) {
+  .shift-editor-calendar-pane {
+    overflow-x: auto !important;
+  }
+  .shift-calendar-grid.weekday-row,
+  .shift-calendar-grid:not(.weekday-row) {
+    min-width: 720px !important;
+  }
+  .shift-side-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .shift-side-form {
+    grid-template-columns: 1fr !important;
+  }
+}
