@@ -2339,3 +2339,61 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .overview-weekdays,
   .overview-calendar { min-width: 720px; }
 }
+
+/* RC6.29: use the exact same calendar structure for shift registration and monthly overview */
+.overview-calendar-wrap.shift-editor-calendar-pane {
+  width: 100%;
+  min-width: 0;
+}
+.overview-shift-day {
+  padding: 0;
+  text-align: left;
+  color: inherit;
+}
+.overview-shift-day .shift-day-select {
+  min-height: 110px;
+}
+.overview-shift-day.has-late:not(.selected) {
+  border: 2px solid #ef4444;
+  background: linear-gradient(145deg, #fff1f2, #ffe4e6);
+  box-shadow: 0 5px 14px rgba(239, 68, 68, .14);
+}
+.overview-shift-day.all-clocked:not(.selected):not(.has-late) {
+  border: 2px solid #22c55e;
+  background: linear-gradient(145deg, #dcfce7, #bbf7d0);
+  box-shadow: 0 5px 14px rgba(34, 197, 94, .12);
+}
+.overview-shift-day .overview-late-label {
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* AP selector and date selector are equal-width, equal-height cards. */
+.shift-top-controls.has-user-selector {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+.shift-top-controls.has-user-selector > .shift-side-section {
+  min-height: 136px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.shift-top-controls.has-user-selector .shift-user-selector,
+.shift-top-controls.has-user-selector .shift-date-selector {
+  margin: 0;
+}
+.shift-top-controls.has-user-selector .shift-user-selector label {
+  flex: 1;
+}
+.shift-top-controls.has-user-selector .shift-date-selector .shift-side-actions {
+  margin-top: auto;
+}
+@media (max-width: 900px) {
+  .shift-top-controls.has-user-selector {
+    grid-template-columns: 1fr;
+  }
+  .shift-top-controls.has-user-selector > .shift-side-section {
+    min-height: 0;
+  }
+}

@@ -152,17 +152,23 @@ export default function ShiftManagementPanel({ currentProfile }) {
     <section className="all-shifts-overview calendar-overview">
       <div className="today-shift-head"><div><h3>月間シフト一覧</h3><p>日付を選択すると、その日のシフト一覧を確認できます。</p></div></div>
       <div className="overview-layout">
-        <div className="overview-calendar-wrap">
-          <div className="overview-weekdays">{["日","月","火","水","木","金","土"].map((day)=><div key={day}>{day}</div>)}</div>
-          <div className="overview-calendar">{monthDates.map((date,index)=>{
-            if (!date) return <div key={`empty-${index}`} className="overview-day empty" />;
+        <div className="overview-calendar-wrap shift-editor-calendar-pane">
+          <div className="shift-calendar-grid weekday-row">{["日","月","火","水","木","金","土"].map((day)=><div key={day}>{day}</div>)}</div>
+          <div className="shift-calendar-grid">{monthDates.map((date,index)=>{
+            if (!date) return <div key={`empty-${index}`} className="shift-day empty" />;
             const dayShifts=shifts.filter((item)=>item.shift_date===date);
             const scheduled=dayShifts.filter((item)=>!item.is_off);
             const dayAttendance=attendance.filter((item)=>item.work_date===date);
             const hasLate=scheduled.some((item)=>item.start_time && now > new Date(`${date}T${item.start_time}+09:00`).getTime() && !dayAttendance.some((record)=>record.user_id===item.user_id && record.clock_in));
             const allClocked=scheduled.length>0 && scheduled.every((item)=>dayAttendance.some((record)=>record.user_id===item.user_id && record.clock_in));
-            const className=["overview-day",date===selectedOverviewDate?"selected":"",date===today?"today":"",hasLate?"has-late":"",allClocked?"all-clocked":""].filter(Boolean).join(" ");
-            return <button type="button" key={date} className={className} onClick={()=>setOverviewDate(date)}><span className="overview-day-number">{Number(date.slice(-2))}</span><strong>{scheduled.length}名</strong>{hasLate&&<small>未打刻あり</small>}</button>;
+            const className=["shift-day","overview-shift-day",dayShifts.length?"registered":"",date===selectedOverviewDate?"selected":"",date===today?"today":"",hasLate?"has-late":"",allClocked?"all-clocked":""].filter(Boolean).join(" ");
+            return <div key={date} className={className}>
+              <button type="button" className="shift-day-select" onClick={()=>setOverviewDate(date)} aria-label={`${date}のシフトを表示`}>
+                <span className="shift-day-number">{Number(date.slice(-2))}</span>
+                {dayShifts.length > 0 && <span className="shift-registered-badge">登録済み</span>}
+                <span className="shift-day-summary"><strong>{scheduled.length}名</strong>{dayShifts.length > scheduled.length && <span>休み {dayShifts.length - scheduled.length}名</span>}{hasLate && <span className="overview-late-label">未打刻あり</span>}</span>
+              </button>
+            </div>;
           })}</div>
         </div>
         <div className="overview-day-panel">
