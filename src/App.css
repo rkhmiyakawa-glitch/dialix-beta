@@ -2721,3 +2721,16 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
     margin-top: 18px !important;
   }
 }
+
+/* RC6.34: balance the vertical spacing in the date-selection card without changing its size */
+.shift-date-selector .shift-side-actions,
+.shift-registration-controls .shift-date-selector .shift-side-actions {
+  margin-top: 24px !important;
+}
+
+@media (max-width: 700px) {
+  .shift-date-selector .shift-side-actions,
+  .shift-registration-controls .shift-date-selector .shift-side-actions {
+    margin-top: 14px !important;
+  }
+}
