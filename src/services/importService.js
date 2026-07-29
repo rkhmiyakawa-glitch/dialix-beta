@@ -109,7 +109,37 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
     const histories = chunk.filter((row) => row.status || row.memo || row.rawApName || row.lastCalledAt).map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "CSVインポート", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
     if (histories.length) { const { error: historyError } = await supabase.from("call_histories").insert(histories); if (historyError) throw historyError; importedHistoryRows += histories.length; }
   }
-  const { error: refreshError } = await supabase.rpc("refresh_list_customer_count", { target_list_id: targetListId }); if (refreshError) throw refreshError;
-  const { error: batchError } = await supabase.from("import_batches").insert({ list_id: targetListId, file_name: fileName, total_rows: rows.length, inserted_rows: insertedRows, duplicate_rows: duplicateRows, error_rows: errorRows, imported_by: userId || null }); if (batchError) throw batchError;
-  return { targetListId, totalRows: rows.length, insertedRows, duplicateRows, errorRows, importedHistoryRows };
+  // 顧客本体の登録後に行う集計・履歴処理は、古いDB関数の権限判定で
+  // owner が除外されている環境でもインポート全体を失敗扱いにしない。
+  // まず既存RPCを試し、失敗時は直接件数を集計して更新する。
+  const postProcessWarnings = [];
+  const { error: refreshError } = await supabase.rpc("refresh_list_customer_count", { target_list_id: targetListId });
+  if (refreshError) {
+    const { count, error: countError } = await supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("list_id", targetListId);
+    if (!countError) {
+      const { error: updateCountError } = await supabase
+        .from("lists")
+        .update({ customer_count: count ?? insertedRows })
+        .eq("id", targetListId);
+      if (updateCountError) postProcessWarnings.push(`リスト件数更新: ${updateCountError.message}`);
+    } else {
+      postProcessWarnings.push(`リスト件数集計: ${countError.message}`);
+    }
+  }
+
+  const { error: batchError } = await supabase.from("import_batches").insert({
+    list_id: targetListId,
+    file_name: fileName,
+    total_rows: rows.length,
+    inserted_rows: insertedRows,
+    duplicate_rows: duplicateRows,
+    error_rows: errorRows,
+    imported_by: userId || null,
+  });
+  if (batchError) postProcessWarnings.push(`インポート履歴: ${batchError.message}`);
+
+  return { targetListId, totalRows: rows.length, insertedRows, duplicateRows, errorRows, importedHistoryRows, postProcessWarnings };
 }

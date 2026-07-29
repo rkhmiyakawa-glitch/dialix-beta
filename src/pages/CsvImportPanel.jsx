@@ -64,7 +64,8 @@ export default function CsvImportPanel({ currentProfile }) {
     setBusy(true); setError(""); setMessage("");
     try {
       const result = await importCustomers({ fileName, listMode, listId, newListName, rows, userId: currentProfile?.id, userName: currentProfile?.displayName });
-      setMessage(`取込完了：新規 ${result.insertedRows}件／履歴 ${result.importedHistoryRows}件／重複 ${result.duplicateRows}件／エラー ${result.errorRows}件`);
+      const warningText = result.postProcessWarnings?.length ? `（補助処理警告：${result.postProcessWarnings.join("／")}）` : "";
+      setMessage(`取込完了：新規 ${result.insertedRows}件／履歴 ${result.importedHistoryRows}件／重複 ${result.duplicateRows}件／エラー ${result.errorRows}件${warningText}`);
       await reload();
     } catch (e) { setError(e.message || "インポートに失敗しました。"); }
     finally { setBusy(false); }
