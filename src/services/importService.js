@@ -74,7 +74,7 @@ export function prepareRows(parsedRows, mapping, statusMappings = {}, apMappings
     const rawApName = String(raw[mapping.apName] || "").trim();
     const mappedStatus = rawStatus ? (statusMappings[rawStatus] || "") : "";
     const statusIgnored = mappedStatus === IGNORE_STATUS_MAPPING;
-    const status = statusIgnored ? "" : mappedStatus;
+    const status = statusIgnored || !rawStatus ? "未架電" : mappedStatus;
     const apMapping = apMappings[rawApName];
     const apIgnored = apMapping === IGNORE_AP_MAPPING;
     const apMatch = apIgnored ? null : (apMapping || null);
@@ -110,7 +110,7 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
   const postProcessWarnings = [];
   for (let i = 0; i < insertable.length; i += 200) {
     const chunk = insertable.slice(i, i + 200);
-    const payload = chunk.map((row) => ({ list_id: targetListId, company_name: row.companyName, phone: row.phone, address: row.address, business_subcategory: row.businessSubcategory || null, ap_name: row.apName || "", status: row.status || null, last_called_at: row.lastCalledAt, reminder_at: row.reminderAt }));
+    const payload = chunk.map((row) => ({ list_id: targetListId, company_name: row.companyName, phone: row.phone, address: row.address, business_subcategory: row.businessSubcategory || null, ap_name: row.apName || "", status: row.status || "未架電", last_called_at: row.lastCalledAt, reminder_at: row.reminderAt }));
     const { data, error } = await supabase.from("customers").insert(payload).select("id,phone"); if (error) throw error;
     insertedRows += (data || []).length; const byPhone = new Map((data || []).map((r) => [r.phone, r.id]));
     const histories = chunk.filter((row) => row.status || row.memo || row.rawApName || row.lastCalledAt).map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "CSVインポート", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
