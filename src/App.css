@@ -2771,3 +2771,12 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
     margin-top: 14px !important;
   }
 }
+
+/* RC6.41: stack reminder date and time fields in status details */
+.status-panel .reminder-embedded .reminder-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.status-panel .reminder-embedded .reminder-grid input {
+  width: 100%;
+  min-width: 0;
+}
