@@ -2057,3 +2057,37 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .dashboard-overdue-filter { width: 100%; justify-content: flex-start; }
   .dashboard-overdue-filter select { flex: 1; min-width: 140px; }
 }
+
+/* RC6.26: calendar controls and monthly attendance details below calendar */
+.shift-editor-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.shift-editor-side-pane {
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+.shift-editor-side-pane > .shift-user-selector,
+.shift-editor-side-pane > .attendance-side-card {
+  grid-column: 1 / -1;
+}
+.shift-editor-side-pane > .shift-bulk-box {
+  min-width: 0;
+}
+.overview-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.overview-calendar-wrap,
+.overview-day-panel {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .shift-editor-side-pane { display: flex; }
+}

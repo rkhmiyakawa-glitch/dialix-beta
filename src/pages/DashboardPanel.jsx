@@ -83,6 +83,14 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
         <MetricCard label="期限超過" value={`${data.metrics.overdueCount}件`} sub="要対応リマインド" />
       </div>
 
+      <div className="dashboard-section-title"><h3>ランキング</h3><span>{data.rangeLabel}の実績</span></div>
+      <div className="dashboard-ranking-grid">
+        <RankingBox title="コールランキング" rows={data.callRanking} metricKey="callCount" emptyText="対象期間のコール実績はありません。" />
+        <RankingBox title="見込みランキング" rows={data.prospectRanking} metricKey="prospectCount" emptyText="対象期間の見込み実績はありません。" />
+        <RankingBox title="トスアップランキング" rows={data.tossupRanking} metricKey="tossupCount" emptyText="対象期間のトスアップ実績はありません。" />
+      </div>
+
+
       <section className="dashboard-box dashboard-full-width dashboard-overdue-panel">
         <div className="dashboard-box-head dashboard-overdue-head">
           <h3>期限超過リマインド</h3>
@@ -119,12 +127,6 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
           </div>}
       </section>
 
-      <div className="dashboard-section-title"><h3>ランキング</h3><span>{data.rangeLabel}の実績</span></div>
-      <div className="dashboard-ranking-grid">
-        <RankingBox title="コールランキング" rows={data.callRanking} metricKey="callCount" emptyText="対象期間のコール実績はありません。" />
-        <RankingBox title="見込みランキング" rows={data.prospectRanking} metricKey="prospectCount" emptyText="対象期間の見込み実績はありません。" />
-        <RankingBox title="トスアップランキング" rows={data.tossupRanking} metricKey="tossupCount" emptyText="対象期間のトスアップ実績はありません。" />
-      </div>
     </>}
   </section>;
 }
