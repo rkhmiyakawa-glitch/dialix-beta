@@ -68,16 +68,18 @@ export default function ShiftCalendarEditor({ month, shifts, onBulkSave, disable
     </div>
 
     <aside className="shift-editor-side-pane">
-      {sideTop}
-      <section className="shift-side-section">
-        <div className="shift-side-heading"><h3>日付を選択</h3><span>{selected.length}日選択中</span></div>
-        <div className="shift-side-actions">
-          <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekdays}>平日を選択</button>
-          <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekend}>土日を選択</button>
-          <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected(allDates)}>全選択</button>
-          <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected([])}>全解除</button>
-        </div>
-      </section>
+      <div className={`shift-top-controls ${sideTop ? "has-user-selector" : "single-control"}`}>
+        {sideTop}
+        <section className="shift-side-section shift-date-selector">
+          <div className="shift-side-heading"><h3>日付を選択</h3><span>{selected.length}日選択中</span></div>
+          <div className="shift-side-actions">
+            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekdays}>平日を選択</button>
+            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekend}>土日を選択</button>
+            <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected(allDates)}>全選択</button>
+            <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected([])}>全解除</button>
+          </div>
+        </section>
+      </div>
 
       {!disabled && <section className="shift-side-section shift-bulk-box">
         <h3>選択した日に登録</h3>

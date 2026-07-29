@@ -2227,3 +2227,115 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .overview-weekdays,
   .overview-calendar { min-width: 720px; }
 }
+
+/* RC6.28: exact calendar visual unification and balanced top controls */
+.shift-top-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+.shift-top-controls.single-control {
+  grid-template-columns: 1fr;
+}
+.shift-top-controls > .shift-side-section {
+  height: 100%;
+  min-height: 126px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.shift-user-selector label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+.shift-user-selector select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 0 10px;
+  background: #fff;
+  font: inherit;
+}
+.shift-date-selector .shift-side-actions {
+  margin-top: auto;
+}
+
+/* Registration calendar and monthly overview now share the same outer frame. */
+.shift-editor-calendar-pane,
+.overview-calendar-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 14px;
+}
+.shift-calendar-grid.weekday-row,
+.overview-weekdays {
+  grid-template-columns: repeat(7, minmax(92px, 1fr));
+  gap: 8px;
+  margin-bottom: 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+.shift-calendar-grid.weekday-row > div,
+.overview-weekdays > div {
+  padding: 6px;
+}
+.shift-calendar-grid:not(.weekday-row),
+.overview-calendar {
+  grid-template-columns: repeat(7, minmax(92px, 1fr));
+  gap: 8px;
+}
+.shift-day,
+.overview-day {
+  min-height: 112px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.overview-day {
+  padding: 10px;
+  gap: 10px;
+}
+.shift-day.empty,
+.overview-day.empty {
+  border-color: transparent;
+  background: transparent;
+}
+.shift-day.selected,
+.overview-day.selected {
+  outline: 3px solid #2563eb;
+  outline-offset: 0;
+  border-color: #2563eb;
+}
+.shift-day.today,
+.overview-day.today {
+  outline: 3px solid #f59e0b;
+  outline-offset: 0;
+}
+.shift-day-number,
+.overview-day-number {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .shift-top-controls { grid-template-columns: 1fr; }
+  .shift-top-controls > .shift-side-section { min-height: 0; }
+}
+@media (max-width: 760px) {
+  .shift-editor-calendar-pane,
+  .overview-calendar-wrap { overflow-x: auto; }
+  .shift-calendar-grid.weekday-row,
+  .shift-calendar-grid:not(.weekday-row),
+  .overview-weekdays,
+  .overview-calendar { min-width: 720px; }
+}
