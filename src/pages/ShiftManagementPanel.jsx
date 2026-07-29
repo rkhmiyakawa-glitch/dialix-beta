@@ -178,12 +178,13 @@ export default function ShiftManagementPanel({ currentProfile }) {
       </div>
     </section>
 
-    {loading ? <div className="empty-state">読み込み中...</div> : <ShiftCalendarEditor month={month} shifts={selectedShifts} onBulkSave={bulkSave} disabled={!canManage || !selectedUserId} sideTop={
-      <section className="shift-side-section shift-user-selector">
-        <label>登録・編集するAP<select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}><option value="">選択してください</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName || u.email}</option>)}</select></label>
-        {!selectedUserId && <p className="shift-side-help">APを選択すると、カレンダーからシフトを登録・編集できます。</p>}
-      </section>
-    } />}
+    <section className="shift-registration-section">
+      <div className="today-shift-head shift-registration-head">
+        <div><h3>シフトの登録・確認</h3><p>APを選択して、カレンダーからシフトを登録・編集できます。</p></div>
+        <label className="shift-registration-user-select"><span>登録・編集するAP</span><select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}><option value="">選択してください</option>{users.map((u) => <option key={u.id} value={u.id}>{u.displayName || u.email}</option>)}</select></label>
+      </div>
+      {loading ? <div className="empty-state">読み込み中...</div> : <ShiftCalendarEditor month={month} shifts={selectedShifts} onBulkSave={bulkSave} disabled={!canManage || !selectedUserId} />}
+    </section>
 
     {editingAttendance && <div className="lock-overlay"><section className="edit-modal attendance-edit-modal"><h2>勤怠修正</h2><p><strong>{editingAttendance.userName}</strong></p><label>対象日<input type="date" value={editingAttendance.workDate} onChange={(e)=>setEditingAttendance({...editingAttendance,workDate:e.target.value})} /></label><label>出勤時刻<input type="time" value={editingAttendance.clockIn} onChange={(e)=>setEditingAttendance({...editingAttendance,clockIn:e.target.value})} /></label><label>退勤時刻<input type="time" value={editingAttendance.clockOut} onChange={(e)=>setEditingAttendance({...editingAttendance,clockOut:e.target.value})} /></label><label>休憩時間（分）<input type="number" min="0" value={editingAttendance.breakMinutes} onChange={(e)=>setEditingAttendance({...editingAttendance,breakMinutes:e.target.value})} /></label><label>修正理由・管理メモ<textarea rows="3" value={editingAttendance.managerNote} onChange={(e)=>setEditingAttendance({...editingAttendance,managerNote:e.target.value})} /></label><div className="modal-actions">{editingAttendance.requestId && <button className="secondary-button danger" onClick={()=>saveAttendanceEdit("rejected")} disabled={savingAttendance}>却下</button>}<button className="secondary-button" onClick={()=>setEditingAttendance(null)} disabled={savingAttendance}>キャンセル</button><button className="primary-button" onClick={()=>saveAttendanceEdit("approved")} disabled={savingAttendance}>{savingAttendance ? "保存中..." : editingAttendance.requestId ? "承認して保存" : "修正を保存"}</button></div></section></div>}
   </section>;

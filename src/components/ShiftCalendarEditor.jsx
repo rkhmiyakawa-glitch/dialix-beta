@@ -68,31 +68,30 @@ export default function ShiftCalendarEditor({ month, shifts, onBulkSave, disable
     </div>
 
     <aside className="shift-editor-side-pane">
-      <div className={`shift-top-controls ${sideTop ? "has-user-selector" : "single-control"}`}>
-        {sideTop}
+      <div className={`shift-registration-controls ${disabled ? "single-control" : ""}`}>
         <section className="shift-side-section shift-date-selector">
           <div className="shift-side-heading"><h3>日付を選択</h3><span>{selected.length}日選択中</span></div>
           <div className="shift-side-actions">
-            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekdays}>平日を選択</button>
-            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekend}>土日を選択</button>
+            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekdays}>平日</button>
+            <button type="button" className="secondary-button" disabled={disabled} onClick={chooseWeekend}>土日</button>
             <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected(allDates)}>全選択</button>
             <button type="button" className="secondary-button" disabled={disabled} onClick={() => setSelected([])}>全解除</button>
           </div>
         </section>
-      </div>
 
-      {!disabled && <section className="shift-side-section shift-bulk-box">
-        <h3>選択した日に登録</h3>
-        <p className="shift-form-note">1日だけ選択すれば、その日の時間を個別に設定・上書きできます。</p>
-        <div className="shift-side-form">
-          <label>出勤<input type="time" value={bulk.startTime} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,startTime:e.target.value})}/></label>
-          <label>退勤<input type="time" value={bulk.endTime} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,endTime:e.target.value})}/></label>
-          <label>休憩（分）<input type="number" min="0" step="5" value={bulk.breakMinutes} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,breakMinutes:e.target.value})}/></label>
-          <label>メモ<input value={bulk.memo} onChange={(e) => setBulk({...bulk,memo:e.target.value})}/></label>
-          <label className="toggle-row"><input type="checkbox" checked={bulk.isOff} onChange={(e) => setBulk({...bulk,isOff:e.target.checked})}/>休み</label>
-          <button type="button" className="primary-button shift-save-button" onClick={saveBulk} disabled={saving || !selected.length}>{saving ? "保存中..." : "選択日に登録"}</button>
-        </div>
-      </section>}
+        {!disabled && <section className="shift-side-section shift-bulk-box">
+          <h3>選択した日に登録</h3>
+          <p className="shift-form-note">選択した日付へ時間・休憩・メモをまとめて登録できます。</p>
+          <div className="shift-side-form">
+            <label>出勤<input type="time" value={bulk.startTime} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,startTime:e.target.value})}/></label>
+            <label>退勤<input type="time" value={bulk.endTime} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,endTime:e.target.value})}/></label>
+            <label>休憩（分）<input type="number" min="0" step="5" value={bulk.breakMinutes} disabled={bulk.isOff} onChange={(e) => setBulk({...bulk,breakMinutes:e.target.value})}/></label>
+            <label>メモ<input value={bulk.memo} onChange={(e) => setBulk({...bulk,memo:e.target.value})}/></label>
+            <label className="toggle-row"><input type="checkbox" checked={bulk.isOff} onChange={(e) => setBulk({...bulk,isOff:e.target.checked})}/>休み</label>
+            <button type="button" className="primary-button shift-save-button" onClick={saveBulk} disabled={saving || !selected.length}>{saving ? "保存中..." : "選択日に登録"}</button>
+          </div>
+        </section>}
+      </div>
     </aside>
   </div>;
 }
