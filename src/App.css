@@ -1838,3 +1838,101 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 @media(max-width:720px){
   .sidebar-attendance{padding:6px 4px 2px}
 }
+
+/* RC6.23 sidebar attendance unified with navigation */
+.sidebar-bottom-area {
+  padding: 0;
+  gap: 7px;
+}
+.sidebar-attendance {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  gap: 7px;
+}
+.sidebar-attendance-block,
+.sidebar-work-status,
+.sidebar-clock-summary span,
+.sidebar-attendance-alert,
+.sidebar-attendance-error {
+  margin: 0;
+  padding: 10px 13px;
+  border: 0 !important;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  box-shadow: none !important;
+}
+.sidebar-attendance-block {
+  gap: 3px;
+}
+.sidebar-attendance-label {
+  color: #9fb0c8;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.sidebar-attendance-block strong {
+  color: #dbe6f5;
+  font-size: 13px;
+}
+.sidebar-current-time {
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.2;
+}
+.sidebar-work-status {
+  min-height: 42px;
+  padding: 10px 13px;
+  background: rgba(255,255,255,.06);
+  color: #dbe6f5;
+}
+.sidebar-attendance-alert {
+  background: rgba(220,38,38,.2);
+  color: #fecaca;
+}
+.sidebar-clock-summary {
+  gap: 7px;
+}
+.sidebar-clock-summary span {
+  color: #9fb0c8;
+  font-size: 10px;
+}
+.sidebar-clock-summary b {
+  color: #fff;
+  font-size: 14px;
+}
+.sidebar-attendance-actions {
+  gap: 7px;
+}
+.sidebar-attendance-actions button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.sidebar-logout {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 12px 13px !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+@media(max-height:820px){
+  .sidebar-bottom-area{gap:5px}
+  .sidebar-attendance{padding:0;gap:5px}
+  .sidebar-attendance-block,.sidebar-work-status,.sidebar-clock-summary span,.sidebar-attendance-alert{padding:7px 11px}
+  .sidebar-current-time{font-size:18px}
+  .sidebar-attendance-actions button{min-height:36px}
+  .sidebar-logout{padding:9px 11px!important}
+}
+@media(max-width:720px){
+  .sidebar-bottom-area{padding:0;gap:6px}
+  .sidebar-attendance{padding:0;gap:6px}
+  .sidebar-work-status{padding:6px;min-height:30px}
+  .sidebar-attendance-actions{width:100%}
+  .sidebar-logout{padding:0!important}
+}
