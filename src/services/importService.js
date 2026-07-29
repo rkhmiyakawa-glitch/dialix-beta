@@ -12,6 +12,8 @@ const HEADER_ALIASES = {
   reminderAt: ["次回架電日時", "リマインド", "reminder_at"],
 };
 
+export const IGNORE_STATUS_MAPPING = "__IGNORE_STATUS__";
+export const IGNORE_AP_MAPPING = "__IGNORE_AP__";
 export const DIALIX_STATUSES = ["", "留守", "NG", "非決裁NG", "決裁NG", "対象外", "現アナ", "再コール", "再コール留守", "見込み", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ"];
 const STATUS_ALIASES = {
   "留守電": "留守", "不在": "留守", "留守": "留守",
@@ -61,7 +63,7 @@ export function guessMapping(headers) {
   return mapping;
 }
 export function guessStatusMappings(values) {
-  return Object.fromEntries(values.map((value) => [value, STATUS_ALIASES[value] ?? (DIALIX_STATUSES.includes(value) ? value : "")]));
+  return Object.fromEntries(values.map((value) => [value, value === "未架電" ? IGNORE_STATUS_MAPPING : (STATUS_ALIASES[value] ?? (DIALIX_STATUSES.includes(value) ? value : ""))]));
 }
 export function prepareRows(parsedRows, mapping, statusMappings = {}, apMappings = {}) {
   const seen = new Set();
@@ -70,15 +72,19 @@ export function prepareRows(parsedRows, mapping, statusMappings = {}, apMappings
     const phone = normalizePhone(raw[mapping.phone]);
     const rawStatus = String(raw[mapping.status] || "").trim();
     const rawApName = String(raw[mapping.apName] || "").trim();
-    const status = rawStatus ? (statusMappings[rawStatus] || "") : "";
-    const apMatch = apMappings[rawApName] || null;
+    const mappedStatus = rawStatus ? (statusMappings[rawStatus] || "") : "";
+    const statusIgnored = mappedStatus === IGNORE_STATUS_MAPPING;
+    const status = statusIgnored ? "" : mappedStatus;
+    const apMapping = apMappings[rawApName];
+    const apIgnored = apMapping === IGNORE_AP_MAPPING;
+    const apMatch = apIgnored ? null : (apMapping || null);
     const errors = [];
     if (!companyName) errors.push("顧客名が空です");
     if (!phone) errors.push("電話番号が空です");
     if (phone && seen.has(phone)) errors.push("CSV内で電話番号が重複しています");
-    if (rawStatus && !status) errors.push(`ステータス「${rawStatus}」が未設定です`);
+    if (rawStatus && !status && !statusIgnored) errors.push(`ステータス「${rawStatus}」が未設定です`);
     if (phone) seen.add(phone);
-    return { rowNumber, companyName, phone, address: String(raw[mapping.address] || "").trim(), businessSubcategory: String(raw[mapping.businessSubcategory] || "").trim(), rawStatus, status, memo: String(raw[mapping.memo] || "").trim(), rawApName, apName: apMatch?.displayName || rawApName, apUserId: apMatch?.id || null, lastCalledAt: parseDate(raw[mapping.lastCalledAt]), reminderAt: parseDate(raw[mapping.reminderAt]), errors };
+    return { rowNumber, companyName, phone, address: String(raw[mapping.address] || "").trim(), businessSubcategory: String(raw[mapping.businessSubcategory] || "").trim(), rawStatus, status, statusIgnored, memo: String(raw[mapping.memo] || "").trim(), rawApName: apIgnored ? "" : rawApName, apIgnored, apName: apIgnored ? "" : (apMatch?.displayName || rawApName), apUserId: apIgnored ? null : (apMatch?.id || null), lastCalledAt: parseDate(raw[mapping.lastCalledAt]), reminderAt: parseDate(raw[mapping.reminderAt]), errors };
   });
 }
 export async function fetchImportLists() {
