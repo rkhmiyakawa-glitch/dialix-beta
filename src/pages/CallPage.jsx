@@ -11,6 +11,7 @@ import LastContactCard from "../components/LastContactCard";
 import HistoryTimeline from "../components/HistoryTimeline";
 import useToast from "../hooks/useToast";
 import { statuses } from "../data/sampleData";
+import { fetchAssignableProfiles } from "../services/dataService";
 
 export default function CallPage({
   selectedList,
@@ -36,10 +37,26 @@ export default function CallPage({
   const [memo, setMemo] = useState("");
   const [reminderDate, setReminderDate] = useState("");
   const [reminderTime, setReminderTime] = useState("");
+  const [assignableProfiles, setAssignableProfiles] = useState([]);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [callState, setCallState] = useState("room");
   const { message, showToast } = useToast();
+
+  useEffect(() => {
+    let active = true;
+    fetchAssignableProfiles()
+      .then((profiles) => {
+        if (active) setAssignableProfiles(profiles);
+      })
+      .catch(() => {
+        if (active) setAssignableProfiles([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     setSelectedCategory("");
@@ -47,6 +64,7 @@ export default function CallPage({
     setMemo("");
     setReminderDate("");
     setReminderTime("");
+    setSelectedAssigneeId("");
     setIsDirty(false);
     setIsSaving(false);
     setCallState("room");
@@ -71,16 +89,17 @@ export default function CallPage({
   }
 
   function handleSelectCategory(category) {
-    const directStatuses = ["留守", "対象外", "現アナ", "再コール", "再コール留守", "見込み留守", "トスアップ"];
-    const isProspectCategory = category === "見込み" || category === "見込み留守";
+    const directStatuses = ["留守", "対象外", "現アナ", "再コール", "再コール留守", "見込み留守", "トスアップ", "前確依頼", "前確OK", "前確NG"];
+    const hasReminder = category === "見込み" || category === "見込み留守" || category === "前確依頼";
 
     setSelectedCategory(category);
     setSelectedStatus(directStatuses.includes(category) ? category : "");
 
-    if (!isProspectCategory) {
+    if (!hasReminder) {
       setReminderDate("");
       setReminderTime("");
     }
+    if (category !== "前確依頼") setSelectedAssigneeId("");
 
     setIsDirty(true);
   }
@@ -90,6 +109,7 @@ export default function CallPage({
     setSelectedStatus("");
     setReminderDate("");
     setReminderTime("");
+    setSelectedAssigneeId("");
     setIsDirty(true);
   }
 
@@ -108,6 +128,7 @@ export default function CallPage({
         memo,
         reminderDate,
         reminderTime,
+        reminderAssignee: assignableProfiles.find((profile) => profile.id === selectedAssigneeId) || null,
       });
 
       setIsDirty(false);
@@ -229,6 +250,9 @@ export default function CallPage({
                 reminderTime={reminderTime}
                 onReminderDateChange={markDirty(setReminderDate)}
                 onReminderTimeChange={markDirty(setReminderTime)}
+                assignableProfiles={assignableProfiles}
+                selectedAssigneeId={selectedAssigneeId}
+                onAssigneeChange={markDirty(setSelectedAssigneeId)}
               />
             </section>
           </div>

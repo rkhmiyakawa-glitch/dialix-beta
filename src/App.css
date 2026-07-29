@@ -529,7 +529,43 @@ input,select,textarea,button{max-width:100%}
   .customer-details-v104 .phone-actions{display:grid!important;grid-template-columns:1fr!important}
   .customer-details-v104 .phone-actions button{width:100%!important;min-width:0}
 }
-\n\n/* v1.0.5 customer list overlap + global logo navigation fix */\n/*\n * The customer list header previously used viewport-based sticky positioning\n * while its parent only scrolled horizontally. Depending on browser width and\n * zoom, the sticky header could cover the first customer row. Keep the sticky\n * header inside one explicit scrolling container instead.\n */\n.customer-table-card{\n  overflow:hidden!important;\n}\n.customer-table-scroll{\n  width:100%;\n  max-width:100%;\n  max-height:calc(100vh - 250px);\n  min-height:180px;\n  overflow:auto!important;\n  position:relative;\n  overscroll-behavior:contain;\n  -webkit-overflow-scrolling:touch;\n}\n.customer-table thead th{\n  position:sticky!important;\n  top:0!important;\n  z-index:3!important;\n  box-shadow:0 1px 0 #dfe6f1;\n}\n.customer-table tbody tr:first-child td{\n  position:relative;\n  z-index:1;\n}\n@media(max-height:720px){\n  .customer-table-scroll{max-height:calc(100vh - 210px)}\n}\n@media(max-width:720px){\n  .customer-table-scroll{max-height:none;overflow-x:auto!important;overflow-y:visible!important}\n  .customer-table thead th{position:static!important}\n}\n
+/* v1.0.5 customer list overlap + global logo navigation fix */
+/*
+ * The customer list header previously used viewport-based sticky positioning
+ * while its parent only scrolled horizontally. Depending on browser width and
+ * zoom, the sticky header could cover the first customer row. Keep the sticky
+ * header inside one explicit scrolling container instead.
+ */
+.customer-table-card{
+  overflow:hidden!important;
+}
+.customer-table-scroll{
+  width:100%;
+  max-width:100%;
+  max-height:calc(100vh - 250px);
+  min-height:180px;
+  overflow:auto!important;
+  position:relative;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.customer-table thead th{
+  position:sticky!important;
+  top:0!important;
+  z-index:3!important;
+  box-shadow:0 1px 0 #dfe6f1;
+}
+.customer-table tbody tr:first-child td{
+  position:relative;
+  z-index:1;
+}
+@media(max-height:720px){
+  .customer-table-scroll{max-height:calc(100vh - 210px)}
+}
+@media(max-width:720px){
+  .customer-table-scroll{max-height:none;overflow-x:auto!important;overflow-y:visible!important}
+  .customer-table thead th{position:static!important}
+}
 /* v1.0.6 customer list header overlap final fix */
 /* Disable sticky positioning completely on the customer list. Chrome can
    paint a collapsed-border sticky thead over the first row at some zoom
@@ -576,6 +612,7 @@ input,select,textarea,button{max-width:100%}
 @media(max-width:720px){.beta-badge{display:none}}
 
 .status-heading-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.status-clear-button{border:1px solid #cfd8e6;border-radius:8px;background:#fff;color:#5b6678;padding:7px 10px;font-size:12px;font-weight:700}.status-clear-button:hover{border-color:#9cabc2;color:#172033}.status-clear-button:disabled{opacity:.55;cursor:not-allowed}
+.precheck-detail-area{margin-top:18px;padding-top:16px;border-top:1px solid #e4e9f1}.precheck-assignee{display:grid;gap:8px;color:#536078;font-size:13px;font-weight:800}.precheck-assignee select{width:100%;min-height:44px;padding:0 12px;border:1px solid #cfd8e6;border-radius:10px;background:#fff;color:#172033}.precheck-assignee select:focus{border-color:#1f4fd6;box-shadow:0 0 0 4px rgba(31,79,214,.12);outline:none}.precheck-assignee select:disabled{cursor:not-allowed;opacity:.65;background:#f2f4f8}
 
 
 /* Beta 1.0.2 KPI one-row layout */

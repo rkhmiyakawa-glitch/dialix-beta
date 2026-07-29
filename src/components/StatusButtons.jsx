@@ -21,6 +21,9 @@ export default function StatusButtons({
   reminderTime,
   onReminderDateChange,
   onReminderTimeChange,
+  assignableProfiles = [],
+  selectedAssigneeId = "",
+  onAssigneeChange,
   onClearStatus,
   disabled = false,
 }) {
@@ -101,7 +104,37 @@ export default function StatusButtons({
             </div>
           )}
 
-          {!details.length && selectedCategory !== "見込み留守" && (
+          {selectedCategory === "前確依頼" && (
+            <div className="precheck-detail-area">
+              <label className="precheck-assignee">
+                <span>詳細ステータス（担当AP・任意）</span>
+                <select
+                  value={selectedAssigneeId}
+                  onChange={(event) => onAssigneeChange?.(event.target.value)}
+                  disabled={disabled}
+                >
+                  <option value="">選択しない</option>
+                  {assignableProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.displayName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="status-reminder-area">
+                <ReminderPanel
+                  reminderDate={reminderDate}
+                  reminderTime={reminderTime}
+                  onDateChange={onReminderDateChange}
+                  onTimeChange={onReminderTimeChange}
+                  disabled={disabled}
+                  embedded
+                />
+              </div>
+            </div>
+          )}
+
+          {!details.length && selectedCategory !== "見込み留守" && selectedCategory !== "前確依頼" && (
             <div className="status-side-placeholder">
               ステータスを選択すると、必要な詳細項目がここに表示されます。
             </div>

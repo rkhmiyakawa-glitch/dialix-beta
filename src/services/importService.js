@@ -14,7 +14,7 @@ const HEADER_ALIASES = {
 
 export const IGNORE_STATUS_MAPPING = "__IGNORE_STATUS__";
 export const IGNORE_AP_MAPPING = "__IGNORE_AP__";
-export const DIALIX_STATUSES = ["", "留守", "NG", "非決裁NG", "決裁NG", "対象外", "現アナ", "再コール", "再コール留守", "見込み", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ"];
+export const DIALIX_STATUSES = ["", "留守", "NG", "非決裁NG", "決裁NG", "対象外", "現アナ", "再コール", "再コール留守", "見込み", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ", "前確依頼", "前確OK", "前確NG"];
 const STATUS_ALIASES = {
   "留守電": "留守", "不在": "留守", "留守": "留守",
   "フロントNG": "非決裁NG", "担当NG": "非決裁NG", "非決裁NG": "非決裁NG",
@@ -24,6 +24,7 @@ const STATUS_ALIASES = {
   "見込": "非決裁見込み", "見込み": "見込み", "非決裁見込み": "非決裁見込み",
   "決裁見込": "決裁見込み", "決裁見込み": "決裁見込み", "見込み留守": "見込み留守",
   "アポ": "トスアップ", "トスアップ": "トスアップ",
+  "前確依頼": "前確依頼", "前確OK": "前確OK", "前確NG": "前確NG",
 };
 
 function normalizeHeader(value) { return String(value || "").replace(/^\uFEFF/, "").trim(); }
@@ -113,7 +114,9 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
     const payload = chunk.map((row) => ({ list_id: targetListId, company_name: row.companyName, phone: row.phone, address: row.address, business_subcategory: row.businessSubcategory || null, ap_name: row.apName || "", status: row.status || "未架電", last_called_at: row.lastCalledAt, reminder_at: row.reminderAt }));
     const { data, error } = await supabase.from("customers").insert(payload).select("id,phone"); if (error) throw error;
     insertedRows += (data || []).length; const byPhone = new Map((data || []).map((r) => [r.phone, r.id]));
-    const histories = chunk.filter((row) => row.status || row.memo || row.rawApName || row.lastCalledAt).map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "CSVインポート", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
+    const histories = chunk
+      .filter((row) => row.status !== "未架電" || row.memo || row.rawApName || row.lastCalledAt || row.reminderAt)
+      .map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
     if (histories.length) {
       const { error: historyError } = await supabase.from("call_histories").insert(histories);
       if (historyError) postProcessWarnings.push(`架電履歴: ${historyError.message}`);

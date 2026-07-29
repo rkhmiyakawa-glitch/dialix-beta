@@ -182,6 +182,20 @@ export async function fetchCustomerDetails(customerId) {
   return { ...customer, ap: customer.status || customer.history.length ? (latestHistory?.ap || legacyName) : "" };
 }
 
+export async function fetchAssignableProfiles() {
+  if (!isSupabaseConfigured) return [];
+  const { data, error } = await withRetry(() => supabase
+    .from("profiles")
+    .select("id,display_name,email,is_active")
+    .eq("is_active", true)
+    .order("display_name", { ascending: true }));
+  if (error) throw error;
+  return (data || []).map((profile) => ({
+    id: profile.id,
+    displayName: profile.display_name || profile.email || "名称未設定",
+  }));
+}
+
 export async function saveCallResult({
   customerId,
   status,
@@ -190,6 +204,7 @@ export async function saveCallResult({
   reminderTime,
   operatorName,
   userId,
+  reminderAssignee,
 }) {
   if (!isSupabaseConfigured) {
     return {
@@ -204,6 +219,10 @@ export async function saveCallResult({
       : null;
 
   const calledAt = new Date().toISOString();
+  const assignedApName =
+    status === "前確依頼" && reminderAssignee?.displayName
+      ? reminderAssignee.displayName
+      : operatorName || "";
 
   // 顧客更新と履歴追加は互いに依存しないため並列実行し、保存待ち時間を短縮する。
   const [updateResult, historyResult] = await Promise.all([
@@ -213,7 +232,7 @@ export async function saveCallResult({
         status,
         last_called_at: calledAt,
         reminder_at: reminderAt,
-        ap_name: operatorName || "",
+        ap_name: assignedApName,
         updated_at: calledAt,
       })
       .eq("id", customerId),
