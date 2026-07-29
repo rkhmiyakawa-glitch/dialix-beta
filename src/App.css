@@ -1936,3 +1936,84 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .sidebar-attendance-actions{width:100%}
   .sidebar-logout{padding:0!important}
 }
+
+/* RC6.24 logo divider removal + compact sidebar time card */
+.sidebar-brand {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+.sidebar-attendance {
+  gap: 5px !important;
+}
+.sidebar-attendance-line {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 18px auto 1fr;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  color: #dbe6f5;
+}
+.sidebar-attendance-line > span {
+  color: #9fb0c8;
+  text-align: center;
+  font-size: 13px;
+}
+.sidebar-attendance-line small {
+  color: #9fb0c8;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.sidebar-attendance-line strong {
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.sidebar-attendance-line > strong:last-child {
+  justify-self: end;
+}
+.sidebar-attendance-now strong {
+  font-size: 11px;
+  color: #dbe6f5;
+}
+.sidebar-attendance-now b {
+  justify-self: end;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+}
+.sidebar-work-status {
+  min-height: 34px !important;
+  padding: 7px 13px !important;
+  gap: 8px;
+}
+.sidebar-work-status small {
+  margin-left: auto;
+  color: #b9c9dc;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.sidebar-attendance-alert {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
+.sidebar-attendance-actions {
+  gap: 6px !important;
+}
+.sidebar-attendance-actions button {
+  min-height: 36px !important;
+  font-size: 12px !important;
+}
+@media(max-height:820px){
+  .sidebar-attendance-line{min-height:30px;padding:5px 11px}
+  .sidebar-work-status{min-height:30px!important;padding:5px 11px!important}
+  .sidebar-attendance-actions button{min-height:33px!important}
+}
+@media(max-width:720px){
+  .sidebar-attendance-line{display:none}
+  .sidebar-work-status small{display:none}
+}

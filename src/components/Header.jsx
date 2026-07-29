@@ -84,32 +84,32 @@ function SidebarAttendance({ currentProfile }) {
     finally { setLoading(false); }
   }
 
-  const dateLabel = now.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit", weekday: "short" });
-  const timeLabel = now.toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const shiftLabel = shift ? (shift.is_off ? "休日" : `${shift.start_time?.slice(0, 5) || "--:--"} ～ ${shift.end_time?.slice(0, 5) || "--:--"}`) : "未登録";
+  const dateLabel = now.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" });
+  const timeLabel = now.toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" });
+  const shiftLabel = shift ? (shift.is_off ? "休日" : `${shift.start_time?.slice(0, 5) || "--:--"}〜${shift.end_time?.slice(0, 5) || "--:--"}`) : "未登録";
 
   return (
     <section className={`sidebar-attendance sidebar-attendance-${state.key}`} aria-label="本日の勤怠">
-      <div className="sidebar-attendance-block">
-        <span className="sidebar-attendance-label">現在日時</span>
+      <div className="sidebar-attendance-line sidebar-attendance-now">
+        <span aria-hidden="true">◷</span>
         <strong>{dateLabel}</strong>
-        <b className="sidebar-current-time">{timeLabel}</b>
+        <b>{timeLabel}</b>
       </div>
-      <div className="sidebar-attendance-block">
-        <span className="sidebar-attendance-label">今日のシフト</span>
+      <div className="sidebar-attendance-line">
+        <span aria-hidden="true">▣</span>
+        <small>今日のシフト</small>
         <strong>{shiftLabel}</strong>
       </div>
       <div className={`sidebar-work-status ${state.key}`}>
         <span className="sidebar-status-dot" />
         <strong>{state.label}</strong>
+        {record?.clock_in && (
+          <small>{formatClock(record.clock_in)}{record?.clock_out ? `〜${formatClock(record.clock_out)}` : "〜"}</small>
+        )}
       </div>
       {(state.key === "missed-in" || state.key === "missed-out") && (
         <div className="sidebar-attendance-alert">⚠ {state.label}</div>
       )}
-      <div className="sidebar-clock-summary">
-        <span>出勤 <b>{formatClock(record?.clock_in)}</b></span>
-        <span>退勤 <b>{formatClock(record?.clock_out)}</b></span>
-      </div>
       <div className="sidebar-attendance-actions">
         <button type="button" className="clock-in" onClick={handleClockIn} disabled={loading || Boolean(record?.clock_in) || shift?.is_off}>出勤</button>
         <button type="button" className="clock-out" onClick={handleClockOut} disabled={loading || !record?.clock_in || Boolean(record?.clock_out)}>退勤</button>
