@@ -2017,3 +2017,43 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .sidebar-attendance-line{display:none}
   .sidebar-work-status small{display:none}
 }
+
+
+/* RC6.25.1: 管理ダッシュボード 期限超過リマインド APフィルター */
+.dashboard-overdue-head {
+  align-items: center;
+  gap: 16px;
+}
+.dashboard-overdue-filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dashboard-overdue-filter label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+}
+.dashboard-overdue-filter select {
+  min-width: 160px;
+  height: 38px;
+  padding: 0 34px 0 12px;
+  border: 1px solid var(--border, #dbe3ee);
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+}
+.dashboard-overdue-filter span {
+  min-width: 64px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted, #64748b);
+}
+@media (max-width: 720px) {
+  .dashboard-overdue-head { align-items: flex-start; }
+  .dashboard-overdue-filter { width: 100%; justify-content: flex-start; }
+  .dashboard-overdue-filter select { flex: 1; min-width: 140px; }
+}

@@ -26,7 +26,7 @@ const demo = {
   tossupRanking: [
     { userId: "demo-1", displayName: "宮川", callCount: 18, validCount: 12, prospectCount: 3, tossupCount: 1 },
     { userId: "demo-2", displayName: "田中", callCount: 14, validCount: 9, prospectCount: 2, tossupCount: 1 },
-  ], overdue: [],
+  ], overdue: [], activeApNames: ["宮川", "田中"],
 };
 
 export async function fetchDashboardData(period = "today") {
@@ -65,8 +65,15 @@ export async function fetchDashboardData(period = "today") {
   const mapReminder = (r) => ({ id: r.id, listId: r.list_id, companyName: r.company_name, apName: r.ap_name || "未設定", status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" });
   const overdue = (overdueResult.data || []).map(mapReminder);
 
+  const activeApNames = profiles
+    .filter((profile) => ["operator", "sv"].includes(String(profile.role || "").toLowerCase()))
+    .map((profile) => profile.display_name || "")
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "ja"));
+
   return {
     rangeLabel: label,
+    activeApNames,
     metrics: {
       callCount: histories.length,
       validCount,

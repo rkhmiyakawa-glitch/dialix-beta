@@ -28,6 +28,7 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedAp, setSelectedAp] = useState("all");
 
   async function reload() {
     setLoading(true); setError("");
@@ -38,6 +39,25 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
 
   useEffect(() => { reload(); }, [period]);
   useEffect(() => subscribeDashboardChanges(reload), [period]);
+
+  const apOptions = useMemo(() => {
+    if (!data) return [];
+    const names = data.activeApNames?.length
+      ? data.activeApNames
+      : data.overdue.map((item) => item.apName).filter((name) => name && name !== "未設定");
+    return [...new Set(names)].sort((a, b) => a.localeCompare(b, "ja"));
+  }, [data]);
+
+  const filteredOverdue = useMemo(() => {
+    if (!data) return [];
+    return selectedAp === "all"
+      ? data.overdue
+      : data.overdue.filter((item) => item.apName === selectedAp);
+  }, [data, selectedAp]);
+
+  useEffect(() => {
+    if (selectedAp !== "all" && !apOptions.includes(selectedAp)) setSelectedAp("all");
+  }, [apOptions, selectedAp]);
 
   if (loading && !data) return <section className="admin-panel"><div className="empty-state">ダッシュボードを読み込み中...</div></section>;
 
@@ -64,15 +84,25 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
       </div>
 
       <section className="dashboard-box dashboard-full-width dashboard-overdue-panel">
-        <div className="dashboard-box-head"><h3>期限超過リマインド</h3><span>{data.overdue.length}件表示</span></div>
-        {!data.overdue.length ? <div className="empty-state">期限超過はありません。</div> :
+        <div className="dashboard-box-head dashboard-overdue-head">
+          <h3>期限超過リマインド</h3>
+          <div className="dashboard-overdue-filter">
+            <label htmlFor="overdue-ap-filter">担当AP</label>
+            <select id="overdue-ap-filter" value={selectedAp} onChange={(e) => setSelectedAp(e.target.value)}>
+              <option value="all">全AP</option>
+              {apOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+            </select>
+            <span>{filteredOverdue.length}件表示</span>
+          </div>
+        </div>
+        {!filteredOverdue.length ? <div className="empty-state">{selectedAp === "all" ? "期限超過はありません。" : `${selectedAp}さんの期限超過はありません。`}</div> :
           <div className="task-list dashboard-overdue-list">
-            {data.overdue.map((item) => (
+            {filteredOverdue.map((item) => (
               <button
                 key={item.id}
                 className="task-row dashboard-overdue-row"
                 type="button"
-                onClick={() => onOpenOverdueCustomer?.(item, data.overdue)}
+                onClick={() => onOpenOverdueCustomer?.(item, filteredOverdue)}
               >
                 <div className="dashboard-overdue-customer">
                   <strong>{item.companyName}</strong>
