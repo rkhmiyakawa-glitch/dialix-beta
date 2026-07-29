@@ -89,7 +89,7 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
           <div className="dashboard-overdue-filter">
             <label htmlFor="overdue-ap-filter">担当AP</label>
             <select id="overdue-ap-filter" value={selectedAp} onChange={(e) => setSelectedAp(e.target.value)}>
-              <option value="all">全AP</option>
+              <option value="all" aria-label="全AP"></option>
               {apOptions.map((name) => <option key={name} value={name}>{name}</option>)}
             </select>
             <span>{filteredOverdue.length}件表示</span>
