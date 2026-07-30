@@ -2064,6 +2064,61 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .sidebar-work-status small{display:none}
 }
 
+/* v1.0.19: sidebar menu order and unified spacing */
+.sidebar-nav {
+  padding-bottom: 5px;
+}
+.sidebar-timecard-area {
+  margin: 0 12px;
+}
+.sidebar-bottom-area {
+  margin-top: auto;
+  padding: 12px;
+  gap: 5px;
+}
+.sidebar-bottom-action,
+.sidebar-logout {
+  width: 100% !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent;
+  color: #eef5ff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0 16px !important;
+  font: inherit;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar-bottom-action:hover,
+.sidebar-logout:hover {
+  background: rgba(255,255,255,.11);
+}
+.sidebar-bottom-action span:last-child,
+.sidebar-logout span:last-child {
+  display: inline-block;
+  width: auto;
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+@media(max-height:820px){
+  .sidebar-nav{padding-bottom:2px}
+  .sidebar-bottom-area{padding:8px 12px;gap:2px}
+  .sidebar-bottom-action,.sidebar-logout{min-height:40px!important}
+}
+@media(max-width:720px){
+  .sidebar-timecard-area{margin:0 8px}
+  .sidebar-bottom-area{padding:8px;gap:5px}
+  .sidebar-bottom-action,.sidebar-logout{justify-content:center!important;padding:0!important}
+  .sidebar-bottom-action span:last-child,.sidebar-logout span:last-child{display:none!important}
+}
+
 
 /* RC6.25.1: 管理ダッシュボード 期限超過リマインド APフィルター */
 .dashboard-overdue-head {

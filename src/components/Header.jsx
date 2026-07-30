@@ -138,7 +138,6 @@ function SidebarAttendance({ currentProfile }) {
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
   const canOpenAdmin = ["owner", "admin", "sv", "supervisor", "管理者", "オーナー"].includes(normalizedRole);
-  const displayName = currentProfile?.displayName || "マイページ";
 
   async function goLists() {
     await onGoLists?.();
@@ -154,12 +153,6 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
         </button>
 
         <nav className="sidebar-nav">
-          <button type="button" onClick={onOpenMyPage}>
-            <span className="sidebar-icon">👤</span><span>{displayName}</span>
-          </button>
-          <button type="button" onClick={() => emitNavigation("attendance")}>
-            <span className="sidebar-icon">◷</span><span>勤怠</span>
-          </button>
           <button type="button" onClick={goLists}>
             <span className="sidebar-icon">☷</span><span>リスト一覧</span>
           </button>
@@ -172,15 +165,24 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
           <button type="button" onClick={() => emitNavigation("links")}>
             <span className="sidebar-icon">↗</span><span>リンク</span>
           </button>
+          <button type="button" onClick={onOpenMyPage}>
+            <span className="sidebar-icon">👤</span><span>マイページ</span>
+          </button>
+          <button type="button" onClick={() => emitNavigation("attendance")}>
+            <span className="sidebar-icon">◷</span><span>勤怠</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-timecard-area">
+          <SidebarAttendance currentProfile={currentProfile} />
+        </div>
+
+        <div className="sidebar-bottom-area">
           {canOpenAdmin && onOpenAdmin && (
-            <button type="button" onClick={onOpenAdmin}>
+            <button className="sidebar-bottom-action" type="button" onClick={onOpenAdmin}>
               <span className="sidebar-icon">⚙</span><span>管理画面</span>
             </button>
           )}
-        </nav>
-
-        <div className="sidebar-bottom-area">
-          <SidebarAttendance currentProfile={currentProfile} />
           <button className="sidebar-logout" type="button" onClick={onLogout}>
             <span className="sidebar-icon">⇥</span><span>ログアウト</span>
           </button>
