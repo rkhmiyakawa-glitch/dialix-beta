@@ -18,6 +18,10 @@ type RequestBody = {
   role?: Role;
   isActive?: boolean;
   userIds?: string[];
+  updates?: Array<{
+    userId?: string;
+    sortOrder?: number;
+  }>;
 };
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -148,21 +152,27 @@ Deno.serve(async (req) => {
       if (updates.length !== 2 || new Set(updates.map((item) => item.userId)).size !== 2) {
         return json({ ok: false, error: "入れ替えるユーザー情報が正しくありません。" }, 400);
       }
-      const { data: existingProfiles, error: existingError } = await admin
-        .from("profiles")
-        .select("id")
-        .in("id", updates.map((item) => item.userId));
-      if (existingError) throw existingError;
-      if ((existingProfiles ?? []).length !== updates.length) {
-        return json({ ok: false, error: "ユーザー一覧が更新されています。画面を再読み込みしてから、もう一度お試しください。" }, 409);
-      }
-      // 矢印1回につき、実際に入れ替わる2人だけを更新する。
-      for (const update of updates) {
-        const { error: reorderError } = await admin
+      // 矢印1回につき、実際に入れ替わる2人だけを並列更新する。
+      // 事前SELECTは一覧更新との競合で409を誤返却するため行わず、
+      // UPDATE結果から対象行が存在したことを確認する。
+      const results = await Promise.all(
+        updates.map((update) =>
+          admin
           .from("profiles")
           .update({ sort_order: update.sortOrder })
-          .eq("id", update.userId);
-        if (reorderError) throw reorderError;
+          .eq("id", update.userId)
+          .select("id")
+          .maybeSingle()
+        ),
+      );
+      for (const result of results) {
+        if (result.error) throw result.error;
+        if (!result.data) {
+          return json(
+            { ok: false, error: "対象ユーザーが見つかりません。画面を再読み込みしてから、もう一度お試しください。" },
+            404,
+          );
+        }
       }
       return json({ ok: true });
     }

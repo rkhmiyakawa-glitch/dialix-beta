@@ -5,10 +5,17 @@ async function invokeAdminUsers(body) {
   const { data, error } = await supabase.functions.invoke("admin-users", { body });
   if (error) {
     const raw = error.message || "";
+    let detail = "";
+    try {
+      const responseBody = await error.context?.json?.();
+      detail = responseBody?.error || "";
+    } catch {
+      // 応答本文がJSONでない場合はSDKのメッセージを使用する。
+    }
     if (/Failed to send a request|fetch/i.test(raw)) {
       throw new Error("SupabaseのEdge Function『admin-users』へ接続できません。Supabaseへ関数をデプロイしたか確認してください。");
     }
-    throw new Error(raw || "ユーザー管理処理に失敗しました。");
+    throw new Error(detail || raw || "ユーザー管理処理に失敗しました。");
   }
   if (!data?.ok) throw new Error(data?.error || "ユーザー管理処理に失敗しました。");
   return data;
