@@ -2066,7 +2066,7 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 
 /* v1.0.19: sidebar menu order and unified spacing */
 .sidebar-nav {
-  padding-bottom: 5px;
+  padding-bottom: 12px;
 }
 .sidebar-timecard-area {
   margin: 0 12px;
@@ -2108,7 +2108,7 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   white-space: nowrap;
 }
 @media(max-height:820px){
-  .sidebar-nav{padding-bottom:2px}
+  .sidebar-nav{padding-bottom:8px}
   .sidebar-bottom-area{padding:8px 12px;gap:2px}
   .sidebar-bottom-action,.sidebar-logout{min-height:40px!important}
 }
