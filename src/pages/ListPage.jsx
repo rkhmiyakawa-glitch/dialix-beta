@@ -1,13 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import { fetchProfiles } from "../services/profileService";
 
 export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apQuery, setApQuery] = useState("");
+  const [apOptions, setApOptions] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchProfiles()
+      .then((profiles) => {
+        if (!active) return;
+        const names = [...new Set(
+          profiles
+            .filter((profile) => profile.isActive !== false)
+            .map((profile) => String(profile.displayName || "").trim())
+            .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, "ja"));
+        setApOptions(names);
+      })
+      .catch(() => {
+        if (active) setApOptions([]);
+      });
+    return () => { active = false; };
+  }, []);
 
   async function handleCustomerSearch(event) {
     event.preventDefault();
@@ -48,7 +69,10 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
         <label htmlFor="customer-search">全検索</label>
         <div className="global-search-fields">
           <input id="customer-search" type="search" placeholder="顧客名または電話番号" value={customerQuery} onChange={(e) => setCustomerQuery(e.target.value)} />
-          <input type="search" aria-label="AP" placeholder="AP名" value={apQuery} onChange={(e) => setApQuery(e.target.value)} />
+          <select aria-label="AP" value={apQuery} onChange={(e) => setApQuery(e.target.value)}>
+            <option value="">AP：すべて</option>
+            {apOptions.map((apName) => <option key={apName} value={apName}>{apName}</option>)}
+          </select>
           <select aria-label="ステータス" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">ステータス：すべて</option>
             <option value="uncontacted">未架電</option>

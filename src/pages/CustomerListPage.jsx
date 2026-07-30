@@ -40,20 +40,23 @@ export default function CustomerListPage({
   onOpenAdmin,
   onOpenMyPage,
 }) {
-  const [apInput, setApInput] = useState("");
   const [apFilter, setApFilter] = useState("");
   const [sortKey, setSortKey] = useState("import");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
-  const visibleCustomers = useMemo(() => {
-    const normalizedAp = normalizeSearchText(apFilter);
+  const apOptions = useMemo(
+    () => [...new Set(customers.map((customer) => String(customer.ap || "").trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "ja")),
+    [customers]
+  );
 
+  const visibleCustomers = useMemo(() => {
     let result = customers.filter((customer) => {
       const matchesAp =
-        !normalizedAp ||
-        normalizeSearchText(customer.ap).includes(normalizedAp);
+        !apFilter ||
+        normalizeSearchText(customer.ap) === normalizeSearchText(apFilter);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -96,13 +99,6 @@ export default function CustomerListPage({
     setPage(1);
   }
 
-  function handleSearch(event) {
-    event.preventDefault();
-    setApFilter(apInput.trim());
-    setPage(1);
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }
-
   function changePage(nextPage) {
     setPage(nextPage);
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -136,19 +132,19 @@ export default function CustomerListPage({
         </div>
 
         <section className="customer-filter-panel">
-          <form className="customer-search-field" onSubmit={handleSearch}>
-            <label htmlFor="customer-list-search">AP</label>
-            <div className="customer-search-row">
-              <input
-                id="customer-list-search"
-                type="search"
-                placeholder="AP名を入力"
-                value={apInput}
-                onChange={(event) => setApInput(event.target.value)}
-              />
-              <button type="submit">検索</button>
-            </div>
-          </form>
+          <label className="customer-search-field" htmlFor="customer-list-ap-filter">
+            AP
+            <select
+              id="customer-list-ap-filter"
+              value={apFilter}
+              onChange={(event) => updateFilter(setApFilter, event.target.value)}
+            >
+              <option value="">すべてのAP</option>
+              {apOptions.map((apName) => (
+                <option key={apName} value={apName}>{apName}</option>
+              ))}
+            </select>
+          </label>
 
           <label>
             ステータス
