@@ -243,27 +243,42 @@ export default function App() {
     setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
     setNavigationLabel(contextLabel);
     const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0 };
-    setDataLoading(true);
-    try {
-      const nextCustomers = await fetchCustomers(list.id);
-      setCustomers(nextCustomers);
-      setSelectedList({ ...list, count: list.count || nextCustomers.length });
-      const customer = nextCustomers.find((item) => item.id === task.id);
-      if (!customer) throw new Error("顧客が見つかりませんでした。");
-      setPendingCustomerId(customer.id);
-    } finally { setDataLoading(false); }
+    if (!list.id || !task.id) throw new Error("顧客の移動先情報が不足しています。");
+
+    // 一覧全件の取得完了を待たず、押した顧客をすぐ画面へ渡す。
+    // 詳細は openCustomer がIDで取得し、一覧は背後で更新する。
+    const taskCustomer = {
+      id: task.id,
+      companyName: task.companyName || "顧客",
+      phone: task.phone || "",
+      address: task.address || "",
+      businessSubcategory: task.businessSubcategory || "",
+      ap: task.apName || "",
+      status: task.status || "",
+      reminderAt: task.reminderAt || "",
+      history: [],
+    };
+    setCustomers([taskCustomer]);
+    setSelectedList({ ...list, count: list.count || 1 });
+    setPendingCustomerId(taskCustomer.id);
+
+    fetchCustomers(list.id)
+      .then((nextCustomers) => {
+        setCustomers(nextCustomers);
+        setSelectedList((current) => current?.id === list.id
+          ? { ...current, count: list.count || nextCustomers.length }
+          : current);
+      })
+      .catch((error) => setDataError(error.message || "顧客一覧の取得に失敗しました。"));
   }
 
   useEffect(() => {
     if (!pendingCustomerId || !selectedList || !customers.length) return;
     const customer = customers.find((item) => item.id === pendingCustomerId);
     if (!customer) return;
-    const timer = window.setTimeout(async () => {
-      setPendingCustomerId("");
-      await openCustomer(customer);
-    }, 150);
-    return () => window.clearTimeout(timer);
-  }, [pendingCustomerId, selectedList, customers, presence.rows]);
+    setPendingCustomerId("");
+    openCustomer(customer);
+  }, [pendingCustomerId, selectedList, customers]);
 
   async function openList(list) {
     scrollPageTop();

@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { withRetry } from "../lib/retry";
+import { fetchAllRows } from "../lib/fetchAllRows";
 import {
   sampleLists,
   customersByList,
@@ -120,14 +121,14 @@ export async function fetchCustomers(listId) {
   if (!isSupabaseConfigured) return (customersByList[listId] || []).map((customer) => ({ ...customer, ap: customer.status || customer.history?.length ? customer.ap : "" }));
 
   // 顧客一覧では履歴を取得しない。大量リストでの初回表示を優先し、履歴は顧客を開いた時だけ取得する。
-  const { data, error } = await withRetry(() => supabase
+  const data = await fetchAllRows(() => supabase
     .from("customers")
     .select("id,company_name,phone,address,business_subcategory,ap_name,status,last_called_at,reminder_at")
     .eq("list_id", listId)
-    .order("sort_order", { ascending: true }));
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true }));
 
-  if (error) throw error;
-  return (data || []).map((row) => ({
+  return data.map((row) => ({
     ...mapCustomer({ ...row, call_histories: [] }),
     ap: row.status ? (row.ap_name || "") : "",
   }));

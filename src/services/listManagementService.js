@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { sampleLists, customersByList } from "../data/sampleData";
+import { fetchAllRows } from "../lib/fetchAllRows";
 
 const demoState = {
   lists: sampleLists.map((list, index) => ({ ...list, updatedAt: new Date(Date.now() - index * 86400000).toISOString(), deletedAt: null })),
@@ -58,8 +59,12 @@ export async function duplicateList(listId, newName) {
     .single();
   if (listError) throw listError;
 
-  const { data: sourceCustomers, error: sourceError } = await supabase.from("customers").select("*").eq("list_id", listId);
-  if (sourceError) throw sourceError;
+  const sourceCustomers = await fetchAllRows(() => supabase
+    .from("customers")
+    .select("*")
+    .eq("list_id", listId)
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true }));
   const copies = (sourceCustomers || []).map(({ id, created_at, updated_at, ...row }) => ({ ...row, list_id: newList.id, created_at: now, updated_at: now }));
   for (let i = 0; i < copies.length; i += 200) {
     const { error } = await supabase.from("customers").insert(copies.slice(i, i + 200));
@@ -97,9 +102,12 @@ export async function permanentlyDeleteList(listId) {
     delete customersByList[listId];
     return;
   }
-  const { data: customers, error: customerReadError } = await supabase.from("customers").select("id").eq("list_id", listId);
-  if (customerReadError) throw customerReadError;
-  const ids = (customers || []).map((row) => row.id);
+  const customers = await fetchAllRows(() => supabase
+    .from("customers")
+    .select("id")
+    .eq("list_id", listId)
+    .order("id", { ascending: true }));
+  const ids = customers.map((row) => row.id);
   for (let i = 0; i < ids.length; i += 500) {
     const chunk = ids.slice(i, i + 500);
     const { error: historyError } = await supabase.from("call_histories").delete().in("customer_id", chunk);
@@ -113,9 +121,13 @@ export async function permanentlyDeleteList(listId) {
 
 export async function fetchListCustomers(listId) {
   if (!isSupabaseConfigured) return (customersByList[listId] || []).map((customer) => ({ id: customer.id, companyName: customer.companyName, phone: customer.phone, status: customer.status || "", reminderAt: customer.reminderAt || "" }));
-  const { data, error } = await supabase.from("customers").select("id,company_name,phone,status,reminder_at").eq("list_id", listId).order("sort_order", { ascending: true });
-  if (error) throw error;
-  return (data || []).map((row) => ({ id: row.id, companyName: row.company_name, phone: row.phone, status: row.status || "", reminderAt: row.reminder_at || "" }));
+  const data = await fetchAllRows(() => supabase
+    .from("customers")
+    .select("id,company_name,phone,status,reminder_at")
+    .eq("list_id", listId)
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true }));
+  return data.map((row) => ({ id: row.id, companyName: row.company_name, phone: row.phone, status: row.status || "", reminderAt: row.reminder_at || "" }));
 }
 
 export async function bulkUpdateCustomers({ customerIds, status, reminderAt, destinationListId }) {

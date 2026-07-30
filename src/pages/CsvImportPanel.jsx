@@ -21,6 +21,7 @@ export default function CsvImportPanel({ currentProfile }) {
   const [newListName, setNewListName] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [importErrorDetails, setImportErrorDetails] = useState([]);
   const [error, setError] = useState("");
 
   async function reload() {
@@ -50,7 +51,7 @@ export default function CsvImportPanel({ currentProfile }) {
   }, [rawApNames.join("|"), profiles]);
 
   async function onFileChange(event) {
-    setError(""); setMessage("");
+    setError(""); setMessage(""); setImportErrorDetails([]);
     const file = event.target.files?.[0]; if (!file) return;
     try {
       const parsed = parseCsv(await file.text());
@@ -61,11 +62,12 @@ export default function CsvImportPanel({ currentProfile }) {
   async function runImport() {
     if (!mapping.companyName || !mapping.phone) return setError("顧客名と電話番号の列を指定してください。");
     if (!rows.length) return setError("CSVを選択してください。");
-    setBusy(true); setError(""); setMessage("");
+    setBusy(true); setError(""); setMessage(""); setImportErrorDetails([]);
     try {
       const result = await importCustomers({ fileName, listMode, listId, newListName, rows, userId: currentProfile?.id, userName: currentProfile?.displayName });
       const warningText = result.postProcessWarnings?.length ? `（補助処理警告：${result.postProcessWarnings.join("／")}）` : "";
       setMessage(`取込完了：新規 ${result.insertedRows}件／履歴 ${result.importedHistoryRows}件／重複 ${result.duplicateRows}件／エラー ${result.errorRows}件${warningText}`);
+      setImportErrorDetails(result.errorDetails || []);
       await reload();
     } catch (e) { setError(e.message || "インポートに失敗しました。"); }
     finally { setBusy(false); }
@@ -75,6 +77,7 @@ export default function CsvImportPanel({ currentProfile }) {
     <section className="admin-panel csv-panel">
       <div className="admin-panel-head"><div><h2>CSVインポート</h2><p>顧客IDは自動採番。電話番号は全角を半角化し、ハイフン・空白を除去します。</p></div></div>
       {error && <div className="admin-error">{error}</div>}{message && <div className="admin-success">{message}</div>}
+      {importErrorDetails.length > 0 && <div className="admin-error"><strong>未取込の行</strong>{importErrorDetails.map((detail) => <div key={detail}>{detail}</div>)}</div>}
       <div className="csv-form">
         <label className="file-drop">CSVファイル<input type="file" accept=".csv,text/csv" onChange={onFileChange} /><span>{fileName || "ファイルを選択してください"}</span></label>
         <div className="import-destination"><label><input type="radio" checked={listMode === "existing"} onChange={() => setListMode("existing")} />既存リストへ追加</label><label><input type="radio" checked={listMode === "new"} onChange={() => setListMode("new")} />新規リストを作成</label></div>

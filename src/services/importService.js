@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { fetchAllRows } from "../lib/fetchAllRows";
 
 const HEADER_ALIASES = {
   companyName: ["顧客名", "企業名", "会社名", "店舗名", "company", "company_name"],
@@ -107,29 +108,60 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
   if (listMode === "new") { const cleanName = newListName.trim(); if (!cleanName) throw new Error("新しいリスト名を入力してください。"); const { data, error } = await supabase.from("lists").insert({ name: cleanName }).select("id").single(); if (error) throw error; targetListId = data.id; }
   if (!targetListId) throw new Error("取込先リストを選択してください。");
   const validRows = rows.filter((row) => row.errors.length === 0); const errorRows = rows.length - validRows.length;
-  const phones = [...new Set(validRows.map((row) => row.phone))]; const existingPhones = new Set();
+  const phones = [...new Set(validRows.map((row) => row.phone))];
+  const customersByPhone = new Map();
   const phoneChunks = [];
   for (let i = 0; i < phones.length; i += 500) phoneChunks.push(phones.slice(i, i + 500));
-  const duplicateResults = await Promise.all(phoneChunks.map((chunk) => supabase.from("customers").select("phone").in("phone", chunk)));
+  const duplicateResults = await Promise.all(phoneChunks.map((chunk) => supabase.from("customers").select("id,phone").in("phone", chunk)));
   const duplicateError = duplicateResults.find((result) => result.error)?.error;
   if (duplicateError) throw duplicateError;
-  duplicateResults.forEach((result) => (result.data || []).forEach((row) => existingPhones.add(row.phone)));
-  const insertable = validRows.filter((row) => !existingPhones.has(row.phone)); const duplicateRows = validRows.length - insertable.length;
+  duplicateResults.forEach((result) => (result.data || []).forEach((row) => customersByPhone.set(row.phone, row.id)));
+  const insertable = validRows.filter((row) => !customersByPhone.has(row.phone)); const duplicateRows = validRows.length - insertable.length;
   let insertedRows = 0; let importedHistoryRows = 0;
-  const postProcessWarnings = [];
+  const postProcessWarnings = new Set();
   for (let i = 0; i < insertable.length; i += 200) {
     const chunk = insertable.slice(i, i + 200);
     const payload = chunk.map((row) => ({ list_id: targetListId, company_name: row.companyName, phone: row.phone, address: row.address, business_subcategory: row.businessSubcategory || null, ap_name: row.apName || "", status: row.status || "未架電", last_called_at: row.lastCalledAt, reminder_at: row.reminderAt }));
     const { data, error } = await supabase.from("customers").insert(payload).select("id,phone"); if (error) throw error;
-    insertedRows += (data || []).length; const byPhone = new Map((data || []).map((r) => [r.phone, r.id]));
-    const histories = chunk
-      .filter((row) => row.status !== "未架電" || row.memo || row.rawApName || row.lastCalledAt || row.reminderAt)
-      .map((row) => ({ customer_id: byPhone.get(row.phone), called_at: row.lastCalledAt || new Date().toISOString(), user_id: row.apUserId, operator_name: row.apName || row.rawApName || "", status: row.status || "未架電", memo: row.memo || "", reminder_at: row.reminderAt }));
-    if (histories.length) {
-      const { error: historyError } = await supabase.from("call_histories").insert(histories);
-      if (historyError) postProcessWarnings.push(`架電履歴: ${historyError.message}`);
-      else importedHistoryRows += histories.length;
-    }
+    insertedRows += (data || []).length;
+    (data || []).forEach((row) => customersByPhone.set(row.phone, row.id));
+  }
+
+  // 新規顧客だけでなく、前回RLSで履歴だけ失敗した既存顧客も復旧する。
+  // 既に履歴が1件以上ある顧客には追加しないため、同じCSVを再取込しても履歴を重複させない。
+  const historySourceRows = validRows.filter((row) =>
+    row.status !== "未架電" || row.memo || row.rawApName || row.lastCalledAt || row.reminderAt
+  );
+  const historyCustomerIds = [...new Set(historySourceRows.map((row) => customersByPhone.get(row.phone)).filter(Boolean))];
+  const customersWithHistory = new Set();
+  for (let i = 0; i < historyCustomerIds.length; i += 500) {
+    const ids = historyCustomerIds.slice(i, i + 500);
+    const existingHistories = await fetchAllRows(() => supabase
+      .from("call_histories")
+      .select("id,customer_id")
+      .in("customer_id", ids)
+      .order("id", { ascending: true }));
+    existingHistories.forEach((row) => customersWithHistory.add(row.customer_id));
+  }
+  const histories = historySourceRows
+    .filter((row) => {
+      const customerId = customersByPhone.get(row.phone);
+      return customerId && !customersWithHistory.has(customerId);
+    })
+    .map((row) => ({
+      customer_id: customersByPhone.get(row.phone),
+      called_at: row.lastCalledAt || new Date().toISOString(),
+      user_id: row.apUserId,
+      operator_name: row.apName || row.rawApName || userName || "",
+      status: row.status || "未架電",
+      memo: row.memo || "",
+      reminder_at: row.reminderAt,
+    }));
+  for (let i = 0; i < histories.length; i += 200) {
+    const historyChunk = histories.slice(i, i + 200);
+    const { error: historyError } = await supabase.from("call_histories").insert(historyChunk);
+    if (historyError) postProcessWarnings.add(`架電履歴: ${historyError.message}`);
+    else importedHistoryRows += historyChunk.length;
   }
   // 顧客本体の登録後に行う集計・履歴処理は、古いDB関数の権限判定で
   // owner が除外されている環境でもインポート全体を失敗扱いにしない。
@@ -145,9 +177,9 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
         .from("lists")
         .update({ customer_count: count ?? insertedRows })
         .eq("id", targetListId);
-      if (updateCountError) postProcessWarnings.push(`リスト件数更新: ${updateCountError.message}`);
+      if (updateCountError) postProcessWarnings.add(`リスト件数更新: ${updateCountError.message}`);
     } else {
-      postProcessWarnings.push(`リスト件数集計: ${countError.message}`);
+      postProcessWarnings.add(`リスト件数集計: ${countError.message}`);
     }
   }
 
@@ -160,7 +192,16 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
     error_rows: errorRows,
     imported_by: userId || null,
   });
-  if (batchError) postProcessWarnings.push(`インポート履歴: ${batchError.message}`);
+  if (batchError) postProcessWarnings.add(`インポート履歴: ${batchError.message}`);
 
-  return { targetListId, totalRows: rows.length, insertedRows, duplicateRows, errorRows, importedHistoryRows, postProcessWarnings };
+  return {
+    targetListId,
+    totalRows: rows.length,
+    insertedRows,
+    duplicateRows,
+    errorRows,
+    errorDetails: rows.filter((row) => row.errors.length).map((row) => `CSV ${row.rowNumber}行目: ${row.errors.join("／")}`),
+    importedHistoryRows,
+    postProcessWarnings: [...postProcessWarnings],
+  };
 }
