@@ -40,6 +40,7 @@ export default function CustomerListPage({
   onOpenAdmin,
   onOpenMyPage,
 }) {
+  const [customerQuery, setCustomerQuery] = useState("");
   const [apFilter, setApFilter] = useState("");
   const [sortKey, setSortKey] = useState("import");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -54,6 +55,14 @@ export default function CustomerListPage({
 
   const visibleCustomers = useMemo(() => {
     let result = customers.filter((customer) => {
+      const normalizedQuery = normalizeSearchText(customerQuery);
+      const phoneQuery = String(customerQuery || "").replace(/\D/g, "");
+      const normalizedPhone = String(customer.phone || "").replace(/\D/g, "");
+      const matchesCustomer =
+        !normalizedQuery ||
+        normalizeSearchText(customer.companyName).includes(normalizedQuery) ||
+        (phoneQuery && normalizedPhone.includes(phoneQuery));
+
       const matchesAp =
         !apFilter ||
         normalizeSearchText(customer.ap) === normalizeSearchText(apFilter);
@@ -64,7 +73,7 @@ export default function CustomerListPage({
         groupedStatuses[statusFilter]?.has(customer.status) ||
         customer.status === statusFilter;
 
-      return matchesAp && matchesStatus;
+      return matchesCustomer && matchesAp && matchesStatus;
     });
 
     result = [...result].sort((a, b) => {
@@ -88,7 +97,7 @@ export default function CustomerListPage({
     });
 
     return result;
-  }, [customers, apFilter, sortKey, statusFilter]);
+  }, [customers, customerQuery, apFilter, sortKey, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -102,6 +111,16 @@ export default function CustomerListPage({
   function changePage(nextPage) {
     setPage(nextPage);
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }
+
+  const hasSearchConditions =
+    Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilter !== "all";
+
+  function clearSearchConditions() {
+    setCustomerQuery("");
+    setApFilter("");
+    setStatusFilter("all");
+    setPage(1);
   }
 
   return (
@@ -124,7 +143,7 @@ export default function CustomerListPage({
           <button
             className="start-call-button"
             type="button"
-            onClick={() => visibleCustomers[0] && onOpenCustomer(visibleCustomers[0], visibleCustomers, (apFilter || statusFilter !== "all") ? "条件検索結果" : "リスト")}
+            onClick={() => visibleCustomers[0] && onOpenCustomer(visibleCustomers[0], visibleCustomers, hasSearchConditions ? "条件検索結果" : "リスト")}
             disabled={visibleCustomers.length === 0}
           >
             架電開始
@@ -132,7 +151,18 @@ export default function CustomerListPage({
         </div>
 
         <section className="customer-filter-panel">
-          <label className="customer-search-field" htmlFor="customer-list-ap-filter">
+          <label className="customer-search-field" htmlFor="customer-list-query">
+            顧客名または電話番号検索
+            <input
+              id="customer-list-query"
+              type="search"
+              placeholder="顧客名または電話番号を入力"
+              value={customerQuery}
+              onChange={(event) => updateFilter(setCustomerQuery, event.target.value)}
+            />
+          </label>
+
+          <label htmlFor="customer-list-ap-filter">
             AP
             <select
               id="customer-list-ap-filter"
@@ -182,6 +212,15 @@ export default function CustomerListPage({
               <option value="reminderAsc">リマインドが近い順</option>
             </select>
           </label>
+
+          <button
+            className="secondary-button customer-filter-clear"
+            type="button"
+            onClick={clearSearchConditions}
+            disabled={!hasSearchConditions}
+          >
+            条件クリア
+          </button>
         </section>
 
         <div className="customer-summary">
@@ -232,7 +271,7 @@ export default function CustomerListPage({
                       <button
                         className="customer-name-button"
                         type="button"
-                        onClick={() => !locked && onOpenCustomer(customer, visibleCustomers, (apFilter || statusFilter !== "all") ? "条件検索結果" : "リスト")}
+                        onClick={() => !locked && onOpenCustomer(customer, visibleCustomers, hasSearchConditions ? "条件検索結果" : "リスト")}
                         disabled={locked}
                       >
                         <strong>{customer.companyName}</strong>
