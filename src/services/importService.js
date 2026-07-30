@@ -98,11 +98,7 @@ export async function fetchImportLists() {
 export async function fetchImportProfiles() {
   const { data, error } = await supabase.from("profiles").select("id,display_name,email,is_active").order("display_name"); if (error) throw error; return (data || []).map((p) => ({ id: p.id, displayName: p.display_name || p.email, email: p.email, isActive: p.is_active !== false }));
 }
-export async function fetchImportHistory() {
-  if (!isSupabaseConfigured) return [];
-  const { data, error } = await supabase.from("import_batches").select("id,file_name,total_rows,inserted_rows,duplicate_rows,error_rows,created_at,lists(name)").order("created_at", { ascending: false }).limit(30); if (error) throw error; return data || [];
-}
-export async function importCustomers({ fileName, listMode, listId, newListName, rows, userId, userName }) {
+export async function importCustomers({ listMode, listId, newListName, rows, userName }) {
   if (!isSupabaseConfigured) throw new Error("Supabase接続設定がありません。");
   let targetListId = listId;
   if (listMode === "new") { const cleanName = newListName.trim(); if (!cleanName) throw new Error("新しいリスト名を入力してください。"); const { data, error } = await supabase.from("lists").insert({ name: cleanName }).select("id").single(); if (error) throw error; targetListId = data.id; }
@@ -182,17 +178,6 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
       postProcessWarnings.add(`リスト件数集計: ${countError.message}`);
     }
   }
-
-  const { error: batchError } = await supabase.from("import_batches").insert({
-    list_id: targetListId,
-    file_name: fileName,
-    total_rows: rows.length,
-    inserted_rows: insertedRows,
-    duplicate_rows: duplicateRows,
-    error_rows: errorRows,
-    imported_by: userId || null,
-  });
-  if (batchError) postProcessWarnings.add(`インポート履歴: ${batchError.message}`);
 
   return {
     targetListId,

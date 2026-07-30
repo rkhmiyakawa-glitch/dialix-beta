@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { DIALIX_STATUSES, IGNORE_AP_MAPPING, IGNORE_STATUS_MAPPING, fetchImportHistory, fetchImportLists, fetchImportProfiles, guessMapping, guessStatusMappings, importCustomers, parseCsv, prepareRows } from "../services/importService";
+import { DIALIX_STATUSES, IGNORE_AP_MAPPING, IGNORE_STATUS_MAPPING, fetchImportLists, fetchImportProfiles, guessMapping, guessStatusMappings, importCustomers, parseCsv, prepareRows } from "../services/importService";
 
 const fieldLabels = {
   companyName: "顧客名（必須）", phone: "電話番号（必須）", address: "住所", businessSubcategory: "詳細・事業内容",
@@ -15,8 +15,7 @@ export default function CsvImportPanel({ currentProfile }) {
   const [apMappings, setApMappings] = useState({});
   const [lists, setLists] = useState([]);
   const [profiles, setProfiles] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [listMode, setListMode] = useState("existing");
+  const [listMode, setListMode] = useState("new");
   const [listId, setListId] = useState("");
   const [newListName, setNewListName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -25,8 +24,8 @@ export default function CsvImportPanel({ currentProfile }) {
   const [error, setError] = useState("");
 
   async function reload() {
-    const [nextLists, nextProfiles, nextHistory] = await Promise.all([fetchImportLists(), fetchImportProfiles(), fetchImportHistory()]);
-    setLists(nextLists); setProfiles(nextProfiles); setHistory(nextHistory);
+    const [nextLists, nextProfiles] = await Promise.all([fetchImportLists(), fetchImportProfiles()]);
+    setLists(nextLists); setProfiles(nextProfiles);
     if (!listId && nextLists[0]) setListId(nextLists[0].id);
   }
   useEffect(() => { reload().catch((e) => setError(e.message)); }, []);
@@ -64,7 +63,7 @@ export default function CsvImportPanel({ currentProfile }) {
     if (!rows.length) return setError("CSVを選択してください。");
     setBusy(true); setError(""); setMessage(""); setImportErrorDetails([]);
     try {
-      const result = await importCustomers({ fileName, listMode, listId, newListName, rows, userId: currentProfile?.id, userName: currentProfile?.displayName });
+      const result = await importCustomers({ listMode, listId, newListName, rows, userName: currentProfile?.displayName });
       const warningText = result.postProcessWarnings?.length ? `（補助処理警告：${result.postProcessWarnings.join("／")}）` : "";
       setMessage(`取込完了：新規 ${result.insertedRows}件／履歴 ${result.importedHistoryRows}件／重複 ${result.duplicateRows}件／エラー ${result.errorRows}件${warningText}`);
       setImportErrorDetails(result.errorDetails || []);
@@ -80,7 +79,7 @@ export default function CsvImportPanel({ currentProfile }) {
       {importErrorDetails.length > 0 && <div className="admin-error"><strong>未取込の行</strong>{importErrorDetails.map((detail) => <div key={detail}>{detail}</div>)}</div>}
       <div className="csv-form">
         <label className="file-drop">CSVファイル<input type="file" accept=".csv,text/csv" onChange={onFileChange} /><span>{fileName || "ファイルを選択してください"}</span></label>
-        <div className="import-destination"><label><input type="radio" checked={listMode === "existing"} onChange={() => setListMode("existing")} />既存リストへ追加</label><label><input type="radio" checked={listMode === "new"} onChange={() => setListMode("new")} />新規リストを作成</label></div>
+        <div className="import-destination"><label><input type="radio" checked={listMode === "new"} onChange={() => setListMode("new")} />新規リストを作成</label><label><input type="radio" checked={listMode === "existing"} onChange={() => setListMode("existing")} />既存リストへ追加</label></div>
         {listMode === "existing" ? <select value={listId} onChange={(e) => setListId(e.target.value)}><option value="">選択してください</option>{lists.map((list) => <option key={list.id} value={list.id}>{list.name}（{list.customer_count || 0}件）</option>)}</select> : <input value={newListName} onChange={(e) => setNewListName(e.target.value)} placeholder="新しいリスト名" />}
       </div>
 
@@ -99,6 +98,5 @@ export default function CsvImportPanel({ currentProfile }) {
       </>}
     </section>
 
-    <section className="admin-panel csv-history"><h2>インポート履歴</h2>{history.length === 0 ? <div className="empty-state">履歴はありません。</div> : <div className="table-scroll"><table className="admin-table"><thead><tr><th>日時</th><th>ファイル</th><th>リスト</th><th>結果</th><th>実行者</th></tr></thead><tbody>{history.map((item) => <tr key={item.id}><td>{new Date(item.created_at).toLocaleString("ja-JP")}</td><td>{item.file_name}</td><td>{item.lists?.name || "―"}</td><td>新規 {item.inserted_rows}／重複 {item.duplicate_rows}／エラー {item.error_rows}</td><td>{item.imported_by_name || "―"}</td></tr>)}</tbody></table></div>}</section>
   </div>;
 }
