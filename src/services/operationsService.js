@@ -52,13 +52,6 @@ export async function fetchOperationalTasks(currentUser = {}) {
     .lte("reminder_at", now.toISOString())
     .order("reminder_at", { ascending: true })
     .limit(100);
-  const todayQuery = supabase.from("customers").select(baseColumns)
-    .not("reminder_at", "is", null)
-    .or(assigneeFilter)
-    .gte("reminder_at", startOfToday.toISOString())
-    .lte("reminder_at", endOfToday.toISOString())
-    .order("reminder_at", { ascending: true })
-    .limit(100);
   const allReminderQuery = supabase.from("customers").select(baseColumns)
     .not("reminder_at", "is", null)
     .or(assigneeFilter)
@@ -66,7 +59,7 @@ export async function fetchOperationalTasks(currentUser = {}) {
     .order("reminder_at", { ascending: true })
     .limit(300);
 
-  const [reminderResult, prospectResult, tossupResult, todayResult, allReminderResult] = await Promise.all([
+  const [reminderResult, prospectResult, tossupResult, allReminderResult] = await Promise.all([
     overdueQuery,
     supabase.from("customers").select(baseColumns)
       .in("status", ["非決裁見込み", "決裁見込み", "見込み", "見込み留守"])
@@ -74,19 +67,22 @@ export async function fetchOperationalTasks(currentUser = {}) {
       .order("last_called_at", { ascending: true, nullsFirst: true })
       .limit(100),
     supabase.from("customers").select(baseColumns).eq("status", "トスアップ").order("last_called_at", { ascending: false, nullsFirst: false }).limit(100),
-    todayQuery,
     allReminderQuery,
   ]);
 
-  const failed = [reminderResult, prospectResult, tossupResult, todayResult, allReminderResult].find((result) => result.error);
+  const failed = [reminderResult, prospectResult, tossupResult, allReminderResult].find((result) => result.error);
   if (failed?.error) throw failed.error;
 
+  const futureReminders = allReminderResult.data || [];
+  const dueToday = futureReminders
+    .filter((row) => row.reminder_at <= endOfToday.toISOString())
+    .slice(0, 100);
   return {
     reminders: (reminderResult.data || []).map(mapTask),
     prospects: (prospectResult.data || []).map(mapTask),
     tossups: (tossupResult.data || []).map(mapTask),
-    dueToday: (todayResult.data || []).map(mapTask),
-    allReminders: (allReminderResult.data || []).map(mapTask),
+    dueToday: dueToday.map(mapTask),
+    allReminders: futureReminders.map(mapTask),
   };
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createCustomerPresenceChannel } from "../services/presenceService";
 
 export default function useCustomerPresence({ listId, userId, userName }) {
@@ -33,15 +33,20 @@ export default function useCustomerPresence({ listId, userId, userName }) {
     return result;
   }, [rows]);
 
-  const getOtherUsers = (customerId) =>
-    (presenceByCustomer[customerId] || []).filter((row) => row.userId !== userId);
+  const getOtherUsers = useCallback(
+    (customerId) => (presenceByCustomer[customerId] || []).filter((row) => row.userId !== userId),
+    [presenceByCustomer, userId],
+  );
+  const trackCustomer = useCallback((id) => controllerRef.current?.trackCustomer(id), []);
+  const setCallState = useCallback((state) => controllerRef.current?.setCallState(state), []);
+  const clearCustomer = useCallback(() => controllerRef.current?.clearCustomer(), []);
 
-  return {
+  return useMemo(() => ({
     rows,
     presenceByCustomer,
     getOtherUsers,
-    trackCustomer: (id) => controllerRef.current?.trackCustomer(id),
-    setCallState: (state) => controllerRef.current?.setCallState(state),
-    clearCustomer: () => controllerRef.current?.clearCustomer(),
-  };
+    trackCustomer,
+    setCallState,
+    clearCustomer,
+  }), [rows, presenceByCustomer, getOtherUsers, trackCustomer, setCallState, clearCustomer]);
 }

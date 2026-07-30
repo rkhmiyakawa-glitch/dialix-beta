@@ -35,10 +35,24 @@ export async function fetchAuditLogs(limit = 200) {
 
 export function subscribeManagementChanges({ onKpiChange, onAuditChange }) {
   if (!isSupabaseConfigured) return () => {};
+  let kpiTimer;
+  let auditTimer;
+  const notifyKpi = () => {
+    window.clearTimeout(kpiTimer);
+    kpiTimer = window.setTimeout(() => onKpiChange?.(), 600);
+  };
+  const notifyAudit = () => {
+    window.clearTimeout(auditTimer);
+    auditTimer = window.setTimeout(() => onAuditChange?.(), 600);
+  };
   const channel = supabase
     .channel("dialix-management-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, () => onKpiChange?.())
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "audit_logs" }, () => onAuditChange?.())
+    .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, notifyKpi)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "audit_logs" }, notifyAudit)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => {
+    window.clearTimeout(kpiTimer);
+    window.clearTimeout(auditTimer);
+    supabase.removeChannel(channel);
+  };
 }

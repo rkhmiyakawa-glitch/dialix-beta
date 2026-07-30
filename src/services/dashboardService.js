@@ -91,10 +91,15 @@ export async function fetchDashboardData(period = "today") {
 
 export function subscribeDashboardChanges(onChange) {
   if (!isSupabaseConfigured) return () => {};
+  let timer;
+  const notify = () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => onChange?.(), 600);
+  };
   const channel = supabase.channel("dialix-dashboard-realtime")
-    .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, () => onChange?.())
-    .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => onChange?.())
-    .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => onChange?.())
+    .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, notify)
+    .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, notify)
+    .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, notify)
     .subscribe();
-  return () => { supabase.removeChannel(channel); };
+  return () => { window.clearTimeout(timer); supabase.removeChannel(channel); };
 }

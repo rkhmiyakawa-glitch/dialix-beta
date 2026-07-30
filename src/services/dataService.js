@@ -62,7 +62,13 @@ function mapCustomer(row, profilesById = new Map(), profilesByEmail = new Map())
   };
 }
 
-export async function fetchLists() {
+let listCache = { data: null, expiresAt: 0, pending: null };
+
+export function invalidateListCache() {
+  listCache = { data: null, expiresAt: 0, pending: null };
+}
+
+async function loadLists() {
   if (!isSupabaseConfigured) return sampleLists;
 
   const { data, error } = await withRetry(() => supabase
@@ -100,6 +106,24 @@ export async function fetchLists() {
     const counts = countsByList.get(row.id) || {};
     return mapList({ ...row, customer_count: counts.totalCount ?? row.customer_count }, counts);
   });
+}
+
+export async function fetchLists({ force = false } = {}) {
+  if (!isSupabaseConfigured) return sampleLists;
+  const now = Date.now();
+  if (!force && listCache.data && listCache.expiresAt > now) return listCache.data;
+  if (!force && listCache.pending) return listCache.pending;
+  const pending = loadLists()
+    .then((data) => {
+      listCache = { data, expiresAt: Date.now() + 15 * 1000, pending: null };
+      return data;
+    })
+    .catch((error) => {
+      listCache.pending = null;
+      throw error;
+    });
+  listCache.pending = pending;
+  return pending;
 }
 
 export async function fetchCustomers(listId) {
@@ -252,6 +276,7 @@ export async function saveCallResult({
   if (updateResult.error) throw updateResult.error;
   if (historyResult.error) throw historyResult.error;
 
+  invalidateListCache();
   return {
     savedAt: calledAt,
     demoMode: false,

@@ -98,9 +98,16 @@ export default function App() {
 
   useEffect(() => {
     if (!session) return undefined;
-    touchUserActivity().catch(() => {});
-    const timer = window.setInterval(() => touchUserActivity().catch(() => {}), 5 * 60 * 1000);
-    return () => window.clearInterval(timer);
+    const touchIfVisible = () => {
+      if (document.visibilityState === "visible") touchUserActivity().catch(() => {});
+    };
+    touchIfVisible();
+    const timer = window.setInterval(touchIfVisible, 5 * 60 * 1000);
+    document.addEventListener("visibilitychange", touchIfVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", touchIfVisible);
+    };
   }, [session]);
 
   useEffect(() => {

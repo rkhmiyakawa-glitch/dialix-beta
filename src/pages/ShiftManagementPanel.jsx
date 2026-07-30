@@ -26,9 +26,11 @@ export default function ShiftManagementPanel({ currentProfile }) {
   const today = dateNow();
   const selectedShifts = useMemo(() => shifts.filter((s) => s.user_id === selectedUserId), [shifts, selectedUserId]);
   const userMap = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
+  const shiftByUserAndDate = useMemo(() => new Map(shifts.map((item) => [`${item.user_id}:${item.shift_date}`, item])), [shifts]);
+  const attendanceByUserAndDate = useMemo(() => new Map(attendance.map((item) => [`${item.user_id}:${item.work_date}`, item])), [attendance]);
   const todayRows = useMemo(() => users.map((u) => {
-    const shift = shifts.find((s) => s.user_id === u.id && s.shift_date === today);
-    const record = attendance.find((a) => a.user_id === u.id && a.work_date === today);
+    const shift = shiftByUserAndDate.get(`${u.id}:${today}`);
+    const record = attendanceByUserAndDate.get(`${u.id}:${today}`);
     let status = "no-shift";
     if (shift?.is_off) status = "off";
     else if (record?.clock_out) status = "done";
@@ -36,7 +38,7 @@ export default function ShiftManagementPanel({ currentProfile }) {
     else if (shift?.start_time && now > new Date(`${today}T${shift.start_time}+09:00`).getTime()) status = "late";
     else if (shift) status = "before";
     return { user:u, shift, record, status };
-  }), [users, shifts, attendance, today, now]);
+  }), [users, shiftByUserAndDate, attendanceByUserAndDate, today, now]);
   const filteredRows = todayRows.filter((r) => filter === "all" || r.status === filter);
   const lateRows = todayRows.filter((r) => r.status === "late");
   const monthDates = useMemo(() => {
@@ -50,9 +52,9 @@ export default function ShiftManagementPanel({ currentProfile }) {
   }, [month]);
   const selectedOverviewDate = overviewDate.startsWith(`${month}-`) ? overviewDate : `${month}-01`;
   const overviewRows = useMemo(() => users.map((user) => {
-    const shift = shifts.find((item) => item.user_id === user.id && item.shift_date === selectedOverviewDate);
+    const shift = shiftByUserAndDate.get(`${user.id}:${selectedOverviewDate}`);
     if (!shift) return null;
-    const record = attendance.find((item) => item.user_id === user.id && item.work_date === selectedOverviewDate);
+    const record = attendanceByUserAndDate.get(`${user.id}:${selectedOverviewDate}`);
     let status = "before";
     if (shift.is_off) status = "off";
     else if (record?.clock_out) status = "done";
@@ -62,7 +64,7 @@ export default function ShiftManagementPanel({ currentProfile }) {
   }).filter(Boolean).sort((a, b) => {
     if (a.shift.is_off !== b.shift.is_off) return a.shift.is_off ? 1 : -1;
     return String(a.shift.start_time || "99:99").localeCompare(String(b.shift.start_time || "99:99"));
-  }), [users, shifts, attendance, selectedOverviewDate, now]);
+  }), [users, shiftByUserAndDate, attendanceByUserAndDate, selectedOverviewDate, now]);
   const overviewCounts = useMemo(() => ({
     scheduled: overviewRows.filter((row) => !row.shift.is_off).length,
     working: overviewRows.filter((row) => row.status === "working").length,
@@ -83,7 +85,22 @@ export default function ShiftManagementPanel({ currentProfile }) {
   }
   useEffect(() => { reload(); }, [month, requestFilter]);
   useEffect(() => { setOverviewDate(month === monthNow() ? dateNow() : `${month}-01`); }, [month]);
-  useEffect(() => { const timer = setInterval(() => { setNow(Date.now()); reload(); }, 60000); return () => clearInterval(timer); }, [month]);
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      setNow(Date.now());
+      reload();
+    };
+    const timer = window.setInterval(refresh, 60000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [month, requestFilter]);
 
   async function bulkSave(dates, settings) {
     if (!canManage || !selectedUserId) return;

@@ -55,7 +55,10 @@ export function parseCsv(text) {
   const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter((line) => line.trim() !== "");
   if (lines.length < 2) throw new Error("ヘッダー行とデータ行を含むCSVを選択してください。");
   const headers = parseCsvLine(lines[0]).map(normalizeHeader);
-  const rows = lines.slice(1).map((line, index) => ({ rowNumber: index + 2, raw: Object.fromEntries(headers.map((header, i) => [header, parseCsvLine(line)[i] ?? ""])) }));
+  const rows = lines.slice(1).map((line, index) => {
+    const cells = parseCsvLine(line);
+    return { rowNumber: index + 2, raw: Object.fromEntries(headers.map((header, i) => [header, cells[i] ?? ""])) };
+  });
   return { headers, rows };
 }
 export function guessMapping(headers) {

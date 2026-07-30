@@ -36,8 +36,24 @@ function SidebarAttendance({ currentProfile }) {
 
   useEffect(() => { reload(); }, [reload]);
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(timer);
+    let interval;
+    const update = () => setNow(new Date());
+    const startMinuteUpdates = () => {
+      update();
+      window.clearInterval(interval);
+      interval = window.setInterval(update, 60 * 1000);
+    };
+    const timeout = window.setTimeout(startMinuteUpdates, 60 * 1000 - Date.now() % (60 * 1000));
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") startMinuteUpdates();
+      else window.clearInterval(interval);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.clearTimeout(timeout);
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, []);
   useEffect(() => {
     const handleRefresh = () => reload();
