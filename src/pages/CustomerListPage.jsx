@@ -42,7 +42,6 @@ export default function CustomerListPage({
 }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apFilter, setApFilter] = useState("");
-  const [sortKey, setSortKey] = useState("import");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -54,7 +53,7 @@ export default function CustomerListPage({
   );
 
   const visibleCustomers = useMemo(() => {
-    let result = customers.filter((customer) => {
+    return customers.filter((customer) => {
       const normalizedQuery = normalizeSearchText(customerQuery);
       const phoneQuery = String(customerQuery || "").replace(/\D/g, "");
       const normalizedPhone = String(customer.phone || "").replace(/\D/g, "");
@@ -75,29 +74,7 @@ export default function CustomerListPage({
 
       return matchesCustomer && matchesAp && matchesStatus;
     });
-
-    result = [...result].sort((a, b) => {
-      if (sortKey === "companyAsc") {
-        return a.companyName.localeCompare(b.companyName, "ja");
-      }
-
-      if (sortKey === "lastCallAsc") {
-        return (a.lastCallAt || "9999").localeCompare(b.lastCallAt || "9999");
-      }
-
-      if (sortKey === "lastCallDesc") {
-        return (b.lastCallAt || "").localeCompare(a.lastCallAt || "");
-      }
-
-      if (sortKey === "reminderAsc") {
-        return (a.reminderAt || "9999").localeCompare(b.reminderAt || "9999");
-      }
-
-      return 0;
-    });
-
-    return result;
-  }, [customers, customerQuery, apFilter, sortKey, statusFilter]);
+  }, [customers, customerQuery, apFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -196,20 +173,6 @@ export default function CustomerListPage({
               <option value="前確依頼">前確依頼</option>
               <option value="前確NG">前確NG</option>
               <option value="前確OK">前確OK</option>
-            </select>
-          </label>
-
-          <label>
-            並び替え
-            <select
-              value={sortKey}
-              onChange={(event) => updateFilter(setSortKey, event.target.value)}
-            >
-              <option value="import">取り込み順</option>
-              <option value="companyAsc">顧客名 昇順</option>
-              <option value="lastCallAsc">最終架電 古い順</option>
-              <option value="lastCallDesc">最終架電 新しい順</option>
-              <option value="reminderAsc">リマインドが近い順</option>
             </select>
           </label>
 
