@@ -18,6 +18,15 @@ const statusTone = {
   トスアップ: "orange",
 };
 
+const groupedStatuses = {
+  NG: new Set(["NG", "非決裁NG", "決裁NG"]),
+  見込み: new Set(["見込み", "非決裁見込み", "決裁見込み"]),
+};
+
+function normalizeSearchText(value) {
+  return String(value || "").normalize("NFKC").toLocaleLowerCase("ja").replace(/\s+/g, "");
+}
+
 export default function CustomerListPage({
   selectedList,
   customers,
@@ -39,17 +48,19 @@ export default function CustomerListPage({
   const [pageSize, setPageSize] = useState(50);
 
   const visibleCustomers = useMemo(() => {
-    const keyword = query.trim().toLowerCase();
+    const keyword = normalizeSearchText(query);
+    const phoneKeyword = query.replace(/\D/g, "");
 
     let result = customers.filter((customer) => {
       const matchesQuery =
         !keyword ||
-        customer.companyName.toLowerCase().includes(keyword) ||
-        customer.phone.replace(/\D/g, "").includes(keyword.replace(/\D/g, ""));
+        normalizeSearchText(customer.companyName).includes(keyword) ||
+        (phoneKeyword.length > 0 && String(customer.phone || "").replace(/\D/g, "").includes(phoneKeyword));
 
       const matchesStatus =
         statusFilter === "all" ||
         (statusFilter === "uncontacted" && !customer.status) ||
+        groupedStatuses[statusFilter]?.has(customer.status) ||
         customer.status === statusFilter;
 
       return matchesQuery && matchesStatus;
@@ -150,16 +161,17 @@ export default function CustomerListPage({
               <option value="all">すべて</option>
               <option value="uncontacted">未架電</option>
               <option value="留守">留守</option>
-              <option value="非決裁NG">非決裁NG</option>
-              <option value="決裁NG">決裁NG</option>
-              <option value="再コール">再コール</option>
+              <option value="NG">NG</option>
               <option value="対象外">対象外</option>
               <option value="現アナ">現アナ</option>
+              <option value="再コール">再コール</option>
               <option value="再コール留守">再コール留守</option>
-              <option value="非決裁見込み">非決裁見込み</option>
-              <option value="決裁見込み">決裁見込み</option>
+              <option value="見込み">見込み</option>
               <option value="見込み留守">見込み留守</option>
               <option value="トスアップ">トスアップ</option>
+              <option value="前確依頼">前確依頼</option>
+              <option value="前確NG">前確NG</option>
+              <option value="前確OK">前確OK</option>
             </select>
           </label>
 

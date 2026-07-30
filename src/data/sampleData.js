@@ -258,8 +258,8 @@ export const statuses = [
   { name: "見込み留守", tone: "green" },
   { name: "トスアップ", tone: "orange" },
   { name: "前確依頼", tone: "blue" },
-  { name: "前確OK", tone: "green" },
   { name: "前確NG", tone: "red" },
+  { name: "前確OK", tone: "green" },
 ];
 
 export const todayKpi = [
