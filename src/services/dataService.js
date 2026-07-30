@@ -81,26 +81,16 @@ async function loadLists() {
   const rows = data || [];
   if (!rows.length) return [];
 
-  // customer_count がRLSや旧DB関数の影響で更新されない環境でも、
-  // リスト一覧には customers の実件数を表示する。Supabaseの取得上限に
-  // 影響されないよう、各リストを count: exact / head で集計する。
-  const countRows = await Promise.all(rows.map(async (row) => {
-    const [totalResult, uncontactedResult, absenceResult, recallResult] = await Promise.all([
-      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id)),
-      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).or("status.is.null,status.eq.未架電,status.eq.")),
-      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).eq("status", "留守")),
-      withRetry(() => supabase.from("customers").select("id", { count: "exact", head: true }).eq("list_id", row.id).eq("status", "再コール")),
-    ]);
-    const firstError = totalResult.error || uncontactedResult.error || absenceResult.error || recallResult.error;
-    if (firstError) throw firstError;
-    return [row.id, {
-      totalCount: totalResult.count ?? Number(row.customer_count || 0),
-      uncontactedCount: uncontactedResult.count ?? 0,
-      absenceCount: absenceResult.count ?? 0,
-      recallCount: recallResult.count ?? 0,
-    }];
-  }));
-  const countsByList = new Map(countRows);
+  // 全リストの4種類の件数をDB内で一度に集計する。
+  // 旧実装の「リスト数 × 4リクエスト」を常に2リクエストへ固定する。
+  const countResult = await withRetry(() => supabase.rpc("get_list_status_counts"));
+  if (countResult.error) throw countResult.error;
+  const countsByList = new Map((countResult.data || []).map((item) => [item.list_id, {
+    totalCount: Number(item.total_count || 0),
+    uncontactedCount: Number(item.uncontacted_count || 0),
+    absenceCount: Number(item.absence_count || 0),
+    recallCount: Number(item.recall_count || 0),
+  }]));
 
   return rows.map((row) => {
     const counts = countsByList.get(row.id) || {};
@@ -115,7 +105,7 @@ export async function fetchLists({ force = false } = {}) {
   if (!force && listCache.pending) return listCache.pending;
   const pending = loadLists()
     .then((data) => {
-      listCache = { data, expiresAt: Date.now() + 15 * 1000, pending: null };
+      listCache = { data, expiresAt: Date.now() + 60 * 1000, pending: null };
       return data;
     })
     .catch((error) => {

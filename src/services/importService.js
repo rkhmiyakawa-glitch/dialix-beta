@@ -108,7 +108,12 @@ export async function importCustomers({ fileName, listMode, listId, newListName,
   if (!targetListId) throw new Error("取込先リストを選択してください。");
   const validRows = rows.filter((row) => row.errors.length === 0); const errorRows = rows.length - validRows.length;
   const phones = [...new Set(validRows.map((row) => row.phone))]; const existingPhones = new Set();
-  for (let i = 0; i < phones.length; i += 500) { const { data, error } = await supabase.from("customers").select("phone").in("phone", phones.slice(i, i + 500)); if (error) throw error; (data || []).forEach((r) => existingPhones.add(r.phone)); }
+  const phoneChunks = [];
+  for (let i = 0; i < phones.length; i += 500) phoneChunks.push(phones.slice(i, i + 500));
+  const duplicateResults = await Promise.all(phoneChunks.map((chunk) => supabase.from("customers").select("phone").in("phone", chunk)));
+  const duplicateError = duplicateResults.find((result) => result.error)?.error;
+  if (duplicateError) throw duplicateError;
+  duplicateResults.forEach((result) => (result.data || []).forEach((row) => existingPhones.add(row.phone)));
   const insertable = validRows.filter((row) => !existingPhones.has(row.phone)); const duplicateRows = validRows.length - insertable.length;
   let insertedRows = 0; let importedHistoryRows = 0;
   const postProcessWarnings = [];

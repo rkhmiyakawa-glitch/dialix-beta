@@ -96,7 +96,8 @@ export function subscribeDashboardChanges(onChange) {
   let timer;
   const notify = () => {
     window.clearTimeout(timer);
-    timer = window.setTimeout(() => onChange?.(), 600);
+    if (document.visibilityState !== "visible") return;
+    timer = window.setTimeout(() => onChange?.(), 1500);
   };
   const channel = supabase.channel("dialix-dashboard-realtime")
     .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, notify)

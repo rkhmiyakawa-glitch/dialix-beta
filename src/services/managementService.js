@@ -38,12 +38,14 @@ export function subscribeManagementChanges({ onKpiChange, onAuditChange }) {
   let kpiTimer;
   let auditTimer;
   const notifyKpi = () => {
+    if (document.visibilityState !== "visible") return;
     window.clearTimeout(kpiTimer);
-    kpiTimer = window.setTimeout(() => onKpiChange?.(), 600);
+    kpiTimer = window.setTimeout(() => onKpiChange?.(), 1500);
   };
   const notifyAudit = () => {
+    if (document.visibilityState !== "visible") return;
     window.clearTimeout(auditTimer);
-    auditTimer = window.setTimeout(() => onAuditChange?.(), 600);
+    auditTimer = window.setTimeout(() => onAuditChange?.(), 1500);
   };
   const channel = supabase
     .channel("dialix-management-realtime")

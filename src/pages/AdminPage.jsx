@@ -42,7 +42,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
     const refreshSoon = () => {
       if (document.visibilityState !== "visible") return;
       window.clearTimeout(timer);
-      timer = window.setTimeout(() => reload({ showLoading: false }), 500);
+      timer = window.setTimeout(() => reload({ showLoading: false }), 1200);
     };
     const handleLocalUpdate = () => refreshSoon();
     window.addEventListener("dialix:profile-updated", handleLocalUpdate);
