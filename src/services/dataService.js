@@ -289,13 +289,15 @@ const VALID_STATUSES = ["NG", "フロントNG", "担当NG", "非決裁NG", "決�
 const DECISION_STATUSES = ["決裁NG", "決裁見込み"];
 
 function summarizePerformance(rows = []) {
-  return {
-    calls: rows.length,
-    valid: rows.filter((row) => VALID_STATUSES.includes(row.status)).length,
-    decisions: rows.filter((row) => DECISION_STATUSES.includes(row.status)).length,
-    prospects: rows.filter((row) => String(row.status || "").includes("見込み")).length,
-    tossups: rows.filter((row) => row.status === "トスアップ").length,
-  };
+  const result = { calls: rows.length, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
+  for (const row of rows) {
+    const status = row.status;
+    if (VALID_STATUSES.includes(status)) result.valid += 1;
+    if (DECISION_STATUSES.includes(status)) result.decisions += 1;
+    if (String(status || "").includes("見込み")) result.prospects += 1;
+    if (status === "トスアップ") result.tossups += 1;
+  }
+  return result;
 }
 
 export async function fetchMyPerformance(userId) {
@@ -345,27 +347,12 @@ export async function fetchTodayKpi(userId) {
   if (error) throw error;
 
   const rows = data || [];
+  const summary = summarizePerformance(rows);
   return [
-    { label: "コール", value: rows.length, unit: "件" },
-    {
-      label: "有効",
-      value: rows.filter((row) => ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(row.status)).length,
-      unit: "件",
-    },
-    {
-      label: "決裁",
-      value: rows.filter((row) => ["決裁NG", "決裁見込み"].includes(row.status)).length,
-      unit: "件",
-    },
-    {
-      label: "見込み",
-      value: rows.filter((row) => String(row.status || "").includes("見込み")).length,
-      unit: "件",
-    },
-    {
-      label: "トスアップ",
-      value: rows.filter((row) => row.status === "トスアップ").length,
-      unit: "件",
-    },
+    { label: "コール", value: summary.calls, unit: "件" },
+    { label: "有効", value: summary.valid, unit: "件" },
+    { label: "決裁", value: summary.decisions, unit: "件" },
+    { label: "見込み", value: summary.prospects, unit: "件" },
+    { label: "トスアップ", value: summary.tossups, unit: "件" },
   ];
 }

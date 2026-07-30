@@ -27,19 +27,22 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   const ownerExists = useMemo(() => users.some((u) => String(u.role).toLowerCase() === "owner"), [users]);
   const activeAdminCount = useMemo(() => users.filter((u) => u.role === "admin" && u.isActive).length, [users]);
 
-  async function reload() {
-    setLoading(true); setError("");
+  async function reload({ showLoading = true } = {}) {
+    if (showLoading) setLoading(true);
+    setError("");
     try { setUsers(await fetchProfiles()); }
     catch (e) { setError(e.message || "ユーザー一覧を取得できませんでした。"); }
-    finally { setLoading(false); }
+    finally { if (showLoading) setLoading(false); }
   }
 
-  useEffect(() => { reload(); }, []);
   useEffect(() => {
+    if (activeTab !== "users") return undefined;
+    reload();
     let timer = null;
     const refreshSoon = () => {
+      if (document.visibilityState !== "visible") return;
       window.clearTimeout(timer);
-      timer = window.setTimeout(() => reload(), 150);
+      timer = window.setTimeout(() => reload({ showLoading: false }), 500);
     };
     const handleLocalUpdate = () => refreshSoon();
     window.addEventListener("dialix:profile-updated", handleLocalUpdate);
@@ -56,7 +59,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
       window.removeEventListener("dialix:profile-updated", handleLocalUpdate);
       if (channel) supabase.removeChannel(channel);
     };
-  }, []);
+  }, [activeTab]);
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); }, [activeTab]);
 
   function canOperateTarget(user) {
@@ -133,10 +136,15 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
     const previousUsers = users;
     const reordered = [...users];
     [reordered[index], reordered[nextIndex]] = [reordered[nextIndex], reordered[index]];
+    reordered[index] = { ...reordered[index], sortOrder: index };
+    reordered[nextIndex] = { ...reordered[nextIndex], sortOrder: nextIndex };
     setUsers(reordered);
     setSaving(true); setError("");
     try {
-      await reorderManagedUsers(reordered.map((user) => user.id));
+      await reorderManagedUsers([
+        { userId: reordered[index].id, sortOrder: index },
+        { userId: reordered[nextIndex].id, sortOrder: nextIndex },
+      ]);
     } catch (e) {
       setUsers(previousUsers);
       setError(e.message || "ユーザーの順番を保存できませんでした。");
@@ -163,10 +171,10 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
         {!ownerExists && currentRole === "admin" && <div className="owner-claim-box owner-claim-box-compact"><button className="primary-button" type="button" onClick={claimOwner} disabled={saving}>{saving ? "設定中..." : "自分をオーナーに設定"}</button></div>}
         <div className="admin-panel-head"><div><h2>ユーザー一覧</h2></div><button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={!canManageUsers}>＋ ユーザー追加</button></div>
         {error && <div className="admin-error">{error}</div>}
-        {loading ? <div className="empty-state">読み込み中...</div> : <div className="table-scroll"><table className="admin-table"><thead><tr><th>順番</th><th>名前</th><th>メール</th><th>権限</th><th>状態</th><th>最終稼働</th><th>操作</th></tr></thead><tbody>{users.map((user, index) => {
+        {loading ? <div className="empty-state">読み込み中...</div> : <div className="table-scroll"><table className="admin-table"><thead><tr><th>名前</th><th>メール</th><th>権限</th><th>状態</th><th>最終稼働</th><th>操作</th><th>並び替え</th></tr></thead><tbody>{users.map((user, index) => {
           const protectedOwner = user.role === "owner";
           const canOperate = canOperateTarget(user);
-          return <tr key={user.id}><td><div className="user-order-controls"><button type="button" onClick={() => moveUser(index, -1)} disabled={!canManageUsers || saving || index === 0} aria-label={`${user.displayName}を上へ`}>↑</button><button type="button" onClick={() => moveUser(index, 1)} disabled={!canManageUsers || saving || index === users.length - 1} aria-label={`${user.displayName}を下へ`}>↓</button></div></td><td><strong>{user.displayName}</strong>{user.id === currentProfile?.id && <span className="self-badge">自分</span>}</td><td>{user.email || "―"}</td><td><span className={`role-badge ${user.role}`}>{roleLabels[user.role] || user.role}</span></td><td><span className={`state-badge ${user.isActive ? "active" : "stopped"}`}>{user.isActive ? "有効" : "停止"}</span></td><td>{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleString("ja-JP") : "未記録"}</td><td>{protectedOwner ? null : <div className="user-action-group"><button className="table-action" type="button" onClick={() => beginEdit(user)} disabled={!canOperate}>{canOperate ? "編集" : "閲覧のみ"}</button>{canOperate && <><button className="table-action" type="button" onClick={() => resetPassword(user)}>PW変更</button><button className="table-action danger" type="button" onClick={() => removeUser(user)} disabled={user.id === currentProfile?.id}>削除</button></>}</div>}</td></tr>;
+          return <tr key={user.id}><td><strong>{user.displayName}</strong>{user.id === currentProfile?.id && <span className="self-badge">自分</span>}</td><td>{user.email || "―"}</td><td><span className={`role-badge ${user.role}`}>{roleLabels[user.role] || user.role}</span></td><td><span className={`state-badge ${user.isActive ? "active" : "stopped"}`}>{user.isActive ? "有効" : "停止"}</span></td><td>{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleString("ja-JP") : "未記録"}</td><td>{protectedOwner ? null : <div className="user-action-group"><button className="table-action" type="button" onClick={() => beginEdit(user)} disabled={!canOperate}>{canOperate ? "編集" : "閲覧のみ"}</button>{canOperate && <><button className="table-action" type="button" onClick={() => resetPassword(user)}>PW変更</button><button className="table-action danger" type="button" onClick={() => removeUser(user)} disabled={user.id === currentProfile?.id}>削除</button></>}</div>}</td><td><div className="user-order-controls"><button type="button" onClick={() => moveUser(index, -1)} disabled={!canManageUsers || saving || index === 0} aria-label={`${user.displayName}を上へ`}>↑</button><button type="button" onClick={() => moveUser(index, 1)} disabled={!canManageUsers || saving || index === users.length - 1} aria-label={`${user.displayName}を下へ`}>↓</button></div></td></tr>;
         })}</tbody></table></div>}
       </section>}
     </section>

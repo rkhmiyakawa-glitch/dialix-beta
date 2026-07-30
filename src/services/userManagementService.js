@@ -34,6 +34,6 @@ export function claimOwnerRole() {
   return invokeAdminUsers({ action: "claim_owner" });
 }
 
-export function reorderManagedUsers(userIds) {
-  return invokeAdminUsers({ action: "reorder", userIds });
+export function reorderManagedUsers(updates) {
+  return invokeAdminUsers({ action: "reorder", updates });
 }

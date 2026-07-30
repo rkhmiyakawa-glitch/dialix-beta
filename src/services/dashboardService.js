@@ -44,14 +44,18 @@ export async function fetchDashboardData(period = "today") {
   const histories = historyResult.data || [];
   const profiles = profilesResult.data || [];
   const byUser = new Map(profiles.map((p) => [p.id, { userId: p.id, displayName: p.display_name || "名称未設定", callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 }]));
+  let validCount = 0;
+  let decisionCount = 0;
+  let prospectCount = 0;
+  let tossupCount = 0;
   histories.forEach((h) => {
     const key = h.user_id || `name:${h.operator_name}`;
     if (!byUser.has(key)) byUser.set(key, { userId: key, displayName: h.operator_name || "不明", callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 });
     const row = byUser.get(key); row.callCount += 1;
-    if (["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)) row.validCount += 1;
-    if (["決裁NG", "決裁見込み"].includes(h.status)) row.decisionCount += 1;
-    if (String(h.status || "").includes("見込み")) row.prospectCount += 1;
-    if (h.status === "トスアップ") row.tossupCount += 1;
+    if (["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)) { row.validCount += 1; validCount += 1; }
+    if (["決裁NG", "決裁見込み"].includes(h.status)) { row.decisionCount += 1; decisionCount += 1; }
+    if (String(h.status || "").includes("見込み")) { row.prospectCount += 1; prospectCount += 1; }
+    if (h.status === "トスアップ") { row.tossupCount += 1; tossupCount += 1; }
   });
   const operators = [...byUser.values()];
   const sortRanking = (metricKey) => operators
@@ -60,8 +64,6 @@ export async function fetchDashboardData(period = "today") {
   const callRanking = sortRanking("callCount");
   const prospectRanking = sortRanking("prospectCount");
   const tossupRanking = sortRanking("tossupCount");
-  const validCount = histories.filter((h) => ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)).length;
-  const decisionCount = histories.filter((h) => ["決裁NG", "決裁見込み"].includes(h.status)).length;
   const mapReminder = (r) => ({ id: r.id, listId: r.list_id, companyName: r.company_name, apName: r.ap_name || "未設定", status: r.status, reminderAt: r.reminder_at, listName: r.lists?.name || "リスト" });
   const overdue = (overdueResult.data || []).map(mapReminder);
 
@@ -80,8 +82,8 @@ export async function fetchDashboardData(period = "today") {
       validRate: histories.length ? Number((validCount / histories.length * 100).toFixed(1)) : 0,
       decisionCount,
       decisionRate: validCount ? Number((decisionCount / validCount * 100).toFixed(1)) : 0,
-      prospectCount: histories.filter((h) => String(h.status || "").includes("見込み")).length,
-      tossupCount: histories.filter((h) => h.status === "トスアップ").length,
+      prospectCount,
+      tossupCount,
       activeOperatorCount: callRanking.length,
       totalOperatorCount: profiles.length,
       overdueCount: overdue.length,

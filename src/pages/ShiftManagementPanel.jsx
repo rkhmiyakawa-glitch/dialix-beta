@@ -86,14 +86,16 @@ export default function ShiftManagementPanel({ currentProfile }) {
   useEffect(() => { reload(); }, [month, requestFilter]);
   useEffect(() => { setOverviewDate(month === monthNow() ? dateNow() : `${month}-01`); }, [month]);
   useEffect(() => {
-    const refresh = () => {
+    const updateClock = () => {
       if (document.visibilityState !== "visible") return;
       setNow(Date.now());
-      reload();
     };
-    const timer = window.setInterval(refresh, 60000);
+    const timer = window.setInterval(updateClock, 60000);
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") refresh();
+      if (document.visibilityState === "visible") {
+        setNow(Date.now());
+        reload();
+      }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {

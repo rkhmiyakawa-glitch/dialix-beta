@@ -137,20 +137,33 @@ Deno.serve(async (req) => {
     }
 
     if (action === "reorder") {
-      const userIds = Array.isArray(body.userIds)
-        ? [...new Set(body.userIds.map((id) => String(id).trim()).filter(Boolean))]
+      const updates = Array.isArray(body.updates)
+        ? body.updates
+            .map((item) => ({
+              userId: String(item?.userId ?? "").trim(),
+              sortOrder: Number(item?.sortOrder),
+            }))
+            .filter((item) => item.userId && Number.isInteger(item.sortOrder) && item.sortOrder >= 0)
         : [];
-      const { data: existingProfiles, error: existingError } = await admin.from("profiles").select("id");
+      if (updates.length !== 2 || new Set(updates.map((item) => item.userId)).size !== 2) {
+        return json({ ok: false, error: "入れ替えるユーザー情報が正しくありません。" }, 400);
+      }
+      const { data: existingProfiles, error: existingError } = await admin
+        .from("profiles")
+        .select("id")
+        .in("id", updates.map((item) => item.userId));
       if (existingError) throw existingError;
-      const existingIds = new Set((existingProfiles ?? []).map((profile) => profile.id));
-      if (userIds.length !== existingIds.size || userIds.some((id) => !existingIds.has(id))) {
+      if ((existingProfiles ?? []).length !== updates.length) {
         return json({ ok: false, error: "ユーザー一覧が更新されています。画面を再読み込みしてから、もう一度お試しください。" }, 409);
       }
-      const orderedProfiles = userIds.map((id, index) => ({ id, sort_order: index }));
-      const { error: reorderError } = await admin
-        .from("profiles")
-        .upsert(orderedProfiles, { onConflict: "id" });
-      if (reorderError) throw reorderError;
+      // 矢印1回につき、実際に入れ替わる2人だけを更新する。
+      for (const update of updates) {
+        const { error: reorderError } = await admin
+          .from("profiles")
+          .update({ sort_order: update.sortOrder })
+          .eq("id", update.userId);
+        if (reorderError) throw reorderError;
+      }
       return json({ ok: true });
     }
 
