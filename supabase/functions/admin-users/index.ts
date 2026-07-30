@@ -10,13 +10,14 @@ type Role = "owner" | "admin" | "sv" | "operator";
 type AssignableRole = Exclude<Role, "owner">;
 
 type RequestBody = {
-  action?: "claim_owner" | "create" | "update" | "reset_password" | "delete";
+  action?: "claim_owner" | "create" | "update" | "reset_password" | "delete" | "reorder";
   userId?: string;
   displayName?: string;
   email?: string;
   password?: string;
   role?: Role;
   isActive?: boolean;
+  userIds?: string[];
 };
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -116,8 +117,16 @@ Deno.serve(async (req) => {
       const createdUserId = data.user?.id ?? "";
       if (!createdUserId) throw new Error("認証ユーザーIDを取得できませんでした。");
 
+      const { data: lastProfile } = await admin
+        .from("profiles")
+        .select("sort_order")
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const nextSortOrder = Number(lastProfile?.sort_order ?? -1) + 1;
+
       const { error: upsertError } = await admin.from("profiles").upsert(
-        { id: createdUserId, display_name: displayName, email, role, is_active: isActive },
+        { id: createdUserId, display_name: displayName, email, role, is_active: isActive, sort_order: nextSortOrder },
         { onConflict: "id" },
       );
       if (upsertError) {
@@ -125,6 +134,24 @@ Deno.serve(async (req) => {
         throw upsertError;
       }
       return json({ ok: true, userId: createdUserId });
+    }
+
+    if (action === "reorder") {
+      const userIds = Array.isArray(body.userIds)
+        ? [...new Set(body.userIds.map((id) => String(id).trim()).filter(Boolean))]
+        : [];
+      const { data: existingProfiles, error: existingError } = await admin.from("profiles").select("id");
+      if (existingError) throw existingError;
+      const existingIds = new Set((existingProfiles ?? []).map((profile) => profile.id));
+      if (userIds.length !== existingIds.size || userIds.some((id) => !existingIds.has(id))) {
+        return json({ ok: false, error: "ユーザー一覧が更新されています。画面を再読み込みしてから、もう一度お試しください。" }, 409);
+      }
+      const orderedProfiles = userIds.map((id, index) => ({ id, sort_order: index }));
+      const { error: reorderError } = await admin
+        .from("profiles")
+        .upsert(orderedProfiles, { onConflict: "id" });
+      if (reorderError) throw reorderError;
+      return json({ ok: true });
     }
 
     const userId = String(body.userId ?? "").trim();

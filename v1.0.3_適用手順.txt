@@ -1,0 +1,15 @@
+DIALIX v1.0.3 適用手順
+
+1. SupabaseのSQL Editorで、次のSQLを実行してください。
+   supabase/v1.0.3_ユーザー並び順追加.sql
+
+2. Supabase Edge Functionsの「admin-users」を、ZIP内の最新版へ更新・デプロイしてください。
+   supabase/functions/admin-users/index.ts
+
+3. GitHubのDIALIX一式を、このZIPの内容で上書きしてください。
+
+4. Vercelの再デプロイ完了後、管理画面 → ユーザー管理を開いてください。
+
+5. ユーザー一覧の「↑」「↓」で順番を変更し、ブラウザ更新後も順番が維持されることを確認してください。
+
+※ 登録日時の表示は削除済みです。

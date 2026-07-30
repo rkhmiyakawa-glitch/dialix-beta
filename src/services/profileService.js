@@ -13,6 +13,7 @@ const mapProfile = (row) => ({
   email: row.email || "",
   role: row.role || "operator",
   isActive: row.is_active !== false,
+  sortOrder: Number.isFinite(Number(row.sort_order)) ? Number(row.sort_order) : 0,
   createdAt: row.created_at || null,
   lastActiveAt: row.last_active_at || null,
   lastLoginAt: row.last_login_at || null,
@@ -20,14 +21,14 @@ const mapProfile = (row) => ({
 
 export async function fetchMyProfile(user) {
   if (!isSupabaseConfigured) return demoProfile;
-  const { data, error } = await supabase.from("profiles").select("id,display_name,email,role,is_active,created_at,last_active_at,last_login_at").eq("id", user.id).single();
+  const { data, error } = await supabase.from("profiles").select("id,display_name,email,role,is_active,sort_order,created_at,last_active_at,last_login_at").eq("id", user.id).single();
   if (error) throw error;
   return mapProfile(data);
 }
 
 export async function fetchProfiles() {
   if (!isSupabaseConfigured) return demoUsers;
-  const { data, error } = await supabase.from("profiles").select("id,display_name,email,role,is_active,created_at,last_active_at,last_login_at").order("created_at", { ascending: true });
+  const { data, error } = await supabase.from("profiles").select("id,display_name,email,role,is_active,sort_order,created_at,last_active_at,last_login_at").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
   if (error) throw error;
   return (data || []).map(mapProfile);
 }
