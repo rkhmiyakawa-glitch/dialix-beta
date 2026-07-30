@@ -52,18 +52,27 @@ export async function touchUserActivity() {
 
 export async function updateMyDisplayName(displayName) {
   if (!isSupabaseConfigured) return { ...demoProfile, displayName };
-  const { data: authData, error: authError } = await supabase.auth.updateUser({
-    data: { display_name: displayName },
+  const cleanName = String(displayName || "").trim();
+  if (!cleanName) throw new Error("表示名を入力してください。");
+
+  // profiles の直接 UPDATE は RLS 構成によって拒否されるため、
+  // 本人の表示名だけを変更できる専用 RPC を使用する。
+  const { data, error } = await supabase.rpc("update_my_display_name", {
+    next_display_name: cleanName,
   });
-  if (authError) throw authError;
-  const userId = authData.user?.id;
-  if (!userId) throw new Error("ユーザー情報を取得できませんでした。");
-  const { data, error } = await supabase
-    .from("profiles")
-    .update({ display_name: displayName })
-    .eq("id", userId)
-    .select("id,display_name,email,role,is_active,created_at,last_active_at,last_login_at")
-    .single();
   if (error) throw error;
-  return mapProfile(data);
+
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error("更新後のプロフィールを取得できませんでした。");
+
+  // ヘッダー等は profiles を正として表示する。認証メタデータも可能な
+  // 範囲で同期するが、こちらの失敗で保存済みプロフィールを巻き戻さない。
+  await supabase.auth.updateUser({
+    data: { display_name: cleanName },
+  }).catch(() => {});
+
+  window.dispatchEvent(new CustomEvent("dialix:profile-updated", {
+    detail: { id: row.id, displayName: row.display_name },
+  }));
+  return mapProfile(row);
 }

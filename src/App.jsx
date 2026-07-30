@@ -25,6 +25,17 @@ function scrollPageTop() {
   });
 }
 
+const NAVIGATION_STORAGE_KEY = "dialix:navigation:v1";
+
+function readSavedNavigation() {
+  try {
+    const saved = JSON.parse(window.sessionStorage.getItem(NAVIGATION_STORAGE_KEY) || "null");
+    return saved && typeof saved === "object" ? saved : { page: "lists" };
+  } catch {
+    return { page: "lists" };
+  }
+}
+
 export default function App() {
   const { session, loading: authLoading, login, logout, demoMode, recoverSession, sessionState } = useAuth();
   const [lists, setLists] = useState([]);
@@ -44,9 +55,12 @@ export default function App() {
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
+  const [navigationReady, setNavigationReady] = useState(false);
+  const [initialDataReady, setInitialDataReady] = useState(false);
   const taskRefreshTimerRef = useRef(null);
   const customerDetailCacheRef = useRef(new Map());
   const customerRequestIdRef = useRef(0);
+  const savedNavigationRef = useRef(readSavedNavigation());
 
   const userId = session?.user?.id || "";
   const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
@@ -126,8 +140,74 @@ export default function App() {
         setTasks(nextTasks);
       })
       .catch((error) => setDataError(error.message || "データ取得に失敗しました。"))
-      .finally(() => setDataLoading(false));
+      .finally(() => {
+        setDataLoading(false);
+        setInitialDataReady(true);
+      });
   }, [session]);
+
+  useEffect(() => {
+    if (!session || !initialDataReady || navigationReady) return;
+
+    let cancelled = false;
+    const saved = savedNavigationRef.current;
+
+    async function restoreNavigation() {
+      try {
+        if (saved.page === "admin") setShowAdmin(true);
+        else if (saved.page === "mypage") setShowMyPage(true);
+        else if (saved.page === "attendance") setShowAttendance(true);
+        else if (saved.page === "links") setShowLinks(true);
+        else if (saved.page === "today-reminders") setReminderPage("today");
+        else if (saved.page === "reminders") setReminderPage("all");
+        else if ((saved.page === "list" || saved.page === "customer") && saved.listId) {
+          const list = lists.find((item) => item.id === saved.listId);
+          if (!list) return;
+          const nextCustomers = await fetchCustomers(list.id);
+          if (cancelled) return;
+          setCustomers(nextCustomers);
+          setSelectedList({ ...list, count: list.count || nextCustomers.length });
+
+          if (saved.page === "customer" && saved.customerId) {
+            const customer = nextCustomers.find((item) => item.id === saved.customerId);
+            if (customer) {
+              const detailedCustomer = await fetchCustomerDetails(customer.id).catch(() => null);
+              if (cancelled) return;
+              const restoredCustomer = detailedCustomer || customer;
+              if (detailedCustomer) customerDetailCacheRef.current.set(customer.id, detailedCustomer);
+              setSelectedCustomer(restoredCustomer);
+              setNavigationItems(nextCustomers.map((item) => ({ id: item.id, listId: list.id })));
+              presence.trackCustomer(customer.id)?.catch?.(() => {});
+            }
+          }
+        }
+      } finally {
+        if (!cancelled) setNavigationReady(true);
+      }
+    }
+
+    restoreNavigation();
+    return () => { cancelled = true; };
+  }, [session, initialDataReady, navigationReady, lists]);
+
+  useEffect(() => {
+    if (!navigationReady || !session) return;
+    let page = "lists";
+    if (reminderPage === "today") page = "today-reminders";
+    else if (reminderPage === "all") page = "reminders";
+    else if (showAttendance) page = "attendance";
+    else if (showLinks) page = "links";
+    else if (showMyPage) page = "mypage";
+    else if (showAdmin) page = "admin";
+    else if (selectedList && selectedCustomer) page = "customer";
+    else if (selectedList) page = "list";
+
+    window.sessionStorage.setItem(NAVIGATION_STORAGE_KEY, JSON.stringify({
+      page,
+      listId: selectedList?.id || "",
+      customerId: selectedCustomer?.id || "",
+    }));
+  }, [navigationReady, session, reminderPage, showAttendance, showLinks, showMyPage, showAdmin, selectedList?.id, selectedCustomer?.id]);
 
 
   useEffect(() => {
@@ -304,6 +384,7 @@ export default function App() {
     setShowAttendance(false);
     setShowLinks(false);
     setReminderPage("");
+    window.sessionStorage.removeItem(NAVIGATION_STORAGE_KEY);
   }
 
   async function handleSaveCall(payload) {
@@ -420,6 +501,7 @@ export default function App() {
 
   if (authLoading) return <main className="loading-screen">認証情報を確認しています...</main>;
   if (!session) return <LoginPage onLogin={login} demoMode={demoMode} />;
+  if (!navigationReady) return <main className="loading-screen">画面を復元しています...</main>;
 
   const banner = <SystemBanner demoMode={demoMode} error={dataError} />;
   const sessionNotice = sessionState !== "ready" && (

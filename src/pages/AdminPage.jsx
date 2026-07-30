@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import { fetchProfiles } from "../services/profileService";
+import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { claimOwnerRole, createManagedUser, deleteManagedUser, resetManagedUserPassword, updateManagedUser } from "../services/userManagementService";
 import CsvImportPanel from "./CsvImportPanel";
 import AuditLogPanel from "./AuditLogPanel";
@@ -34,6 +35,28 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   }
 
   useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    let timer = null;
+    const refreshSoon = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => reload(), 150);
+    };
+    const handleLocalUpdate = () => refreshSoon();
+    window.addEventListener("dialix:profile-updated", handleLocalUpdate);
+
+    const channel = isSupabaseConfigured
+      ? supabase
+          .channel("admin-profiles-refresh")
+          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, refreshSoon)
+          .subscribe()
+      : null;
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("dialix:profile-updated", handleLocalUpdate);
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, []);
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "smooth" }); }, [activeTab]);
 
   function canOperateTarget(user) {
