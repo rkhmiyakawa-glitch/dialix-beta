@@ -40,22 +40,20 @@ export default function CustomerListPage({
   onOpenAdmin,
   onOpenMyPage,
 }) {
-  const [searchInput, setSearchInput] = useState("");
-  const [query, setQuery] = useState("");
+  const [apInput, setApInput] = useState("");
+  const [apFilter, setApFilter] = useState("");
   const [sortKey, setSortKey] = useState("import");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
   const visibleCustomers = useMemo(() => {
-    const keyword = normalizeSearchText(query);
-    const phoneKeyword = query.replace(/\D/g, "");
+    const normalizedAp = normalizeSearchText(apFilter);
 
     let result = customers.filter((customer) => {
-      const matchesQuery =
-        !keyword ||
-        normalizeSearchText(customer.companyName).includes(keyword) ||
-        (phoneKeyword.length > 0 && String(customer.phone || "").replace(/\D/g, "").includes(phoneKeyword));
+      const matchesAp =
+        !normalizedAp ||
+        normalizeSearchText(customer.ap).includes(normalizedAp);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -63,7 +61,7 @@ export default function CustomerListPage({
         groupedStatuses[statusFilter]?.has(customer.status) ||
         customer.status === statusFilter;
 
-      return matchesQuery && matchesStatus;
+      return matchesAp && matchesStatus;
     });
 
     result = [...result].sort((a, b) => {
@@ -87,7 +85,7 @@ export default function CustomerListPage({
     });
 
     return result;
-  }, [customers, query, sortKey, statusFilter]);
+  }, [customers, apFilter, sortKey, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -100,7 +98,7 @@ export default function CustomerListPage({
 
   function handleSearch(event) {
     event.preventDefault();
-    setQuery(searchInput.trim());
+    setApFilter(apInput.trim());
     setPage(1);
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }
@@ -130,7 +128,7 @@ export default function CustomerListPage({
           <button
             className="start-call-button"
             type="button"
-            onClick={() => visibleCustomers[0] && onOpenCustomer(visibleCustomers[0], visibleCustomers, query ? "検索結果" : "リスト")}
+            onClick={() => visibleCustomers[0] && onOpenCustomer(visibleCustomers[0], visibleCustomers, (apFilter || statusFilter !== "all") ? "条件検索結果" : "リスト")}
             disabled={visibleCustomers.length === 0}
           >
             架電開始
@@ -139,14 +137,14 @@ export default function CustomerListPage({
 
         <section className="customer-filter-panel">
           <form className="customer-search-field" onSubmit={handleSearch}>
-            <label htmlFor="customer-list-search">顧客検索</label>
+            <label htmlFor="customer-list-search">AP</label>
             <div className="customer-search-row">
               <input
                 id="customer-list-search"
                 type="search"
-                placeholder="顧客名または電話番号を入力"
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="AP名を入力"
+                value={apInput}
+                onChange={(event) => setApInput(event.target.value)}
               />
               <button type="submit">検索</button>
             </div>
@@ -238,7 +236,7 @@ export default function CustomerListPage({
                       <button
                         className="customer-name-button"
                         type="button"
-                        onClick={() => !locked && onOpenCustomer(customer, visibleCustomers, query ? "検索結果" : "リスト")}
+                        onClick={() => !locked && onOpenCustomer(customer, visibleCustomers, (apFilter || statusFilter !== "all") ? "条件検索結果" : "リスト")}
                         disabled={locked}
                       >
                         <strong>{customer.companyName}</strong>

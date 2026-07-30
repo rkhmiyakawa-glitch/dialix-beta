@@ -3,17 +3,25 @@ import Header from "../components/Header";
 
 export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
+  const [apQuery, setApQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
 
   async function handleCustomerSearch(event) {
     event.preventDefault();
-    const keyword = customerQuery.trim();
-    if (!keyword) return window.alert("顧客名または電話番号を入力してください。");
+    const conditions = {
+      keyword: customerQuery.trim(),
+      ap: apQuery.trim(),
+      status: statusFilter,
+    };
+    if (!conditions.keyword && !conditions.ap && conditions.status === "all") {
+      return window.alert("検索条件を1つ以上入力してください。");
+    }
     setSearching(true);
     setHasSearched(true);
-    try { setSearchResults(await onSearchCustomers(keyword)); }
+    try { setSearchResults(await onSearchCustomers(conditions)); }
     catch (error) { window.alert(error.message || "検索に失敗しました。"); }
     finally { setSearching(false); }
   }
@@ -36,7 +44,31 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
       </section>
 
       <div className="page-title list-section-title"><div><p className="eyebrow">CALL LISTS</p><h1>リスト一覧</h1><p>架電するリストを選択してください。</p></div></div>
-      <form className="search-panel" onSubmit={handleCustomerSearch}><label htmlFor="customer-search">検索</label><div className="search-row"><input id="customer-search" type="search" placeholder="顧客名または電話番号を入力" value={customerQuery} onChange={(e) => setCustomerQuery(e.target.value)} /><button type="submit" disabled={searching}>{searching ? "検索中" : "検索"}</button></div><p>すべてのリストを対象に顧客を検索します。</p></form>
+      <form className="search-panel global-search-panel" onSubmit={handleCustomerSearch}>
+        <label htmlFor="customer-search">全検索</label>
+        <div className="global-search-fields">
+          <input id="customer-search" type="search" placeholder="顧客名または電話番号" value={customerQuery} onChange={(e) => setCustomerQuery(e.target.value)} />
+          <input type="search" aria-label="AP" placeholder="AP名" value={apQuery} onChange={(e) => setApQuery(e.target.value)} />
+          <select aria-label="ステータス" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">ステータス：すべて</option>
+            <option value="uncontacted">未架電</option>
+            <option value="留守">留守</option>
+            <option value="NG">NG</option>
+            <option value="対象外">対象外</option>
+            <option value="現アナ">現アナ</option>
+            <option value="再コール">再コール</option>
+            <option value="再コール留守">再コール留守</option>
+            <option value="見込み">見込み</option>
+            <option value="見込み留守">見込み留守</option>
+            <option value="トスアップ">トスアップ</option>
+            <option value="前確依頼">前確依頼</option>
+            <option value="前確NG">前確NG</option>
+            <option value="前確OK">前確OK</option>
+          </select>
+          <button type="submit" disabled={searching}>{searching ? "検索中" : "検索"}</button>
+        </div>
+        <p>すべてのリストを対象に、顧客名・電話番号・AP・ステータスを組み合わせて検索します。</p>
+      </form>
       {searchResults.length > 0 && <section className="task-panel search-result-panel"><div className="task-panel-head"><h2>検索結果</h2><span>{searchResults.length}件</span></div><div className="task-list">{searchResults.map((item) => <button className="task-row" key={item.id} type="button" onClick={() => onOpenTask(item, searchResults, "検索結果")}><div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div><div className="task-row-meta"><span>{item.status || "未架電"}</span><b>開く ›</b></div></button>)}</div></section>}
       {hasSearched && !searching && searchResults.length === 0 && <div className="empty-state search-empty-state">検索条件に一致する顧客はいません。</div>}
       <section className="list-grid" aria-label="架電リスト">

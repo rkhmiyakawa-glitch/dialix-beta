@@ -86,19 +86,35 @@ export async function fetchOperationalTasks(currentUser = {}) {
   };
 }
 
-export async function searchCustomersAcrossLists(keyword) {
-  const clean = String(keyword || "").trim();
-  if (!clean) return [];
+const groupedSearchStatuses = {
+  NG: ["NG", "非決裁NG", "決裁NG"],
+  見込み: ["見込み", "非決裁見込み", "決裁見込み"],
+};
+
+export async function searchCustomersAcrossLists(conditions = {}) {
+  const values = typeof conditions === "string" ? { keyword: conditions } : conditions;
+  const clean = String(values.keyword || "").trim();
+  const ap = String(values.ap || "").trim();
+  const status = String(values.status || "all");
+  if (!clean && !ap && status === "all") return [];
 
   if (!isSupabaseConfigured) {
     const normalized = clean.toLowerCase();
     const digits = clean.replace(/\D/g, "");
+    const normalizedAp = ap.toLowerCase();
     return sampleLists.flatMap((list) =>
       (customersByList[list.id] || [])
-        .filter((customer) =>
-          customer.companyName.toLowerCase().includes(normalized) ||
-          (digits && customer.phone.replace(/\D/g, "").includes(digits))
-        )
+        .filter((customer) => {
+          const matchesKeyword = !clean ||
+            customer.companyName.toLowerCase().includes(normalized) ||
+            (digits && customer.phone.replace(/\D/g, "").includes(digits));
+          const matchesAp = !ap || String(customer.ap || "").toLowerCase().includes(normalizedAp);
+          const matchesStatus = status === "all" ||
+            (status === "uncontacted" && !customer.status) ||
+            groupedSearchStatuses[status]?.includes(customer.status) ||
+            customer.status === status;
+          return matchesKeyword && matchesAp && matchesStatus;
+        })
         .map((customer) => ({
           ...customer,
           listId: list.id,
@@ -106,14 +122,21 @@ export async function searchCustomersAcrossLists(keyword) {
         }))
     ).slice(0, 50);
   }
-  const digits = clean.replace(/\D/g, "");
-  const safeText = clean.replace(/[%,]/g, "");
-  const filters = [`company_name.ilike.%${safeText}%`];
-  if (digits) filters.push(`phone.ilike.%${digits}%`);
-  const { data, error } = await supabase
+  let query = supabase
     .from("customers")
-    .select("id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)")
-    .or(filters.join(","))
+    .select("id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)");
+  if (clean) {
+    const digits = clean.replace(/\D/g, "");
+    const safeText = clean.replace(/[%,]/g, "");
+    const filters = [`company_name.ilike.%${safeText}%`];
+    if (digits) filters.push(`phone.ilike.%${digits}%`);
+    query = query.or(filters.join(","));
+  }
+  if (ap) query = query.ilike("ap_name", `%${ap.replace(/[%]/g, "")}%`);
+  if (status === "uncontacted") query = query.is("status", null);
+  else if (status !== "all" && groupedSearchStatuses[status]) query = query.in("status", groupedSearchStatuses[status]);
+  else if (status !== "all") query = query.eq("status", status);
+  const { data, error } = await query
     .order("last_called_at", { ascending: false, nullsFirst: false })
     .limit(50);
   if (error) throw error;
