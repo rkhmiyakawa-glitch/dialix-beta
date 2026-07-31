@@ -17,6 +17,26 @@ function mapTask(row) {
   };
 }
 
+function lastCalledTime(task) {
+  if (!task.lastCallAt) return null;
+  const timestamp = new Date(String(task.lastCallAt).replace(/\//g, "-")).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function sortCalledTasksKeepingListOrder(tasks, direction) {
+  const calledTasks = tasks
+    .filter((task) => lastCalledTime(task) !== null)
+    .sort((left, right) => {
+      const leftTime = lastCalledTime(left);
+      const rightTime = lastCalledTime(right);
+      return direction === "asc" ? leftTime - rightTime : rightTime - leftTime;
+    });
+  let calledIndex = 0;
+  return tasks.map((task) =>
+    lastCalledTime(task) === null ? task : calledTasks[calledIndex++]
+  );
+}
+
 const demoTasks = {
   reminders: [],
   prospects: [],
@@ -128,20 +148,13 @@ export async function searchCustomersAcrossLists(conditions = {}) {
         }))
     );
     if (lastCalledSort) {
-      results.sort((left, right) => {
-        const leftTime = left.lastCallAt ? new Date(left.lastCallAt).getTime() : null;
-        const rightTime = right.lastCallAt ? new Date(right.lastCallAt).getTime() : null;
-        if (leftTime === null && rightTime === null) return 0;
-        if (leftTime === null) return 1;
-        if (rightTime === null) return -1;
-        return lastCalledSort === "asc" ? leftTime - rightTime : rightTime - leftTime;
-      });
+      return sortCalledTasksKeepingListOrder(results, lastCalledSort).slice(0, 50);
     }
     return results.slice(0, 50);
   }
   let query = supabase
     .from("customers")
-    .select("id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)");
+    .select("id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,sort_order,lists(name)");
   if (clean) {
     const digits = clean.replace(/\D/g, "");
     const safeText = clean.replace(/[%,]/g, "");
@@ -168,10 +181,15 @@ export async function searchCustomersAcrossLists(conditions = {}) {
     }
   }
   const { data, error } = await query
-    .order("last_called_at", { ascending: lastCalledSort === "asc", nullsFirst: false })
-    .limit(50);
+    .order("list_id", { ascending: true })
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true })
+    .limit(lastCalledSort ? 1000 : 50);
   if (error) throw error;
-  return (data || []).map(mapTask);
+  const tasks = (data || []).map(mapTask);
+  return lastCalledSort
+    ? sortCalledTasksKeepingListOrder(tasks, lastCalledSort).slice(0, 50)
+    : tasks;
 }
 
 export function subscribeOperationalTasks(onChange) {

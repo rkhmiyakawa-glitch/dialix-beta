@@ -34,6 +34,20 @@ function lastCalledTime(value) {
   return Number.isFinite(timestamp) ? timestamp : null;
 }
 
+function sortCalledCustomersKeepingListOrder(customers, direction) {
+  const calledCustomers = customers
+    .filter((customer) => lastCalledTime(customer.lastCallAt) !== null)
+    .sort((left, right) => {
+      const leftTime = lastCalledTime(left.lastCallAt);
+      const rightTime = lastCalledTime(right.lastCallAt);
+      return direction === "asc" ? leftTime - rightTime : rightTime - leftTime;
+    });
+  let calledIndex = 0;
+  return customers.map((customer) =>
+    lastCalledTime(customer.lastCallAt) === null ? customer : calledCustomers[calledIndex++]
+  );
+}
+
 export default function CustomerListPage({
   selectedList,
   customers,
@@ -86,14 +100,7 @@ export default function CustomerListPage({
       return matchesCustomer && matchesAp && matchesStatus;
     });
     if (!lastCalledSort) return filtered;
-    return filtered.slice().sort((left, right) => {
-      const leftTime = lastCalledTime(left.lastCallAt);
-      const rightTime = lastCalledTime(right.lastCallAt);
-      if (leftTime === null && rightTime === null) return 0;
-      if (leftTime === null) return 1;
-      if (rightTime === null) return -1;
-      return lastCalledSort === "asc" ? leftTime - rightTime : rightTime - leftTime;
-    });
+    return sortCalledCustomersKeepingListOrder(filtered, lastCalledSort);
   }, [customers, customerQuery, apFilter, statusFilters, lastCalledSort]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));

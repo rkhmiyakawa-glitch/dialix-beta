@@ -119,8 +119,8 @@ export default function CallPage({
     setIsDirty(true);
   }
 
-  async function handleSave(moveNext = false) {
-    if (isSaving) return;
+  async function handleSave() {
+    if (isSaving || !isDirty) return;
     if (!selectedStatus) {
       window.alert("コールステータスを選択してください");
       return;
@@ -141,7 +141,7 @@ export default function CallPage({
       setCallState("room");
       onCallStateChange?.("room");
 
-      if (moveNext && onOpenNext) {
+      if (onOpenNext && navigationPosition < navigationTotal) {
         showToast("保存しました。次の顧客を開きます。");
         onOpenNext();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -263,7 +263,7 @@ export default function CallPage({
             </section>
           </div>
         </div>
-        <SaveBar onSave={() => handleSave(false)} onSaveAndNext={() => handleSave(true)} isSaving={isSaving} />
+        <SaveBar onSave={handleSave} isSaving={isSaving} isDirty={isDirty} />
         <nav className="customer-navigation bottom" aria-label="顧客移動（下部）">
           <button type="button" onClick={() => handleNavigate("previous")} disabled={isSaving || navigationPosition <= 1}>← 前の顧客</button>
           <span>{navigationLabel === "検索結果" ? "検索結果 " : ""}{navigationPosition} / {navigationTotal}</span>
