@@ -2945,3 +2945,31 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 @media(max-width:720px){
   .status-save-area .primary-save-button{width:100%}
 }
+
+/* v1.0.32: match customer footer actions to list/customer back links */
+.save-bar .save-navigation-button{
+  min-width:0!important;
+  min-height:auto!important;
+  height:auto!important;
+  padding:10px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#1f4fd6!important;
+  box-shadow:none!important;
+  font-size:16px!important;
+  font-weight:700!important;
+}
+.save-bar .save-navigation-button:hover:not(:disabled){
+  border:0!important;
+  background:transparent!important;
+  color:#153ba7!important;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.save-bar .save-navigation-button:disabled{
+  background:transparent!important;
+}
+.save-bar-right{
+  gap:24px;
+}

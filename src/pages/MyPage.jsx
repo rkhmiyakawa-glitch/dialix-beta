@@ -86,7 +86,6 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
     <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle="マイページ" />
     <section className="content mypage-content">
       <div className="page-title"><div>
-        <button className="back-button" type="button" onClick={onBack}>← 前の画面へ</button>
         <p className="eyebrow">MY PAGE</p><h1>マイページ</h1><p>アカウント情報と自分の実績を確認できます。</p>
       </div></div>
       {message && <div className="mypage-success">{message}</div>}
