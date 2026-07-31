@@ -113,6 +113,18 @@ export default function CustomerInfoCard({
         {(customer.status || customer.history?.length > 0) && customer.ap && (
           <DetailRow label="AP" value={customer.ap} onCopy={onCopyField} copyLabel="AP" />
         )}
+
+        {customer.reminderAt && (
+          <div className="customer-reminder-row">
+            <dt>リマインド日時</dt>
+            <dd>
+              <span className={customer.reminderDue ? "customer-reminder-value is-due" : "customer-reminder-value"}>
+                {customer.reminderAt}
+              </span>
+              {customer.reminderDue && <span className="customer-reminder-due-label">期限超過</span>}
+            </dd>
+          </div>
+        )}
       </dl>
     </section>
   );

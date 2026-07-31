@@ -2984,3 +2984,31 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .sidebar-nav{
   padding-top:5px;
 }
+
+/* v1.0.35: show the registered reminder on the customer detail card */
+.customer-details .customer-reminder-row{
+  padding:12px 14px;
+  border-radius:10px;
+  background:#fff8eb;
+}
+.customer-details .customer-reminder-row dd{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.customer-reminder-value{
+  color:#9a5708;
+  font-weight:900;
+}
+.customer-reminder-value.is-due{
+  color:#b43c32;
+}
+.customer-reminder-due-label{
+  padding:4px 8px;
+  border-radius:999px;
+  background:#fde8e6;
+  color:#b43c32;
+  font-size:12px;
+  font-weight:900;
+}
