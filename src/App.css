@@ -2985,12 +2985,7 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   padding-top:5px;
 }
 
-/* v1.0.35: show the registered reminder on the customer detail card */
-.customer-details .customer-reminder-row{
-  padding:12px 14px 12px 0;
-  border-radius:10px;
-  background:#fff8eb;
-}
+/* v1.0.37: align the reminder row exactly with the other customer details */
 .customer-details .customer-reminder-row dd{
   display:flex;
   align-items:center;
