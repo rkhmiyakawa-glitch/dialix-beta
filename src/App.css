@@ -2979,3 +2979,8 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .list-card .list-count > span:not(.arrow){
   font-size:17px;
 }
+
+/* v1.0.34: match the logo-to-menu spacing to the menu item gap */
+.sidebar-nav{
+  padding-top:5px;
+}
