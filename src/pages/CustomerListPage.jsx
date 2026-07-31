@@ -28,6 +28,12 @@ function normalizeSearchText(value) {
   return String(value || "").normalize("NFKC").toLocaleLowerCase("ja").replace(/\s+/g, "");
 }
 
+function lastCalledTime(value) {
+  if (!value) return null;
+  const timestamp = new Date(String(value).replace(/\//g, "-")).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
 export default function CustomerListPage({
   selectedList,
   customers,
@@ -44,6 +50,7 @@ export default function CustomerListPage({
   const [customerQuery, setCustomerQuery] = useState("");
   const [apFilter, setApFilter] = useState("");
   const [statusFilters, setStatusFilters] = useState([]);
+  const [lastCalledSort, setLastCalledSort] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
@@ -54,7 +61,7 @@ export default function CustomerListPage({
   );
 
   const visibleCustomers = useMemo(() => {
-    return customers.filter((customer) => {
+    const filtered = customers.filter((customer) => {
       const normalizedQuery = normalizeSearchText(customerQuery);
       const phoneQuery = String(customerQuery || "").replace(/\D/g, "");
       const normalizedPhone = String(customer.phone || "").replace(/\D/g, "");
@@ -78,7 +85,16 @@ export default function CustomerListPage({
 
       return matchesCustomer && matchesAp && matchesStatus;
     });
-  }, [customers, customerQuery, apFilter, statusFilters]);
+    if (!lastCalledSort) return filtered;
+    return filtered.slice().sort((left, right) => {
+      const leftTime = lastCalledTime(left.lastCallAt);
+      const rightTime = lastCalledTime(right.lastCallAt);
+      if (leftTime === null && rightTime === null) return 0;
+      if (leftTime === null) return 1;
+      if (rightTime === null) return -1;
+      return lastCalledSort === "asc" ? leftTime - rightTime : rightTime - leftTime;
+    });
+  }, [customers, customerQuery, apFilter, statusFilters, lastCalledSort]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -95,12 +111,13 @@ export default function CustomerListPage({
   }
 
   const hasSearchConditions =
-    Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilters.length > 0;
+    Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilters.length > 0 || Boolean(lastCalledSort);
 
   function clearSearchConditions() {
     setCustomerQuery("");
     setApFilter("");
     setStatusFilters([]);
+    setLastCalledSort("");
     setPage(1);
   }
 
@@ -163,6 +180,19 @@ export default function CustomerListPage({
               value={statusFilters}
               onChange={(value) => updateFilter(setStatusFilters, value)}
             />
+          </label>
+
+          <label htmlFor="customer-list-last-called-sort">
+            最終架電日時
+            <select
+              id="customer-list-last-called-sort"
+              value={lastCalledSort}
+              onChange={(event) => updateFilter(setLastCalledSort, event.target.value)}
+            >
+              <option value="">指定なし</option>
+              <option value="desc">新しい順</option>
+              <option value="asc">古い順</option>
+            </select>
           </label>
 
           <button

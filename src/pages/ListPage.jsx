@@ -8,6 +8,7 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
   const [apQuery, setApQuery] = useState("");
   const [apOptions, setApOptions] = useState([]);
   const [statusFilters, setStatusFilters] = useState([]);
+  const [lastCalledSort, setLastCalledSort] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -37,8 +38,9 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
       keyword: customerQuery.trim(),
       ap: apQuery.trim(),
       statuses: statusFilters,
+      lastCalledSort,
     };
-    if (!conditions.keyword && !conditions.ap && conditions.statuses.length === 0) {
+    if (!conditions.keyword && !conditions.ap && conditions.statuses.length === 0 && !conditions.lastCalledSort) {
       return window.alert("検索条件を1つ以上入力してください。");
     }
     setSearching(true);
@@ -75,9 +77,14 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
             {apOptions.map((apName) => <option key={apName} value={apName}>{apName}</option>)}
           </select>
           <StatusMultiSelect value={statusFilters} onChange={setStatusFilters} />
+          <select aria-label="最終架電日時の並び順" value={lastCalledSort} onChange={(e) => setLastCalledSort(e.target.value)}>
+            <option value="">最終架電日時：指定なし</option>
+            <option value="desc">最終架電日時：新しい順</option>
+            <option value="asc">最終架電日時：古い順</option>
+          </select>
           <button type="submit" disabled={searching}>{searching ? "検索中" : "検索"}</button>
         </div>
-        <p>すべてのリストを対象に、顧客名・電話番号・AP・ステータスを組み合わせて検索します。</p>
+        <p>すべてのリストを対象に、顧客名・電話番号・AP・ステータス・最終架電日時の並び順を組み合わせて検索します。</p>
       </form>
       {searchResults.length > 0 && <section className="task-panel search-result-panel"><div className="task-panel-head"><h2>検索結果</h2><span>{searchResults.length}件</span></div><div className="task-list">{searchResults.map((item) => <button className="task-row" key={item.id} type="button" onClick={() => onOpenTask(item, searchResults, "検索結果")}><div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div><div className="task-row-meta"><span>{item.status || "未架電"}</span><b>開く ›</b></div></button>)}</div></section>}
       {hasSearched && !searching && searchResults.length === 0 && <div className="empty-state search-empty-state">検索条件に一致する顧客はいません。</div>}

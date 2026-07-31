@@ -98,13 +98,16 @@ export async function searchCustomersAcrossLists(conditions = {}) {
   const statuses = Array.isArray(values.statuses)
     ? values.statuses.filter(Boolean)
     : values.status && values.status !== "all" ? [String(values.status)] : [];
-  if (!clean && !ap && statuses.length === 0) return [];
+  const lastCalledSort = values.lastCalledSort === "asc" || values.lastCalledSort === "desc"
+    ? values.lastCalledSort
+    : "";
+  if (!clean && !ap && statuses.length === 0 && !lastCalledSort) return [];
 
   if (!isSupabaseConfigured) {
     const normalized = clean.toLowerCase();
     const digits = clean.replace(/\D/g, "");
     const normalizedAp = ap.toLowerCase();
-    return sampleLists.flatMap((list) =>
+    const results = sampleLists.flatMap((list) =>
       (customersByList[list.id] || [])
         .filter((customer) => {
           const matchesKeyword = !clean ||
@@ -123,7 +126,18 @@ export async function searchCustomersAcrossLists(conditions = {}) {
           listId: list.id,
           listName: list.name,
         }))
-    ).slice(0, 50);
+    );
+    if (lastCalledSort) {
+      results.sort((left, right) => {
+        const leftTime = left.lastCallAt ? new Date(left.lastCallAt).getTime() : null;
+        const rightTime = right.lastCallAt ? new Date(right.lastCallAt).getTime() : null;
+        if (leftTime === null && rightTime === null) return 0;
+        if (leftTime === null) return 1;
+        if (rightTime === null) return -1;
+        return lastCalledSort === "asc" ? leftTime - rightTime : rightTime - leftTime;
+      });
+    }
+    return results.slice(0, 50);
   }
   let query = supabase
     .from("customers")
@@ -154,7 +168,7 @@ export async function searchCustomersAcrossLists(conditions = {}) {
     }
   }
   const { data, error } = await query
-    .order("last_called_at", { ascending: false, nullsFirst: false })
+    .order("last_called_at", { ascending: lastCalledSort === "asc", nullsFirst: false })
     .limit(50);
   if (error) throw error;
   return (data || []).map(mapTask);
