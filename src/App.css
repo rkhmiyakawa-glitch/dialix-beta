@@ -2973,3 +2973,9 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .save-bar-right{
   gap:24px;
 }
+
+/* v1.0.33: match the list count text size to the list name */
+.list-card .list-count strong,
+.list-card .list-count > span:not(.arrow){
+  font-size:17px;
+}
