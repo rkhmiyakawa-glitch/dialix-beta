@@ -264,6 +264,7 @@ export default function App() {
       id: task.id,
       companyName: task.companyName || "顧客",
       phone: task.phone || "",
+      phone2: task.phone2 || "",
       address: task.address || "",
       businessSubcategory: task.businessSubcategory || "",
       ap: task.apName || "",
@@ -487,8 +488,21 @@ export default function App() {
     scrollPageTop();
     if (!selectedCustomer || !navigationItems.length) return;
     const currentIndex = navigationItems.findIndex((item) => item.id === selectedCustomer.id);
-    const targetIndex = currentIndex + offset;
-    if (targetIndex < 0 || targetIndex >= navigationItems.length) return;
+    let targetIndex = currentIndex + offset;
+    const skipped = [];
+    while (targetIndex >= 0 && targetIndex < navigationItems.length) {
+      const candidate = navigationItems[targetIndex];
+      if (candidate.listId && candidate.listId !== selectedList?.id) break;
+      const users = presence.getOtherUsers(candidate.id);
+      if (!users.length) break;
+      skipped.push(`${users[0].userName || "他のオペレーター"}さん`);
+      targetIndex += offset;
+    }
+    if (targetIndex < 0 || targetIndex >= navigationItems.length) {
+      if (skipped.length) window.alert("入室中の顧客をスキップしましたが、その先に移動できる顧客がありません。");
+      return;
+    }
+    if (skipped.length) window.alert(`入室中（${[...new Set(skipped)].join("、")}）の顧客をスキップし、次の未入室顧客へ移動します。`);
     const target = navigationItems[targetIndex];
 
     presence.clearCustomer()?.catch?.(() => {});
@@ -510,11 +524,6 @@ export default function App() {
 
     const next = customers.find((item) => item.id === target.id);
     if (!next) return;
-    const users = presence.getOtherUsers(next.id);
-    if (users.length) {
-      window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
-      return;
-    }
     openCustomer(next);
     scrollPageTop();
   }

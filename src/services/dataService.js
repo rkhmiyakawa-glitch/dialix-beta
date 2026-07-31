@@ -42,6 +42,7 @@ function mapCustomer(row, profilesById = new Map(), profilesByEmail = new Map())
     id: row.id,
     companyName: row.company_name,
     phone: row.phone,
+    phone2: row.phone2 || "",
     address: row.address || "",
     businessSubcategory: row.business_subcategory || "",
     ap: "",
@@ -123,7 +124,7 @@ export async function fetchCustomers(listId) {
   // 顧客一覧では履歴を取得しない。大量リストでの初回表示を優先し、履歴は顧客を開いた時だけ取得する。
   const data = await fetchAllRows(() => supabase
     .from("customers")
-    .select("id,company_name,phone,address,business_subcategory,ap_name,status,last_called_at,reminder_at")
+    .select("id,company_name,phone,phone2,address,business_subcategory,ap_name,status,last_called_at,reminder_at")
     .eq("list_id", listId)
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("id", { ascending: true }));
@@ -166,6 +167,7 @@ export async function fetchCustomerDetails(customerId) {
         id,
         company_name,
         phone,
+        phone2,
         address,
         business_subcategory,
         ap_name,
@@ -209,6 +211,17 @@ export async function fetchAssignableProfiles() {
     id: profile.id,
     displayName: profile.display_name || profile.email || "名称未設定",
   }));
+}
+
+export async function updateCustomerPhone2(customerId, phone2) {
+  const normalized = String(phone2 || "").trim();
+  if (!isSupabaseConfigured) return { phone2: normalized, demoMode: true };
+  const { error } = await supabase
+    .from("customers")
+    .update({ phone2: normalized || null, updated_at: new Date().toISOString() })
+    .eq("id", customerId);
+  if (error) throw error;
+  return { phone2: normalized, demoMode: false };
 }
 
 export async function saveCallResult({
