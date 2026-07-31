@@ -70,7 +70,8 @@ export default function CustomerListPage({
       const matchesStatus =
         statusFilters.length === 0 ||
         statusFilters.some((status) =>
-          (status === "uncontacted" && !customer.status) ||
+          (status === "uncontacted" &&
+            (!String(customer.status || "").trim() || customer.status === "未架電")) ||
           groupedStatuses[status]?.has(customer.status) ||
           customer.status === status
         );
