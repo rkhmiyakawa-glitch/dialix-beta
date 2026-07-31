@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import Header from "../components/Header";
+import StatusMultiSelect from "../components/StatusMultiSelect";
 
 const statusTone = {
   留守: "gray",
@@ -42,7 +43,7 @@ export default function CustomerListPage({
 }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apFilter, setApFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilters, setStatusFilters] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
@@ -67,14 +68,16 @@ export default function CustomerListPage({
         normalizeSearchText(customer.ap) === normalizeSearchText(apFilter);
 
       const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "uncontacted" && !customer.status) ||
-        groupedStatuses[statusFilter]?.has(customer.status) ||
-        customer.status === statusFilter;
+        statusFilters.length === 0 ||
+        statusFilters.some((status) =>
+          (status === "uncontacted" && !customer.status) ||
+          groupedStatuses[status]?.has(customer.status) ||
+          customer.status === status
+        );
 
       return matchesCustomer && matchesAp && matchesStatus;
     });
-  }, [customers, customerQuery, apFilter, statusFilter]);
+  }, [customers, customerQuery, apFilter, statusFilters]);
 
   const totalPages = Math.max(1, Math.ceil(visibleCustomers.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -91,12 +94,12 @@ export default function CustomerListPage({
   }
 
   const hasSearchConditions =
-    Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilter !== "all";
+    Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilters.length > 0;
 
   function clearSearchConditions() {
     setCustomerQuery("");
     setApFilter("");
-    setStatusFilter("all");
+    setStatusFilters([]);
     setPage(1);
   }
 
@@ -155,25 +158,10 @@ export default function CustomerListPage({
 
           <label>
             ステータス
-            <select
-              value={statusFilter}
-              onChange={(event) => updateFilter(setStatusFilter, event.target.value)}
-            >
-              <option value="all">すべて</option>
-              <option value="uncontacted">未架電</option>
-              <option value="留守">留守</option>
-              <option value="NG">NG</option>
-              <option value="対象外">対象外</option>
-              <option value="現アナ">現アナ</option>
-              <option value="再コール">再コール</option>
-              <option value="再コール留守">再コール留守</option>
-              <option value="見込み">見込み</option>
-              <option value="見込み留守">見込み留守</option>
-              <option value="トスアップ">トスアップ</option>
-              <option value="前確依頼">前確依頼</option>
-              <option value="前確NG">前確NG</option>
-              <option value="前確OK">前確OK</option>
-            </select>
+            <StatusMultiSelect
+              value={statusFilters}
+              onChange={(value) => updateFilter(setStatusFilters, value)}
+            />
           </label>
 
           <button

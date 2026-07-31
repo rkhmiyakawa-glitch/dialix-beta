@@ -95,8 +95,10 @@ export async function searchCustomersAcrossLists(conditions = {}) {
   const values = typeof conditions === "string" ? { keyword: conditions } : conditions;
   const clean = String(values.keyword || "").trim();
   const ap = String(values.ap || "").trim();
-  const status = String(values.status || "all");
-  if (!clean && !ap && status === "all") return [];
+  const statuses = Array.isArray(values.statuses)
+    ? values.statuses.filter(Boolean)
+    : values.status && values.status !== "all" ? [String(values.status)] : [];
+  if (!clean && !ap && statuses.length === 0) return [];
 
   if (!isSupabaseConfigured) {
     const normalized = clean.toLowerCase();
@@ -109,10 +111,11 @@ export async function searchCustomersAcrossLists(conditions = {}) {
             customer.companyName.toLowerCase().includes(normalized) ||
             (digits && customer.phone.replace(/\D/g, "").includes(digits));
           const matchesAp = !ap || String(customer.ap || "").toLowerCase().includes(normalizedAp);
-          const matchesStatus = status === "all" ||
+          const matchesStatus = statuses.length === 0 || statuses.some((status) =>
             (status === "uncontacted" && !customer.status) ||
             groupedSearchStatuses[status]?.includes(customer.status) ||
-            customer.status === status;
+            customer.status === status
+          );
           return matchesKeyword && matchesAp && matchesStatus;
         })
         .map((customer) => ({
@@ -133,9 +136,21 @@ export async function searchCustomersAcrossLists(conditions = {}) {
     query = query.or(filters.join(","));
   }
   if (ap) query = query.ilike("ap_name", `%${ap.replace(/[%]/g, "")}%`);
-  if (status === "uncontacted") query = query.is("status", null);
-  else if (status !== "all" && groupedSearchStatuses[status]) query = query.in("status", groupedSearchStatuses[status]);
-  else if (status !== "all") query = query.eq("status", status);
+  if (statuses.length > 0) {
+    const includeUncontacted = statuses.includes("uncontacted");
+    const dbStatuses = [...new Set(
+      statuses
+        .filter((status) => status !== "uncontacted")
+        .flatMap((status) => groupedSearchStatuses[status] || [status])
+    )];
+    if (includeUncontacted && dbStatuses.length > 0) {
+      query = query.or(`status.is.null,status.in.(${dbStatuses.join(",")})`);
+    } else if (includeUncontacted) {
+      query = query.is("status", null);
+    } else {
+      query = query.in("status", dbStatuses);
+    }
+  }
   const { data, error } = await query
     .order("last_called_at", { ascending: false, nullsFirst: false })
     .limit(50);

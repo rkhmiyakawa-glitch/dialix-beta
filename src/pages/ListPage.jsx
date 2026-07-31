@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import StatusMultiSelect from "../components/StatusMultiSelect";
 import { fetchProfiles } from "../services/profileService";
 
 export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apQuery, setApQuery] = useState("");
   const [apOptions, setApOptions] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilters, setStatusFilters] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -35,9 +36,9 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
     const conditions = {
       keyword: customerQuery.trim(),
       ap: apQuery.trim(),
-      status: statusFilter,
+      statuses: statusFilters,
     };
-    if (!conditions.keyword && !conditions.ap && conditions.status === "all") {
+    if (!conditions.keyword && !conditions.ap && conditions.statuses.length === 0) {
       return window.alert("検索条件を1つ以上入力してください。");
     }
     setSearching(true);
@@ -73,22 +74,7 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
             <option value="">AP：すべて</option>
             {apOptions.map((apName) => <option key={apName} value={apName}>{apName}</option>)}
           </select>
-          <select aria-label="ステータス" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="all">ステータス：すべて</option>
-            <option value="uncontacted">未架電</option>
-            <option value="留守">留守</option>
-            <option value="NG">NG</option>
-            <option value="対象外">対象外</option>
-            <option value="現アナ">現アナ</option>
-            <option value="再コール">再コール</option>
-            <option value="再コール留守">再コール留守</option>
-            <option value="見込み">見込み</option>
-            <option value="見込み留守">見込み留守</option>
-            <option value="トスアップ">トスアップ</option>
-            <option value="前確依頼">前確依頼</option>
-            <option value="前確NG">前確NG</option>
-            <option value="前確OK">前確OK</option>
-          </select>
+          <StatusMultiSelect value={statusFilters} onChange={setStatusFilters} />
           <button type="submit" disabled={searching}>{searching ? "検索中" : "検索"}</button>
         </div>
         <p>すべてのリストを対象に、顧客名・電話番号・AP・ステータスを組み合わせて検索します。</p>
