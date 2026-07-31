@@ -2987,7 +2987,7 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 
 /* v1.0.35: show the registered reminder on the customer detail card */
 .customer-details .customer-reminder-row{
-  padding:12px 14px;
+  padding:12px 14px 12px 0;
   border-radius:10px;
   background:#fff8eb;
 }
