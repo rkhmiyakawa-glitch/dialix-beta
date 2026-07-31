@@ -58,11 +58,10 @@ export default function CustomerListPage({
       const normalizedQuery = normalizeSearchText(customerQuery);
       const phoneQuery = String(customerQuery || "").replace(/\D/g, "");
       const normalizedPhone = String(customer.phone || "").replace(/\D/g, "");
-      const normalizedPhone2 = String(customer.phone2 || "").replace(/\D/g, "");
       const matchesCustomer =
         !normalizedQuery ||
         normalizeSearchText(customer.companyName).includes(normalizedQuery) ||
-        (phoneQuery && (normalizedPhone.includes(phoneQuery) || normalizedPhone2.includes(phoneQuery)));
+        (phoneQuery && normalizedPhone.includes(phoneQuery));
 
       const matchesAp =
         !apFilter ||

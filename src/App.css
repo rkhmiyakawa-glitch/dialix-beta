@@ -2857,18 +2857,9 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   min-width: 0;
 }
 
-/* v1.0.23: compact list rows and editable secondary phone */
+/* v1.0.23: compact list rows */
 .list-grid{gap:0!important}
 .list-grid .list-card{border-radius:0!important;margin-top:-1px;box-shadow:none}
 .list-grid .list-card:first-child{border-radius:12px 12px 0 0!important;margin-top:0}
 .list-grid .list-card:last-child{border-radius:0 0 12px 12px!important}
 .list-grid .list-card:only-child{border-radius:12px!important}
-.phone2-edit-line{display:grid!important;grid-template-columns:minmax(150px,1fr) auto auto auto;gap:8px!important}
-.phone2-edit-line input{min-width:0;height:40px;padding:0 11px;border:1px solid #cfd8e6;border-radius:8px}
-.phone2-save-button,.phone2-call-button{height:40px;padding:0 12px;border:0;border-radius:8px;color:#fff;font-weight:800}
-.phone2-save-button{background:#16854b}
-.phone2-call-button{background:#2458df}
-.phone2-save-button:disabled,.phone2-call-button:disabled{cursor:not-allowed;opacity:.55}
-@media(max-width:620px){
-  .phone2-edit-line{grid-template-columns:1fr auto auto!important}
-}

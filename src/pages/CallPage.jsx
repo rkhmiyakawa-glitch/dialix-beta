@@ -11,7 +11,7 @@ import LastContactCard from "../components/LastContactCard";
 import HistoryTimeline from "../components/HistoryTimeline";
 import useToast from "../hooks/useToast";
 import { statuses } from "../data/sampleData";
-import { fetchAssignableProfiles, updateCustomerPhone2 } from "../services/dataService";
+import { fetchAssignableProfiles } from "../services/dataService";
 
 export default function CallPage({
   selectedList,
@@ -43,8 +43,6 @@ export default function CallPage({
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [callState, setCallState] = useState("room");
-  const [phone2, setPhone2] = useState(selectedCustomer.phone2 || "");
-  const [isPhone2Saving, setIsPhone2Saving] = useState(false);
   const { message, showToast } = useToast();
 
   useEffect(() => {
@@ -71,8 +69,6 @@ export default function CallPage({
     setIsDirty(false);
     setIsSaving(false);
     setCallState("room");
-    setPhone2(selectedCustomer.phone2 || "");
-    setIsPhone2Saving(false);
     onCallStateChange?.("room");
   }, [selectedCustomer.id]);
 
@@ -186,21 +182,6 @@ export default function CallPage({
     window.location.href = `tel:${phone}`;
   }
 
-  async function handleSavePhone2() {
-    if (isPhone2Saving) return;
-    setIsPhone2Saving(true);
-    try {
-      const result = await updateCustomerPhone2(selectedCustomer.id, phone2);
-      selectedCustomer.phone2 = result.phone2;
-      setPhone2(result.phone2);
-      showToast("電話番号2を保存しました。");
-    } catch (error) {
-      window.alert(error.message || "電話番号2の保存に失敗しました。");
-    } finally {
-      setIsPhone2Saving(false);
-    }
-  }
-
   async function handleCopyField(value, label) {
     const copyValue = String(value || "").trim();
     if (!copyValue) {
@@ -244,10 +225,6 @@ export default function CallPage({
                 callState={callState}
                 onZoomCall={handleZoomCall}
                 onCopyField={handleCopyField}
-                phone2={phone2}
-                onPhone2Change={setPhone2}
-                onSavePhone2={handleSavePhone2}
-                isPhone2Saving={isPhone2Saving}
                 isSaving={isSaving}
               />
             </section>

@@ -45,10 +45,6 @@ export default function CustomerInfoCard({
   callState,
   onZoomCall,
   onCopyField,
-  phone2,
-  onPhone2Change,
-  onSavePhone2,
-  isPhone2Saving = false,
   isSaving = false,
 }) {
   return (
@@ -97,28 +93,6 @@ export default function CustomerInfoCard({
             >
               <CopyIcon />
             </button>
-          </dd>
-        </div>
-
-        <div className="customer-phone-row">
-          <dt>電話番号2</dt>
-          <dd className="customer-value-line phone2-edit-line">
-            <input
-              type="tel"
-              value={phone2}
-              onChange={(event) => onPhone2Change(event.target.value)}
-              placeholder="電話番号を入力"
-              disabled={isSaving || isPhone2Saving}
-            />
-            <button className="phone2-save-button" type="button" onClick={onSavePhone2} disabled={isSaving || isPhone2Saving || phone2 === (customer.phone2 || "")}>
-              {isPhone2Saving ? "保存中" : "保存"}
-            </button>
-            {customer.phone2 && (
-              <>
-                <button className="phone2-call-button" type="button" onClick={() => onZoomCall(customer.phone2)} disabled={isSaving || isPhone2Saving}>発信</button>
-                <button className="icon-copy-button" type="button" onClick={() => onCopyField(customer.phone2, "電話番号2")} disabled={isSaving || isPhone2Saving} aria-label="電話番号2をコピー" title="電話番号2をコピー"><CopyIcon /></button>
-              </>
-            )}
           </dd>
         </div>
 

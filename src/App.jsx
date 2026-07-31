@@ -264,7 +264,6 @@ export default function App() {
       id: task.id,
       companyName: task.companyName || "顧客",
       phone: task.phone || "",
-      phone2: task.phone2 || "",
       address: task.address || "",
       businessSubcategory: task.businessSubcategory || "",
       ap: task.apName || "",

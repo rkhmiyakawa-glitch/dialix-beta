@@ -8,7 +8,6 @@ function mapTask(row) {
     listName: row.lists?.name || "リスト",
     companyName: row.company_name,
     phone: row.phone,
-    phone2: row.phone2 || "",
     address: row.address || "",
     ap: row.ap_name || "",
     status: row.status || "",
@@ -43,7 +42,7 @@ export async function fetchOperationalTasks(currentUser = {}) {
   const endOfToday = new Date(now);
   endOfToday.setHours(23, 59, 59, 999);
 
-  const baseColumns = "id,list_id,company_name,phone,phone2,address,ap_name,status,last_called_at,reminder_at,lists(name)";
+  const baseColumns = "id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)";
   const assigneeFilter = buildAssigneeFilter(currentUser);
   if (!assigneeFilter) return demoTasks;
 
@@ -110,7 +109,7 @@ export async function searchCustomersAcrossLists(conditions = {}) {
         .filter((customer) => {
           const matchesKeyword = !clean ||
             customer.companyName.toLowerCase().includes(normalized) ||
-            (digits && [customer.phone, customer.phone2].some((phone) => String(phone || "").replace(/\D/g, "").includes(digits)));
+            (digits && String(customer.phone || "").replace(/\D/g, "").includes(digits));
           const matchesAp = !ap || String(customer.ap || "").toLowerCase().includes(normalizedAp);
           const matchesStatus = statuses.length === 0 || statuses.some((status) =>
             (status === "uncontacted" && (!customer.status || customer.status === "未架電")) ||
@@ -128,14 +127,13 @@ export async function searchCustomersAcrossLists(conditions = {}) {
   }
   let query = supabase
     .from("customers")
-    .select("id,list_id,company_name,phone,phone2,address,ap_name,status,last_called_at,reminder_at,lists(name)");
+    .select("id,list_id,company_name,phone,address,ap_name,status,last_called_at,reminder_at,lists(name)");
   if (clean) {
     const digits = clean.replace(/\D/g, "");
     const safeText = clean.replace(/[%,]/g, "");
     const filters = [`company_name.ilike.%${safeText}%`];
     if (digits) {
       filters.push(`phone.ilike.%${digits}%`);
-      filters.push(`phone2.ilike.%${digits}%`);
     }
     query = query.or(filters.join(","));
   }
