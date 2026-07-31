@@ -2874,3 +2874,44 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   border-color: #2458df !important;
   color: #2458df !important;
 }
+
+/* v1.0.30: customer-page context, save action and edge navigation */
+.call-toolbar{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.status-save-area{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid #e4e9f1;
+}
+.status-save-area .primary-save-button{
+  min-width:180px;
+  min-height:48px;
+  border-radius:9px;
+  font-size:16px;
+  font-weight:900;
+}
+.status-save-area .primary-save-button:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+}
+.customer-edge-navigation{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  margin-top:20px;
+}
+.customer-edge-navigation .back-button{
+  min-width:0;
+  padding:10px 0;
+}
+@media(max-width:720px){
+  .status-save-area .primary-save-button{width:100%}
+}

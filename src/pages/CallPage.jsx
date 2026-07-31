@@ -6,7 +6,6 @@ import KpiCards from "../components/KpiCards";
 import CustomerInfoCard from "../components/CustomerInfoCard";
 import StatusButtons from "../components/StatusButtons";
 import MemoBox from "../components/MemoBox";
-import SaveBar from "../components/SaveBar";
 import LastContactCard from "../components/LastContactCard";
 import HistoryTimeline from "../components/HistoryTimeline";
 import useToast from "../hooks/useToast";
@@ -141,13 +140,7 @@ export default function CallPage({
       setCallState("room");
       onCallStateChange?.("room");
 
-      if (onOpenNext && navigationPosition < navigationTotal) {
-        showToast("保存しました。次の顧客を開きます。");
-        onOpenNext();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        showToast("保存しました。");
-      }
+      showToast("保存しました。");
     } catch (error) {
       window.alert(error.message || "保存に失敗しました。通信状態を確認して、もう一度お試しください。");
     } finally {
@@ -203,7 +196,6 @@ export default function CallPage({
       <Toast message={message} />
 
       <section className="content call-content">
-        <KpiCards items={kpi} />
         <div className="call-toolbar">
           <button className="back-button" type="button" onClick={handleBack} disabled={isSaving}>← 顧客一覧へ</button>
           <div className="call-progress">
@@ -211,6 +203,7 @@ export default function CallPage({
             <strong>{navigationLabel === "検索結果" ? "検索結果 " : ""}{navigationPosition} / {navigationTotal}</strong>
           </div>
         </div>
+        <KpiCards items={kpi} />
         <div className="call-layout call-layout-v112">
           <div className="call-stack call-stack-left">
             <section className="call-column customer-column-v106">
@@ -253,19 +246,31 @@ export default function CallPage({
                 assignableProfiles={assignableProfiles}
                 selectedAssigneeId={selectedAssigneeId}
                 onAssigneeChange={markDirty(setSelectedAssigneeId)}
+                onSave={handleSave}
+                isDirty={isDirty}
+                isSaving={isSaving}
               />
             </section>
           </div>
         </div>
-        <SaveBar
-          onSave={handleSave}
-          onPrevious={() => handleNavigate("previous")}
-          onNext={() => handleNavigate("next")}
-          isSaving={isSaving}
-          isDirty={isDirty}
-          hasPrevious={navigationPosition > 1}
-          hasNext={navigationPosition < navigationTotal}
-        />
+        <nav className="customer-edge-navigation" aria-label="顧客の前後移動">
+          <button
+            className="back-button"
+            type="button"
+            onClick={() => handleNavigate("previous")}
+            disabled={isSaving || navigationPosition <= 1}
+          >
+            ← 前の顧客
+          </button>
+          <button
+            className="back-button"
+            type="button"
+            onClick={() => handleNavigate("next")}
+            disabled={isSaving || navigationPosition >= navigationTotal}
+          >
+            次の顧客 →
+          </button>
+        </nav>
       </section>
     </main>
   );

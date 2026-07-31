@@ -138,7 +138,6 @@ export default function CustomerListPage({
             <button className="back-button" type="button" onClick={onBack}>
               ← リスト一覧へ
             </button>
-            <p className="eyebrow">CUSTOMERS</p>
             <h1>{selectedList.name}</h1>
             <p>
               全{customers.length}件
