@@ -13,6 +13,7 @@ const ReminderListPage = lazy(() => import("./pages/ReminderListPage"));
 import SystemBanner from "./components/SystemBanner";
 import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
+import useDeploymentRefresh from "./hooks/useDeploymentRefresh";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
 import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, saveCallResult } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
@@ -57,6 +58,7 @@ export default function App() {
   const [navigationLabel, setNavigationLabel] = useState("リスト");
   const [navigationReady, setNavigationReady] = useState(false);
   const [initialDataReady, setInitialDataReady] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const taskRefreshTimerRef = useRef(null);
   const customerDetailCacheRef = useRef(new Map());
   const customerRequestIdRef = useRef(0);
@@ -65,6 +67,17 @@ export default function App() {
   const userId = session?.user?.id || "";
   const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
   const presence = useCustomerPresence({ listId: selectedList?.id, userId, userName });
+  const deploymentNavigationKey = [
+    reminderPage,
+    showAttendance,
+    showLinks,
+    showMyPage,
+    showAdmin,
+    selectedList?.id,
+    selectedCustomer?.id,
+  ].join(":");
+
+  useDeploymentRefresh({ navigationKey: deploymentNavigationKey, hasUnsavedChanges });
 
   const lockedUsers = useMemo(
     () => selectedCustomer ? presence.getOtherUsers(selectedCustomer.id) : [],
@@ -622,6 +635,7 @@ export default function App() {
         currentProfile={currentProfile}
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
+        onUnsavedChange={setHasUnsavedChanges}
       />
     </>;
   }

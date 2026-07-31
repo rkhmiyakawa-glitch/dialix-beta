@@ -31,6 +31,7 @@ export default function CallPage({
   currentProfile,
   onOpenAdmin,
   onOpenMyPage,
+  onUnsavedChange,
 }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -80,6 +81,11 @@ export default function CallPage({
     window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
   }, [isDirty, isSaving]);
+
+  useEffect(() => {
+    onUnsavedChange?.(isDirty && !isSaving);
+    return () => onUnsavedChange?.(false);
+  }, [isDirty, isSaving, onUnsavedChange]);
 
   function markDirty(callback) {
     return (value) => {
