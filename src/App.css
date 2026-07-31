@@ -1572,6 +1572,34 @@ input,select,textarea,button{max-width:100%}
 .save-bar {
   left: var(--dialix-sidebar-width) !important;
 }
+.save-bar {
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+.save-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.save-navigation-button {
+  min-width: 220px;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 1px solid #c8d3e5;
+  border-radius: 9px;
+  background: #fff;
+  color: #1f4fd6;
+  font-size: 16px;
+  font-weight: 900;
+}
+.save-navigation-button:hover:not(:disabled) {
+  border-color: #1f4fd6;
+  background: #f5f8ff;
+}
+.save-navigation-button:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
 @media (max-width: 720px) {
   :root { --dialix-sidebar-width: 76px; }
   .sidebar-brand { padding: 0 !important; justify-content: center !important; }
@@ -1580,6 +1608,8 @@ input,select,textarea,button{max-width:100%}
   .sidebar-logout span:last-child { display: none !important; }
   .sidebar-nav button,
   .sidebar-logout { justify-content: center !important; padding: 0 !important; }
+  .save-bar-right { flex: 1; gap: 8px; }
+  .save-navigation-button { min-width: 0; flex: 1; padding: 0 8px; }
 }
 
 /* RC6.14.7: link ordering controls */

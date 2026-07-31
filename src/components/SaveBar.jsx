@@ -18,22 +18,24 @@ export default function SaveBar({
       >
         ← 前の顧客
       </button>
-      <button
-        className="primary-save-button"
-        type="button"
-        onClick={onSave}
-        disabled={isSaving || !isDirty}
-      >
-        {isSaving ? "保存中..." : isDirty ? "保存" : "保存済み"}
-      </button>
-      <button
-        className="save-navigation-button"
-        type="button"
-        onClick={onNext}
-        disabled={isSaving || !hasNext}
-      >
-        次の顧客 →
-      </button>
+      <div className="save-bar-right">
+        <button
+          className="save-navigation-button"
+          type="button"
+          onClick={onSave}
+          disabled={isSaving || !isDirty}
+        >
+          {isSaving ? "保存中..." : isDirty ? "保存" : "保存済み"}
+        </button>
+        <button
+          className="save-navigation-button"
+          type="button"
+          onClick={onNext}
+          disabled={isSaving || !hasNext}
+        >
+          次の顧客 →
+        </button>
+      </div>
     </section>
   );
 }

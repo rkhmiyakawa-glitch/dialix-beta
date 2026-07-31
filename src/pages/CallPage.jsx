@@ -5,6 +5,7 @@ import CustomerLockModal from "../components/CustomerLockModal";
 import KpiCards from "../components/KpiCards";
 import CustomerInfoCard from "../components/CustomerInfoCard";
 import StatusButtons from "../components/StatusButtons";
+import SaveBar from "../components/SaveBar";
 import MemoBox from "../components/MemoBox";
 import LastContactCard from "../components/LastContactCard";
 import HistoryTimeline from "../components/HistoryTimeline";
@@ -246,31 +247,19 @@ export default function CallPage({
                 assignableProfiles={assignableProfiles}
                 selectedAssigneeId={selectedAssigneeId}
                 onAssigneeChange={markDirty(setSelectedAssigneeId)}
-                onSave={handleSave}
-                isDirty={isDirty}
-                isSaving={isSaving}
               />
             </section>
           </div>
         </div>
-        <nav className="customer-edge-navigation" aria-label="顧客の前後移動">
-          <button
-            className="back-button"
-            type="button"
-            onClick={() => handleNavigate("previous")}
-            disabled={isSaving || navigationPosition <= 1}
-          >
-            ← 前の顧客
-          </button>
-          <button
-            className="back-button"
-            type="button"
-            onClick={() => handleNavigate("next")}
-            disabled={isSaving || navigationPosition >= navigationTotal}
-          >
-            次の顧客 →
-          </button>
-        </nav>
+        <SaveBar
+          onSave={handleSave}
+          onPrevious={() => handleNavigate("previous")}
+          onNext={() => handleNavigate("next")}
+          isSaving={isSaving}
+          isDirty={isDirty}
+          hasPrevious={navigationPosition > 1}
+          hasNext={navigationPosition < navigationTotal}
+        />
       </section>
     </main>
   );

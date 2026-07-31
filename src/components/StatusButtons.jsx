@@ -25,9 +25,6 @@ export default function StatusButtons({
   selectedAssigneeId = "",
   onAssigneeChange,
   onClearStatus,
-  onSave,
-  isDirty = false,
-  isSaving = false,
   disabled = false,
 }) {
   const details = detailOptions[selectedCategory] || [];
@@ -145,16 +142,6 @@ export default function StatusButtons({
         </div>
       </div>
 
-      <div className="status-save-area">
-        <button
-          className="primary-save-button"
-          type="button"
-          onClick={onSave}
-          disabled={isSaving || !isDirty}
-        >
-          {isSaving ? "保存中..." : isDirty ? "保存" : "保存済み"}
-        </button>
-      </div>
     </section>
   );
 }
