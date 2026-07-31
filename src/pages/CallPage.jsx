@@ -211,12 +211,6 @@ export default function CallPage({
             <strong>{navigationLabel === "検索結果" ? "検索結果 " : ""}{navigationPosition} / {navigationTotal}</strong>
           </div>
         </div>
-        <nav className="customer-navigation" aria-label="顧客移動">
-          <button type="button" onClick={() => handleNavigate("previous")} disabled={isSaving || navigationPosition <= 1}>← 前の顧客</button>
-          <span>{navigationLabel === "検索結果" ? "検索結果 " : ""}{navigationPosition} / {navigationTotal}</span>
-          <button type="button" onClick={() => handleNavigate("next")} disabled={isSaving || navigationPosition >= navigationTotal}>次の顧客 →</button>
-        </nav>
-
         <div className="call-layout call-layout-v112">
           <div className="call-stack call-stack-left">
             <section className="call-column customer-column-v106">
@@ -263,12 +257,15 @@ export default function CallPage({
             </section>
           </div>
         </div>
-        <SaveBar onSave={handleSave} isSaving={isSaving} isDirty={isDirty} />
-        <nav className="customer-navigation bottom" aria-label="顧客移動（下部）">
-          <button type="button" onClick={() => handleNavigate("previous")} disabled={isSaving || navigationPosition <= 1}>← 前の顧客</button>
-          <span>{navigationLabel === "検索結果" ? "検索結果 " : ""}{navigationPosition} / {navigationTotal}</span>
-          <button type="button" onClick={() => handleNavigate("next")} disabled={isSaving || navigationPosition >= navigationTotal}>次の顧客 →</button>
-        </nav>
+        <SaveBar
+          onSave={handleSave}
+          onPrevious={() => handleNavigate("previous")}
+          onNext={() => handleNavigate("next")}
+          isSaving={isSaving}
+          isDirty={isDirty}
+          hasPrevious={navigationPosition > 1}
+          hasNext={navigationPosition < navigationTotal}
+        />
       </section>
     </main>
   );

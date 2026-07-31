@@ -2863,3 +2863,14 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .list-grid .list-card:first-child{border-radius:12px 12px 0 0!important;margin-top:0}
 .list-grid .list-card:last-child{border-radius:0 0 12px 12px!important}
 .list-grid .list-card:only-child{border-radius:12px!important}
+
+/* v1.0.29: customer navigation is integrated into the fixed save bar */
+.save-navigation-button {
+  border: 1px solid #bfcbe0 !important;
+  background: #fff !important;
+  color: #172033 !important;
+}
+.save-navigation-button:hover:not(:disabled) {
+  border-color: #2458df !important;
+  color: #2458df !important;
+}
