@@ -4,13 +4,12 @@ import { fetchProfiles } from "../services/profileService";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import { claimOwnerRole, createManagedUser, deleteManagedUser, reorderManagedUsers, resetManagedUserPassword, updateManagedUser } from "../services/userManagementService";
 import CsvImportPanel from "./CsvImportPanel";
-import AuditLogPanel from "./AuditLogPanel";
 import DashboardPanel from "./DashboardPanel";
 import ReportsPanel from "./ReportsPanel";
 import ListManagementPanel from "./ListManagementPanel";
 import ShiftManagementPanel from "./ShiftManagementPanel";
 
-const roleLabels = { owner: "オーナー", admin: "管理者", sv: "SV", operator: "オペレーター" };
+const roleLabels = { owner: "オーナー", admin: "管理者S", admin_a: "管理者A", sv: "SV", operator: "オペレーター" };
 
 export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout, onOpenMyPage, onOpenOverdueCustomer }) {
   const [users, setUsers] = useState([]);
@@ -24,6 +23,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
   const currentRole = String(currentProfile?.role || "").toLowerCase();
   const canManageUsers = ["owner", "admin"].includes(currentRole);
+  const hasLimitedAdminView = ["admin_a", "sv", "supervisor"].includes(currentRole);
   const ownerExists = useMemo(() => users.some((u) => String(u.role).toLowerCase() === "owner"), [users]);
   const activeAdminCount = useMemo(() => users.filter((u) => u.role === "admin" && u.isActive).length, [users]);
 
@@ -160,14 +160,13 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
       <div className="admin-tabs">
         <button className={`admin-tab ${activeTab === "dashboard" ? "active" : ""}`} onClick={() => setActiveTab("dashboard")}>ダッシュボード</button>
         <button className={`admin-tab ${activeTab === "users" ? "active" : ""}`} onClick={() => setActiveTab("users")}>ユーザー管理</button>
-        <button className={`admin-tab ${activeTab === "csv" ? "active" : ""}`} onClick={() => setActiveTab("csv")}>CSVインポート</button>
-        <button className={`admin-tab ${activeTab === "lists" ? "active" : ""}`} onClick={() => setActiveTab("lists")}>リスト管理</button>
+        {!hasLimitedAdminView && <button className={`admin-tab ${activeTab === "csv" ? "active" : ""}`} onClick={() => setActiveTab("csv")}>CSVインポート</button>}
+        {!hasLimitedAdminView && <button className={`admin-tab ${activeTab === "lists" ? "active" : ""}`} onClick={() => setActiveTab("lists")}>リスト管理</button>}
         <button className={`admin-tab ${activeTab === "reports" ? "active" : ""}`} onClick={() => setActiveTab("reports")}>レポート</button>
-        {canManageUsers && <button className={`admin-tab ${activeTab === "shifts" ? "active" : ""}`} onClick={() => setActiveTab("shifts")}>シフト管理</button>}
-        <button className={`admin-tab ${activeTab === "audit" ? "active" : ""}`} onClick={() => setActiveTab("audit")}>監査ログ</button>
+        {!hasLimitedAdminView && canManageUsers && <button className={`admin-tab ${activeTab === "shifts" ? "active" : ""}`} onClick={() => setActiveTab("shifts")}>シフト管理</button>}
       </div>
 
-      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "shifts" ? <ShiftManagementPanel currentProfile={currentProfile} /> : activeTab === "audit" ? <AuditLogPanel /> : <section className="admin-panel">
+      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" && !hasLimitedAdminView ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" && !hasLimitedAdminView ? <ListManagementPanel /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "shifts" && !hasLimitedAdminView ? <ShiftManagementPanel currentProfile={currentProfile} /> : <section className="admin-panel">
         {!ownerExists && currentRole === "admin" && <div className="owner-claim-box owner-claim-box-compact"><button className="primary-button" type="button" onClick={claimOwner} disabled={saving}>{saving ? "設定中..." : "自分をオーナーに設定"}</button></div>}
         <div className="admin-panel-head"><div><h2>ユーザー一覧</h2></div><button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={!canManageUsers}>＋ ユーザー追加</button></div>
         {error && <div className="admin-error">{error}</div>}
@@ -179,8 +178,8 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
       </section>}
     </section>
 
-    {creating && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー追加</h2><label>名前<input value={newUser.displayName} onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })} /></label><label>メールアドレス<input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></label><label>権限<select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}><option value="admin">管理者</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label>初期パスワード<input type="password" minLength="8" autoComplete="new-password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label><label>初期パスワード（確認）<input type="password" minLength="8" autoComplete="new-password" value={newUser.passwordConfirm} onChange={(e) => setNewUser({ ...newUser, passwordConfirm: e.target.value })} placeholder="もう一度入力" /></label><label className="toggle-row"><input type="checkbox" checked={newUser.isActive} onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })} />アカウントを有効にする</label><p className="csv-note">オーナー権限はユーザー追加・編集画面から付与できません。</p><div className="modal-actions"><button className="secondary-button" onClick={() => setCreating(false)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={createUser} disabled={saving}>{saving ? "登録中..." : "登録"}</button></div></section></div>}
+    {creating && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー追加</h2><label>名前<input value={newUser.displayName} onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })} /></label><label>メールアドレス<input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></label><label>権限<select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}><option value="admin">管理者S</option><option value="admin_a">管理者A</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label>初期パスワード<input type="password" minLength="8" autoComplete="new-password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label><label>初期パスワード（確認）<input type="password" minLength="8" autoComplete="new-password" value={newUser.passwordConfirm} onChange={(e) => setNewUser({ ...newUser, passwordConfirm: e.target.value })} placeholder="もう一度入力" /></label><label className="toggle-row"><input type="checkbox" checked={newUser.isActive} onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })} />アカウントを有効にする</label><p className="csv-note">オーナー権限はユーザー追加・編集画面から付与できません。</p><div className="modal-actions"><button className="secondary-button" onClick={() => setCreating(false)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={createUser} disabled={saving}>{saving ? "登録中..." : "登録"}</button></div></section></div>}
 
-    {editing && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー編集</h2><label>名前<input value={editing.displayName} onChange={(e) => setEditing({ ...editing, displayName: e.target.value })} /></label><label>権限<select value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })}><option value="admin">管理者</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label className="toggle-row"><input type="checkbox" checked={editing.isActive} onChange={(e) => setEditing({ ...editing, isActive: e.target.checked })} />アカウントを有効にする</label><div className="modal-actions"><button className="secondary-button" onClick={() => setEditing(null)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={saveEdit} disabled={saving}>{saving ? "保存中..." : "保存"}</button></div></section></div>}
+    {editing && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー編集</h2><label>名前<input value={editing.displayName} onChange={(e) => setEditing({ ...editing, displayName: e.target.value })} /></label><label>権限<select value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })}><option value="admin">管理者S</option><option value="admin_a">管理者A</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label className="toggle-row"><input type="checkbox" checked={editing.isActive} onChange={(e) => setEditing({ ...editing, isActive: e.target.checked })} />アカウントを有効にする</label><div className="modal-actions"><button className="secondary-button" onClick={() => setEditing(null)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={saveEdit} disabled={saving}>{saving ? "保存中..." : "保存"}</button></div></section></div>}
   </main>;
 }

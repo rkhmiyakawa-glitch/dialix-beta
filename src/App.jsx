@@ -609,7 +609,7 @@ export default function App() {
   }
 
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
-  const canOpenAdmin = ["owner", "admin", "sv", "supervisor", "管理者", "オーナー"].includes(normalizedRole);
+  const canOpenAdmin = ["owner", "admin", "admin_a", "sv", "supervisor", "管理者", "管理者s", "管理者a", "オーナー"].includes(normalizedRole);
 
   if (showAdmin && currentProfile && canOpenAdmin) {
     return <>

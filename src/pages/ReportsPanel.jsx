@@ -3,7 +3,7 @@ import { downloadOperatorReportCsv, fetchOperatorReport } from "../services/repo
 
 const today = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
 const firstOfMonth = () => `${today().slice(0, 7)}-01`;
-const roleLabel = { owner: "オーナー", admin: "管理者", sv: "SV", operator: "オペレーター" };
+const roleLabel = { owner: "オーナー", admin: "管理者S", admin_a: "管理者A", sv: "SV", operator: "オペレーター" };
 
 export default function ReportsPanel() {
   const [startDate, setStartDate] = useState(firstOfMonth());

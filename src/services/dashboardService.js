@@ -68,7 +68,7 @@ export async function fetchDashboardData(period = "today") {
   const overdue = (overdueResult.data || []).map(mapReminder);
 
   const activeApNames = profiles
-    .filter((profile) => ["owner", "admin", "sv", "operator"].includes(String(profile.role || "").toLowerCase()))
+    .filter((profile) => ["owner", "admin", "admin_a", "sv", "operator"].includes(String(profile.role || "").toLowerCase()))
     .map((profile) => profile.display_name || "")
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b, "ja"));

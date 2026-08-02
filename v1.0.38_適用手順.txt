@@ -1,0 +1,13 @@
+DIALIX v1.0.38 適用手順
+
+1. Supabase SQL Editorで「v1.0.38_権限追加.sql」を実行してください。
+2. Supabase Edge Functionsの「admin-users」を、同梱の supabase/functions/admin-users/index.ts で再デプロイしてください。
+3. ZIPの内容をGitHubへ上書きし、Vercelを再デプロイしてください。
+
+変更内容
+- 監査ログを管理画面から削除
+- 既存の管理者を「管理者S」表記へ変更
+- 管理者A権限を追加
+- SV・管理者Aの管理画面を「ダッシュボード／ユーザー管理／レポート」に制限
+- SV・管理者Aのユーザー管理は一覧閲覧のみ
+

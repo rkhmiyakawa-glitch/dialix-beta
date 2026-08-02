@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type Role = "owner" | "admin" | "sv" | "operator";
+type Role = "owner" | "admin" | "admin_a" | "sv" | "operator";
 type AssignableRole = Exclude<Role, "owner">;
 
 type RequestBody = {
@@ -36,7 +36,7 @@ function normalizeEmail(value: unknown) {
 }
 
 function validateAssignableRole(value: unknown): AssignableRole {
-  if (value === "admin" || value === "sv" || value === "operator") return value;
+  if (value === "admin" || value === "admin_a" || value === "sv" || value === "operator") return value;
   return "operator";
 }
 

@@ -137,7 +137,7 @@ function SidebarAttendance({ currentProfile }) {
 
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
-  const canOpenAdmin = ["owner", "admin", "sv", "supervisor", "管理者", "オーナー"].includes(normalizedRole);
+  const canOpenAdmin = ["owner", "admin", "admin_a", "sv", "supervisor", "管理者", "管理者s", "管理者a", "オーナー"].includes(normalizedRole);
 
   async function goLists() {
     await onGoLists?.();
