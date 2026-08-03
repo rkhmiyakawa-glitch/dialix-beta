@@ -28,7 +28,6 @@ export default function HistoryTimeline({ history }) {
         <div className="timeline">
           {sortedHistory.map((item) => (
             <article className="timeline-item" key={item.id}>
-              <span className="timeline-dot" />
               <div className="timeline-card">
                 <div className="history-header">
                   <strong>{item.status}</strong>
