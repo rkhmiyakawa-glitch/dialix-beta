@@ -84,7 +84,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   }
 
   async function saveEdit() {
-    if (!editing.displayName.trim()) return window.alert("名前を入力してください。");
+    if (!editing.displayName.trim() || !editing.email.trim()) return window.alert("名前とメールアドレスを入力してください。");
     const original = users.find((u) => u.id === editing.id);
     if (original?.role === "owner") return window.alert("オーナーは編集できません。");
     const removingLastAdmin = original?.role === "admin" && original.isActive && activeAdminCount <= 1 && !ownerExists && (editing.role !== "admin" || !editing.isActive);
@@ -92,7 +92,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
     setSaving(true); setError("");
     try {
-      await updateManagedUser({ userId: editing.id, displayName: editing.displayName, role: editing.role, isActive: editing.isActive });
+      await updateManagedUser({ userId: editing.id, displayName: editing.displayName, email: editing.email, role: editing.role, isActive: editing.isActive });
       setEditing(null); await reload();
     } catch (e) { setError(e.message || "更新に失敗しました。"); }
     finally { setSaving(false); }
@@ -180,6 +180,6 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
     {creating && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー追加</h2><label>名前<input value={newUser.displayName} onChange={(e) => setNewUser({ ...newUser, displayName: e.target.value })} /></label><label>メールアドレス<input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></label><label>権限<select value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}><option value="admin">管理者S</option><option value="admin_a">管理者A</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label>初期パスワード<input type="password" minLength="8" autoComplete="new-password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="8文字以上" /></label><label>初期パスワード（確認）<input type="password" minLength="8" autoComplete="new-password" value={newUser.passwordConfirm} onChange={(e) => setNewUser({ ...newUser, passwordConfirm: e.target.value })} placeholder="もう一度入力" /></label><label className="toggle-row"><input type="checkbox" checked={newUser.isActive} onChange={(e) => setNewUser({ ...newUser, isActive: e.target.checked })} />アカウントを有効にする</label><p className="csv-note">オーナー権限はユーザー追加・編集画面から付与できません。</p><div className="modal-actions"><button className="secondary-button" onClick={() => setCreating(false)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={createUser} disabled={saving}>{saving ? "登録中..." : "登録"}</button></div></section></div>}
 
-    {editing && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー編集</h2><label>名前<input value={editing.displayName} onChange={(e) => setEditing({ ...editing, displayName: e.target.value })} /></label><label>権限<select value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })}><option value="admin">管理者S</option><option value="admin_a">管理者A</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label className="toggle-row"><input type="checkbox" checked={editing.isActive} onChange={(e) => setEditing({ ...editing, isActive: e.target.checked })} />アカウントを有効にする</label><div className="modal-actions"><button className="secondary-button" onClick={() => setEditing(null)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={saveEdit} disabled={saving}>{saving ? "保存中..." : "保存"}</button></div></section></div>}
+    {editing && <div className="lock-overlay"><section className="edit-modal"><h2>ユーザー編集</h2><label>名前<input value={editing.displayName} onChange={(e) => setEditing({ ...editing, displayName: e.target.value })} /></label><label>メールアドレス<input type="email" value={editing.email || ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></label><label>権限<select value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })}><option value="admin">管理者S</option><option value="admin_a">管理者A</option><option value="sv">SV</option><option value="operator">オペレーター</option></select></label><label className="toggle-row"><input type="checkbox" checked={editing.isActive} onChange={(e) => setEditing({ ...editing, isActive: e.target.checked })} />アカウントを有効にする</label><div className="modal-actions"><button className="secondary-button" onClick={() => setEditing(null)} disabled={saving}>キャンセル</button><button className="primary-button" onClick={saveEdit} disabled={saving}>{saving ? "保存中..." : "保存"}</button></div></section></div>}
   </main>;
 }

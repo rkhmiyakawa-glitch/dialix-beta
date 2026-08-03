@@ -1,0 +1,11 @@
+DIALIX v1.0.39 適用手順
+
+1. Supabase Edge Functionsの「admin-users」を、同梱の supabase/functions/admin-users/index.ts で再デプロイしてください。
+2. ZIPの内容をGitHubへ上書きし、Vercelを再デプロイしてください。
+
+変更内容
+- ユーザー管理の編集画面にメールアドレス入力欄を追加
+- 保存時にSupabase Authのログイン用メールアドレスとprofiles.emailを同時更新
+- メールアドレスの未入力・不正形式・重複時はエラーを表示して更新を中止
+
+追加SQLの実行は不要です。

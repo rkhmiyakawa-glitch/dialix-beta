@@ -208,18 +208,21 @@ Deno.serve(async (req) => {
 
     if (action === "update") {
       const displayName = String(body.displayName ?? targetProfile.display_name ?? "").trim();
+      const email = normalizeEmail(body.email ?? targetProfile.email);
       const role = validateAssignableRole(body.role ?? targetProfile.role);
       const isActive = body.isActive !== false;
       const removesLastManager = targetRole === "admin" && targetProfile.is_active !== false && (activeAdminCount ?? 0) <= 1 && (activeOwnerCount ?? 0) === 0 && (role !== "admin" || !isActive);
       if (removesLastManager) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 409);
-      if (!displayName) return json({ ok: false, error: "名前を入力してください。" }, 400);
+      if (!displayName || !email) return json({ ok: false, error: "名前とメールアドレスを入力してください。" }, 400);
 
       const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, {
+        email,
+        email_confirm: true,
         user_metadata: { display_name: displayName, role },
       });
       if (authUpdateError) throw authUpdateError;
 
-      const { error: updateError } = await admin.from("profiles").update({ display_name: displayName, role, is_active: isActive }).eq("id", userId);
+      const { error: updateError } = await admin.from("profiles").update({ display_name: displayName, email, role, is_active: isActive }).eq("id", userId);
       if (updateError) throw updateError;
       return json({ ok: true });
     }
@@ -246,7 +249,12 @@ Deno.serve(async (req) => {
 
     return json({ ok: false, error: "未対応の操作です。" }, 400);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "ユーザー管理処理に失敗しました。";
+    const rawMessage = error instanceof Error ? error.message : "ユーザー管理処理に失敗しました。";
+    const message = /already.*registered|already.*exists|email.*taken/i.test(rawMessage)
+      ? "このメールアドレスはすでに使用されています。"
+      : /invalid.*email|email.*invalid/i.test(rawMessage)
+        ? "メールアドレスの形式が正しくありません。"
+        : rawMessage;
     console.error("admin-users error", error);
     return json({ ok: false, error: message }, 500);
   }
