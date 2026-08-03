@@ -215,16 +215,33 @@ Deno.serve(async (req) => {
       if (removesLastManager) return json({ ok: false, error: "最後の管理者は降格・停止できません。" }, 409);
       if (!displayName || !email) return json({ ok: false, error: "名前とメールアドレスを入力してください。" }, 400);
 
-      const { error: authUpdateError } = await admin.auth.admin.updateUserById(userId, {
+      const previousEmail = normalizeEmail(targetProfile.email);
+      const { data: authUpdateData, error: authUpdateError } = await admin.auth.admin.updateUserById(userId, {
         email,
         email_confirm: true,
         user_metadata: { display_name: displayName, role },
       });
       if (authUpdateError) throw authUpdateError;
+      const authEmail = normalizeEmail(authUpdateData.user?.email);
+      if (authEmail !== email) {
+        return json({ ok: false, error: "ログイン用メールアドレスを更新できませんでした。" }, 500);
+      }
 
-      const { error: updateError } = await admin.from("profiles").update({ display_name: displayName, email, role, is_active: isActive }).eq("id", userId);
-      if (updateError) throw updateError;
-      return json({ ok: true });
+      const { data: updatedProfile, error: updateError } = await admin
+        .from("profiles")
+        .update({ display_name: displayName, email, role, is_active: isActive })
+        .eq("id", userId)
+        .select("id,display_name,email,role,is_active")
+        .single();
+      if (updateError || normalizeEmail(updatedProfile?.email) !== email) {
+        // Authだけが変更された不整合を残さないよう、プロフィール更新失敗時は元へ戻す。
+        if (previousEmail) {
+          await admin.auth.admin.updateUserById(userId, { email: previousEmail, email_confirm: true }).catch(() => undefined);
+        }
+        if (updateError) throw updateError;
+        return json({ ok: false, error: "プロフィールのメールアドレスを更新できませんでした。" }, 500);
+      }
+      return json({ ok: true, userId, email: updatedProfile.email });
     }
 
     if (action === "reset_password") {

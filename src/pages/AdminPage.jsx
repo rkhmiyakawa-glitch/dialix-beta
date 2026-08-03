@@ -93,7 +93,15 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
     setSaving(true); setError("");
     try {
       await updateManagedUser({ userId: editing.id, displayName: editing.displayName, email: editing.email, role: editing.role, isActive: editing.isActive });
-      setEditing(null); await reload();
+      const requestedEmail = editing.email.trim().toLowerCase();
+      const refreshedUsers = await fetchProfiles();
+      const refreshedUser = refreshedUsers.find((user) => user.id === editing.id);
+      if (!refreshedUser || refreshedUser.email.trim().toLowerCase() !== requestedEmail) {
+        throw new Error("メールアドレスの反映を確認できませんでした。画面を再読み込みして、もう一度お試しください。");
+      }
+      setUsers(refreshedUsers);
+      setEditing(null);
+      window.alert("ユーザー情報を更新しました。変更後のメールアドレスは次回ログインから使用できます。");
     } catch (e) { setError(e.message || "更新に失敗しました。"); }
     finally { setSaving(false); }
   }

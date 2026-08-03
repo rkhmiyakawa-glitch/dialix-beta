@@ -26,7 +26,14 @@ export function createManagedUser(payload) {
 }
 
 export function updateManagedUser(payload) {
-  return invokeAdminUsers({ action: "update", ...payload });
+  return invokeAdminUsers({ action: "update", ...payload }).then((result) => {
+    const requestedEmail = String(payload.email || "").trim().toLowerCase();
+    const updatedEmail = String(result.email || "").trim().toLowerCase();
+    if (!updatedEmail || updatedEmail !== requestedEmail) {
+      throw new Error("メールアドレスが反映されませんでした。Supabaseの『admin-users』Edge Functionを最新版へ再デプロイしてください。");
+    }
+    return result;
+  });
 }
 
 export function resetManagedUserPassword(userId, password) {
