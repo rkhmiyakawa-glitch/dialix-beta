@@ -201,3 +201,104 @@ label,dt,.eyebrow,
   .shift-calendar-grid.weekday-row,
   .shift-calendar-grid:not(.weekday-row){min-width:720px!important}
 }
+
+/* v1.0.49 — dimensional surfaces, legible type and restored status colours */
+:root{
+  --ui-shadow:0 1px 2px rgba(11,31,58,.06),0 10px 26px rgba(11,31,58,.075);
+  --ui-shadow-raised:0 1px 1px rgba(255,255,255,.9) inset,0 2px 4px rgba(11,31,58,.07),0 12px 28px rgba(11,31,58,.09);
+  --ui-shadow-control:0 1px 0 rgba(255,255,255,.95) inset,0 2px 5px rgba(11,31,58,.10),0 8px 16px rgba(11,31,58,.055);
+}
+
+body{font-weight:400!important;color:#17243a!important}
+p,li,dd,td,input,select,textarea,button{font-weight:400}
+h1,h2,h3,h4,.page-title h1,.customer-list-heading h1,.section-heading h2,
+.admin-panel-head h2,.dashboard-box-head h3,.task-panel-head h3{font-weight:600!important}
+strong,b,.list-name,.history-ap,.customer-details dd,.last-contact-panel dd{font-weight:600!important}
+label,dt,.eyebrow,.customer-table th,.admin-table th,.dashboard-table th,
+.sidebar-nav button,.sidebar-bottom-action,.sidebar-logout{font-weight:500!important}
+.primary-button,.primary-save-button,.start-call-button,.call-button,
+.search-row button,.customer-search-row button,.shift-save-button,.login-form button,
+.secondary-button,.secondary-save-button,.table-action,.copy-button,
+.customer-filter-clear,.open-customer-button,.header-admin-button,.admin-header-button,
+.customer-navigation button,.pagination button,.link-order-button,.status-clear-button,
+.status-button{font-weight:500!important}
+
+/* Keep text distinct from every light and dark surface. */
+.app-page,.content,.panel,.simple-panel,.admin-panel,.search-panel,
+.customer-filter-panel,.customer-table-card,.kpi-strip,.dashboard-card,.dashboard-box,
+.task-panel,.list-card,.mypage-panel,.reminder-page-panel{color:#17243a!important}
+.page-title p,.admin-panel-head p,.section-heading span,.panel p,.simple-panel p,
+.list-meta,.task-row small,.customer-name-button small,.mypage-note,.version{color:#657287!important}
+.app-sidebar,.app-sidebar strong,.app-sidebar h1,.app-sidebar h2,.app-sidebar h3{color:#f7fbff!important}
+.app-sidebar p,.app-sidebar small,.app-sidebar .sidebar-attendance-status{color:#b9c8d9!important}
+button:disabled,input:disabled,select:disabled,textarea:disabled{opacity:.62;color:#657287!important}
+
+/* One depth language across cards, controls, tables and dialogs. */
+.panel,.simple-panel,.admin-panel,.search-panel,.customer-filter-panel,.customer-table-card,
+.kpi-strip,.dashboard-card,.dashboard-box,.task-panel,.task-summary-card,.list-card,
+.mypage-panel,.attendance-correction-panel,.shift-registration-section,.calendar-overview,
+.link-card,.reminder-page-panel,.ranking-box,.global-search-panel{
+  border-color:#d7e0ea!important;
+  background:linear-gradient(180deg,#fff 0%,#fcfdff 100%)!important;
+  box-shadow:var(--ui-shadow-raised)!important;
+}
+.panel,.simple-panel,.admin-panel,.search-panel,.customer-filter-panel,.customer-table-card,
+.kpi-strip,.dashboard-box,.task-panel,.list-card,.mypage-panel,.calendar-overview{
+  border-top-color:#edf2f7!important;
+}
+.list-card:hover,.task-row:hover,.link-card:hover{transform:translateY(-2px)!important;box-shadow:0 2px 4px rgba(11,31,58,.08),0 16px 34px rgba(11,31,58,.12)!important}
+.login-card,.edit-modal,.lock-modal,.attendance-edit-modal,.modal-card{
+  background:linear-gradient(180deg,#fff,#fbfcfe)!important;
+  box-shadow:0 2px 5px rgba(11,31,58,.10),0 28px 70px rgba(11,31,58,.20)!important;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea,.status-multi-trigger{
+  box-shadow:inset 0 2px 4px rgba(11,31,58,.055),0 1px 0 #fff!important;
+}
+.secondary-button,.secondary-save-button,.table-action,.copy-button,.customer-filter-clear,
+.open-customer-button,.header-admin-button,.admin-header-button,.customer-navigation button,
+.pagination button,.link-order-button,.status-clear-button{
+  background:linear-gradient(180deg,#fff 0%,#f3f6f9 100%)!important;
+  box-shadow:var(--ui-shadow-control)!important;
+}
+.primary-button,.primary-save-button,.start-call-button,.call-button,.search-row button,
+.customer-search-row button,.shift-save-button,.login-form button{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -2px 3px rgba(0,0,0,.18),0 3px 6px rgba(11,31,58,.18),0 10px 22px rgba(11,31,58,.13)!important;
+}
+button:active:not(:disabled){transform:translateY(1px)!important;box-shadow:inset 0 2px 4px rgba(11,31,58,.16),0 1px 2px rgba(11,31,58,.08)!important}
+.customer-table thead th,.admin-table thead th,.dashboard-table thead th{
+  background:linear-gradient(180deg,#f8fafc,#eef3f7)!important;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #d9e1ea!important;
+}
+.customer-table tbody tr:nth-child(even),.admin-table tbody tr:nth-child(even),.dashboard-table tbody tr:nth-child(even){background:#fbfcfe!important}
+
+/* KPI cards use the same raised construction with a restrained navy accent. */
+.kpi-card,.dashboard-card,.mypage-kpi-card,.task-summary-card,.management-kpi-cards article{
+  border:1px solid #d5dee8!important;
+  border-top:3px solid #183f69!important;
+  background:linear-gradient(145deg,#fff 0%,#f4f7fa 100%)!important;
+  box-shadow:inset 0 1px 0 #fff,0 2px 4px rgba(11,31,58,.07),0 12px 24px rgba(11,31,58,.085)!important;
+}
+.kpi-card:hover,.dashboard-card:hover,.mypage-kpi-card:hover,.task-summary-card:hover{
+  transform:translateY(-2px);box-shadow:inset 0 1px 0 #fff,0 3px 6px rgba(11,31,58,.08),0 16px 30px rgba(11,31,58,.11)!important
+}
+.kpi-card strong,.dashboard-card strong,.mypage-kpi-card strong,.task-summary-card strong{font-weight:600!important;color:#102b49!important}
+
+/* Status buttons: neutral before selection, individual colour after selection. */
+.status-button,.status-detail-button{
+  background:linear-gradient(180deg,#fff 0%,#f2f5f8 100%)!important;
+  border:1px solid #cbd6e1!important;
+  color:#25364d!important;
+  box-shadow:var(--ui-shadow-control)!important;
+}
+.status-button:hover:not(:disabled),.status-detail-button:hover:not(:disabled){transform:translateY(-1px)!important;background:linear-gradient(180deg,#fff,#eaf0f5)!important}
+.status-button.gray.is-selected{background:linear-gradient(180deg,#768396,#566274)!important;border-color:#566274!important;color:#fff!important}
+.status-button.slate.is-selected{background:linear-gradient(180deg,#53647a,#354458)!important;border-color:#354458!important;color:#fff!important}
+.status-button.red.is-selected{background:linear-gradient(180deg,#d65a61,#b73740)!important;border-color:#ad3039!important;color:#fff!important}
+.status-button.blue.is-selected{background:linear-gradient(180deg,#3976bd,#24558f)!important;border-color:#1f4b80!important;color:#fff!important}
+.status-button.green.is-selected{background:linear-gradient(180deg,#2e9a69,#19764b)!important;border-color:#166a43!important;color:#fff!important}
+.status-button.orange.is-selected{background:linear-gradient(180deg,#d89237,#ad6818)!important;border-color:#9d5d13!important;color:#fff!important}
+.status-button.purple.is-selected{background:linear-gradient(180deg,#805ac0,#6540a3)!important;border-color:#59378f!important;color:#fff!important}
+.status-button.is-selected{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 4px rgba(0,0,0,.16),0 3px 6px rgba(11,31,58,.16),0 9px 18px rgba(11,31,58,.12)!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.16)
+}
