@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { fetchKpiResetState } from "./kpiResetService";
 
 function periodRange(period) {
   const now = new Date();
@@ -34,9 +35,12 @@ const demo = {
 export async function fetchDashboardData(period = "today") {
   if (!isSupabaseConfigured) return demo;
   const { start, end, label } = periodRange(period);
+  const resetState = await fetchKpiResetState();
+  const resetAt = resetState.resetAt ? new Date(resetState.resetAt) : null;
+  const effectiveStart = resetAt && resetAt > start ? resetAt : start;
   const historyColumns = "id,user_id,operator_name,status,memo,called_at,customers(company_name)";
   const [historyResult, profilesResult, overdueResult] = await Promise.all([
-    supabase.from("call_histories").select(historyColumns).gte("called_at", start.toISOString()).lte("called_at", end.toISOString()).order("called_at", { ascending: false }),
+    supabase.from("call_histories").select(historyColumns).gte("called_at", effectiveStart.toISOString()).lte("called_at", end.toISOString()).order("called_at", { ascending: false }),
     supabase.from("profiles").select("id,display_name,role,is_active").eq("is_active", true),
     supabase.from("customers").select("id,list_id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
   ]);
@@ -89,7 +93,7 @@ export async function fetchDashboardData(period = "today") {
       activeOperatorCount: callRanking.length,
       totalOperatorCount: profiles.length,
       overdueCount: overdue.length,
-    }, callRanking, prospectRanking, tossupRanking, overdue,
+    }, callRanking, prospectRanking, tossupRanking, overdue, resetAt: resetState.resetAt, canUndoReset: resetState.canUndo,
   };
 }
 

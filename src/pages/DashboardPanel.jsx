@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchDashboardData, subscribeDashboardChanges } from "../services/dashboardService";
+import { resetManagementKpi, undoManagementKpiReset } from "../services/kpiResetService";
 
 function MetricCard({ label, value, sub }) {
   return <article className="dashboard-card"><p>{label}</p><strong>{value}</strong><span>{sub}</span></article>;
@@ -23,12 +24,29 @@ function RankingBox({ title, rows, metricKey, emptyText }) {
   </section>;
 }
 
-export default function DashboardPanel({ onOpenOverdueCustomer }) {
+export default function DashboardPanel({ onOpenOverdueCustomer, canResetKpi = false }) {
   const [period, setPeriod] = useState("today");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedAp, setSelectedAp] = useState("all");
+  const [resetting, setResetting] = useState(false);
+
+  async function handleReset() {
+    if (!window.confirm("管理ダッシュボードとレポートの集計をリセットしますか？\n顧客の架電履歴は削除されません。")) return;
+    setResetting(true); setError("");
+    try { await resetManagementKpi(); await reload(); window.alert("集計をリセットしました。"); }
+    catch (e) { setError(e.message || "リセットできませんでした。"); }
+    finally { setResetting(false); }
+  }
+
+  async function handleUndo() {
+    if (!window.confirm("直前のリセットを元に戻しますか？")) return;
+    setResetting(true); setError("");
+    try { await undoManagementKpiReset(); await reload(); window.alert("直前のリセットを元に戻しました。"); }
+    catch (e) { setError(e.message || "元に戻せませんでした。"); }
+    finally { setResetting(false); }
+  }
 
   async function reload() {
     setLoading(true); setError("");
@@ -69,8 +87,11 @@ export default function DashboardPanel({ onOpenOverdueCustomer }) {
           <option value="today">今日</option><option value="week">今週</option><option value="month">今月</option>
         </select>
         <button className="secondary-button" type="button" onClick={reload}>更新</button>
+        {canResetKpi && <button className="danger-outline-button" type="button" onClick={handleReset} disabled={resetting}>リセット</button>}
+        {canResetKpi && <button className="secondary-button" type="button" onClick={handleUndo} disabled={resetting || !data?.canUndoReset}>元に戻す</button>}
       </div>
     </div>
+    {data?.resetAt && <p className="kpi-reset-note">{new Date(data.resetAt).toLocaleString("ja-JP")} 以降の実績を集計中</p>}
     {error && <div className="admin-error">{error}</div>}
     {data && <>
       <div className="dashboard-grid">

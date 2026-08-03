@@ -23,6 +23,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
 
   const currentRole = String(currentProfile?.role || "").toLowerCase();
   const canManageUsers = ["owner", "admin"].includes(currentRole);
+  const canResetKpi = ["owner", "admin"].includes(currentRole);
   const hasLimitedAdminView = ["admin_a", "sv", "supervisor"].includes(currentRole);
   const ownerExists = useMemo(() => users.some((u) => String(u.role).toLowerCase() === "owner"), [users]);
   const activeAdminCount = useMemo(() => users.filter((u) => u.role === "admin" && u.isActive).length, [users]);
@@ -174,7 +175,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
         {!hasLimitedAdminView && canManageUsers && <button className={`admin-tab ${activeTab === "shifts" ? "active" : ""}`} onClick={() => setActiveTab("shifts")}>シフト管理</button>}
       </div>
 
-      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} /> : activeTab === "csv" && !hasLimitedAdminView ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" && !hasLimitedAdminView ? <ListManagementPanel canReorder={currentRole === "owner"} /> : activeTab === "reports" ? <ReportsPanel /> : activeTab === "shifts" && !hasLimitedAdminView ? <ShiftManagementPanel currentProfile={currentProfile} /> : <section className="admin-panel">
+      {activeTab === "dashboard" ? <DashboardPanel onOpenOverdueCustomer={onOpenOverdueCustomer} canResetKpi={canResetKpi} /> : activeTab === "csv" && !hasLimitedAdminView ? <CsvImportPanel currentProfile={currentProfile} /> : activeTab === "lists" && !hasLimitedAdminView ? <ListManagementPanel canReorder={currentRole === "owner"} /> : activeTab === "reports" ? <ReportsPanel canResetKpi={canResetKpi} /> : activeTab === "shifts" && !hasLimitedAdminView ? <ShiftManagementPanel currentProfile={currentProfile} /> : <section className="admin-panel">
         {!ownerExists && currentRole === "admin" && <div className="owner-claim-box owner-claim-box-compact"><button className="primary-button" type="button" onClick={claimOwner} disabled={saving}>{saving ? "設定中..." : "自分をオーナーに設定"}</button></div>}
         <div className="admin-panel-head"><div><h2>ユーザー一覧</h2></div><button className="primary-button" type="button" onClick={() => setCreating(true)} disabled={!canManageUsers}>＋ ユーザー追加</button></div>
         {error && <div className="admin-error">{error}</div>}
