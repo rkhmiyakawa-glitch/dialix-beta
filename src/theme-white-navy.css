@@ -302,3 +302,106 @@ button:active:not(:disabled){transform:translateY(1px)!important;box-shadow:inse
   box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 4px rgba(0,0,0,.16),0 3px 6px rgba(11,31,58,.16),0 9px 18px rgba(11,31,58,.12)!important;
   text-shadow:0 1px 1px rgba(0,0,0,.16)
 }
+
+/* v1.0.50 — unified dimensional design without heavy top accents */
+:root{
+  --ui-bg:#edf2f7;
+  --ui-shadow:0 2px 5px rgba(11,31,58,.07),0 12px 30px rgba(11,31,58,.075);
+  --ui-shadow-raised:inset 0 1px 0 rgba(255,255,255,.98),0 2px 5px rgba(11,31,58,.08),0 14px 32px rgba(11,31,58,.09);
+  --ui-shadow-control:inset 0 1px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(11,31,58,.08),0 3px 7px rgba(11,31,58,.09);
+}
+
+html,body,#root,.app-page{
+  background:linear-gradient(145deg,#f7f9fc 0%,#edf2f7 48%,#e8eef5 100%) fixed!important;
+}
+
+/* A single light direction and depth scale for every major surface. */
+.panel,.simple-panel,.admin-panel,.search-panel,.customer-filter-panel,.customer-table-card,
+.kpi-strip,.dashboard-card,.dashboard-box,.task-panel,.task-summary-card,.list-card,
+.mypage-panel,.attendance-correction-panel,.shift-registration-section,.calendar-overview,
+.link-card,.reminder-page-panel,.ranking-box,.global-search-panel{
+  border:1px solid #d3dde8!important;
+  border-top-width:1px!important;
+  background:linear-gradient(145deg,#fff 0%,#fbfdff 55%,#f3f7fb 100%)!important;
+  box-shadow:var(--ui-shadow-raised)!important;
+}
+.panel:hover,.simple-panel:hover,.dashboard-box:hover,.calendar-overview:hover{
+  border-color:#c9d5e1!important;
+}
+
+/* KPI cards: no top bar; depth comes from the full face and soft shadow. */
+.kpi-card,.dashboard-card,.mypage-kpi-card,.task-summary-card,.management-kpi-cards article{
+  border:1px solid #d2dce7!important;
+  border-top-width:1px!important;
+  background:
+    radial-gradient(circle at 88% 16%,rgba(72,111,153,.11) 0,rgba(72,111,153,0) 36%),
+    linear-gradient(145deg,#fff 0%,#f7faff 56%,#edf3f8 100%)!important;
+  box-shadow:inset 0 1px 0 #fff,0 3px 7px rgba(11,31,58,.08),0 14px 28px rgba(11,31,58,.09)!important;
+}
+.kpi-card::before,.dashboard-card::before,.mypage-kpi-card::before,.task-summary-card::before,
+.kpi-card::after,.dashboard-card::after,.mypage-kpi-card::after,.task-summary-card::after{
+  display:none!important;
+  content:none!important;
+}
+.kpi-card:hover,.dashboard-card:hover,.mypage-kpi-card:hover,.task-summary-card:hover{
+  transform:translateY(-2px)!important;
+  border-color:#b9c9d9!important;
+  box-shadow:inset 0 1px 0 #fff,0 4px 9px rgba(11,31,58,.09),0 18px 34px rgba(11,31,58,.12)!important;
+}
+
+/* Calendar cells remain equal and never use a heavy line along the top. */
+.shift-editor-calendar-pane,.overview-calendar-wrap.shift-editor-calendar-pane{
+  background:linear-gradient(145deg,#f8fafc,#eaf0f6)!important;
+  box-shadow:inset 0 2px 5px rgba(11,31,58,.055),0 1px 0 #fff!important;
+}
+.shift-day,.overview-shift-day,.shift-day.empty,.calendar-day,.overview-day-card{
+  border:1px solid #d4dee8!important;
+  border-top-width:1px!important;
+  background:linear-gradient(145deg,#fff 0%,#f6f9fc 100%)!important;
+  box-shadow:inset 0 1px 0 #fff,0 3px 8px rgba(11,31,58,.07)!important;
+}
+.shift-day.registered,.overview-shift-day.registered,
+.overview-shift-day.has-late:not(.selected),
+.overview-shift-day.all-clocked:not(.selected):not(.has-late){
+  border:1px solid #a9bfd5!important;
+  border-top-width:1px!important;
+  background:linear-gradient(145deg,#f7fbff 0%,#e4eef8 100%)!important;
+  box-shadow:inset 0 1px 0 #fff,0 3px 8px rgba(26,69,111,.11)!important;
+}
+.shift-day.selected,.overview-shift-day.selected{
+  border:1px solid #24558f!important;
+  border-top-width:1px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 0 0 2px rgba(36,85,143,.15),0 5px 12px rgba(24,63,105,.16)!important;
+}
+.shift-calendar-grid.weekday-row>div{
+  border-radius:8px!important;
+  background:linear-gradient(180deg,#f8fafc,#e9eff5)!important;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #d5dee8!important;
+}
+
+/* Controls, tabs, tables and dialogs share the same tactile construction. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea,.status-multi-trigger{
+  background:linear-gradient(180deg,#fff,#fbfcfe)!important;
+  box-shadow:inset 0 2px 4px rgba(11,31,58,.06),0 1px 0 #fff!important;
+}
+.secondary-button,.secondary-save-button,.table-action,.copy-button,.customer-filter-clear,
+.open-customer-button,.header-admin-button,.admin-header-button,.customer-navigation button,
+.pagination button,.link-order-button,.status-clear-button,.admin-tab:not(.active){
+  background:linear-gradient(180deg,#fff 0%,#edf2f7 100%)!important;
+  box-shadow:var(--ui-shadow-control)!important;
+}
+.primary-button,.primary-save-button,.start-call-button,.call-button,.search-row button,
+.customer-search-row button,.shift-save-button,.login-form button,.admin-tab.active{
+  background:linear-gradient(180deg,#21486f 0%,#0b213d 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -2px 3px rgba(0,0,0,.18),0 4px 8px rgba(11,31,58,.18),0 11px 22px rgba(11,31,58,.13)!important;
+}
+.customer-table thead th,.admin-table thead th,.dashboard-table thead th,.overview-day-table thead th{
+  background:linear-gradient(180deg,#f9fbfd 0%,#e8eef4 100%)!important;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #cfd9e4!important;
+}
+.modal-card,.login-card,.edit-modal,.lock-modal,.attendance-edit-modal{
+  border:1px solid #cfd9e4!important;
+  border-top-width:1px!important;
+  background:linear-gradient(145deg,#fff,#f5f8fb)!important;
+  box-shadow:inset 0 1px 0 #fff,0 6px 14px rgba(11,31,58,.12),0 30px 72px rgba(11,31,58,.22)!important;
+}
