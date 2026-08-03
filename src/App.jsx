@@ -15,7 +15,7 @@ import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
 import useDeploymentRefresh from "./hooks/useDeploymentRefresh";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
-import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, saveCallResult } from "./services/dataService";
+import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, saveCallResult } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
 import { fetchOperationalTasks, searchCustomersAcrossLists, subscribeOperationalTasks } from "./services/operationsService";
 
@@ -368,6 +368,10 @@ export default function App() {
     setSelectedList(null);
     setCustomers([]);
     setNavigationItems([]);
+    invalidateListCache();
+    fetchLists({ force: true })
+      .then(setLists)
+      .catch((error) => setDataError(error.message || "リスト一覧の取得に失敗しました。"));
     window.requestAnimationFrame(scrollPageTop);
   }
 

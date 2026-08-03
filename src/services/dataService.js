@@ -74,8 +74,9 @@ async function loadLists() {
 
   const { data, error } = await withRetry(() => supabase
     .from("lists")
-    .select("id,name,customer_count")
+    .select("id,name,customer_count,sort_order,created_at")
     .eq("is_active", true)
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true }));
 
   if (error) throw error;
