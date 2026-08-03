@@ -283,6 +283,41 @@ button:active:not(:disabled){transform:translateY(1px)!important;box-shadow:inse
 }
 .kpi-card strong,.dashboard-card strong,.mypage-kpi-card strong,.task-summary-card strong{font-weight:600!important;color:#102b49!important}
 
+/* v1.0.51: 太字に頼らず、サイズ・色・余白で情報の強弱を表現する */
+html body,
+html body * {
+  font-weight:400!important;
+}
+
+html body strong,
+html body b,
+html body h1,
+html body h2,
+html body h3,
+html body h4,
+html body h5,
+html body h6,
+html body button,
+html body label,
+html body th,
+html body dt,
+html body .sidebar-brand,
+html body .brand-mark,
+html body .sidebar-brand-mark,
+html body .header-mark,
+html body .sidebar-logo,
+html body .kpi-card strong,
+html body .dashboard-card strong,
+html body .mypage-kpi-card strong,
+html body .task-summary-card strong,
+html body .status-button,
+html body .role-badge,
+html body .state-badge,
+html body .shift-status,
+html body .request-status {
+  font-weight:400!important;
+}
+
 /* Status buttons: neutral before selection, individual colour after selection. */
 .status-button,.status-detail-button{
   background:linear-gradient(180deg,#fff 0%,#f2f5f8 100%)!important;
