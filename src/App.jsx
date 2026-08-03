@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
+import "./theme-charcoal.css";
 import LoginPage from "./pages/LoginPage";
 import ListPage from "./pages/ListPage";
 import CustomerListPage from "./pages/CustomerListPage";
