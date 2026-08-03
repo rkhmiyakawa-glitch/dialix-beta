@@ -587,3 +587,130 @@ select,.status-multi-trigger,.page-size-select select,
   .customer-filter-panel,.dashboard-box,.task-panel,.calendar-overview,
   .global-search-panel{padding:18px!important}
 }
+
+/* v1.0.55 — premium sidebar and integrated time card */
+.app-sidebar{
+  padding:18px 16px 14px!important;
+  background:linear-gradient(180deg,#101827 0%,#0c1625 56%,#08111f 100%)!important;
+  border-right:1px solid rgba(139,166,198,.18)!important;
+  box-shadow:16px 0 42px rgba(7,18,32,.13)!important;
+}
+.sidebar-brand{
+  height:62px!important;
+  padding:0 10px 12px!important;
+  gap:12px!important;
+}
+.sidebar-brand-mark{
+  width:36px!important;
+  height:36px!important;
+  border-color:#365675!important;
+  background:linear-gradient(145deg,#244b74,#102a47 76%)!important;
+}
+.sidebar-brand strong{font-size:19px!important;letter-spacing:.16em!important}
+.sidebar-nav{padding:6px 0 12px!important;gap:5px!important}
+.sidebar-nav button,.sidebar-bottom-action,.sidebar-logout{
+  position:relative;
+  min-height:43px!important;
+  padding:0 13px!important;
+  gap:11px!important;
+  color:#9baabc!important;
+  border:1px solid transparent!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+}
+.sidebar-nav button:hover,.sidebar-bottom-action:hover,.sidebar-logout:hover{
+  color:#eef4fb!important;
+  background:rgba(255,255,255,.055)!important;
+  border-color:rgba(255,255,255,.07)!important;
+  box-shadow:none!important;
+}
+.sidebar-nav button.active,.sidebar-bottom-action.active{
+  color:#142238!important;
+  background:linear-gradient(180deg,#fff,#f5f8fc)!important;
+  border-color:#fff!important;
+  box-shadow:0 8px 22px rgba(2,10,20,.22)!important;
+}
+.sidebar-nav button.active::before,.sidebar-bottom-action.active::before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  top:9px;
+  bottom:9px;
+  width:3px;
+  border-radius:0 3px 3px 0;
+  background:#3370ae;
+}
+.sidebar-icon{
+  width:24px!important;
+  min-width:24px!important;
+  color:#8394a8!important;
+  font-size:16px!important;
+  filter:grayscale(1)!important;
+  opacity:1!important;
+}
+.sidebar-nav button.active .sidebar-icon,.sidebar-bottom-action.active .sidebar-icon{color:#315f8d!important}
+.sidebar-timecard-area{
+  margin:1px 0 0!important;
+  padding:13px 10px 12px!important;
+  border-top:1px solid rgba(255,255,255,.09)!important;
+  border-bottom:1px solid rgba(255,255,255,.09)!important;
+}
+.sidebar-timecard-heading{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 3px 9px;
+  color:#77899f;
+  font-size:9px;
+  letter-spacing:.17em;
+}
+.sidebar-timecard-heading i{height:1px;flex:1;background:rgba(255,255,255,.08)}
+.sidebar-attendance{gap:6px!important}
+.sidebar-attendance-line,.sidebar-work-status{
+  border:1px solid rgba(255,255,255,.065)!important;
+  border-radius:7px!important;
+  background:rgba(255,255,255,.035)!important;
+}
+.sidebar-attendance-now{
+  min-height:42px!important;
+  grid-template-columns:18px 1fr auto!important;
+  background:rgba(255,255,255,.055)!important;
+}
+.sidebar-attendance-now strong{font-size:11px!important;color:#aebdce!important}
+.sidebar-attendance-now b{font-size:18px!important;font-variant-numeric:tabular-nums;letter-spacing:.025em}
+.sidebar-attendance-line small{color:#8294a9!important}
+.sidebar-attendance-line strong,.sidebar-work-status strong{font-weight:400!important}
+.sidebar-work-status{min-height:36px!important}
+.sidebar-status-dot{width:7px!important;height:7px!important;box-shadow:0 0 0 3px rgba(148,163,184,.11)!important}
+.sidebar-attendance-actions{gap:7px!important;margin-top:1px}
+.sidebar-attendance-actions button{
+  min-height:35px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:7px!important;
+  font-weight:400!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+.sidebar-attendance-actions .clock-in{background:#176844!important}
+.sidebar-attendance-actions .clock-out{background:#913f45!important}
+.sidebar-attendance-actions button:disabled{background:#253246!important;color:#718096!important;border-color:rgba(255,255,255,.04)!important}
+.sidebar-bottom-area{
+  padding:11px 0 0!important;
+  gap:4px!important;
+  border:0!important;
+}
+.sidebar-logout{margin-top:3px!important;border-top:1px solid rgba(255,255,255,.09)!important;border-radius:0!important}
+@media(max-height:820px){
+  .app-sidebar{padding-top:10px!important;padding-bottom:8px!important}
+  .sidebar-brand{height:52px!important;padding-bottom:6px!important}
+  .sidebar-nav{padding-top:3px!important;padding-bottom:7px!important;gap:2px!important}
+  .sidebar-nav button,.sidebar-bottom-action,.sidebar-logout{min-height:38px!important}
+  .sidebar-timecard-area{padding-top:8px!important;padding-bottom:8px!important}
+  .sidebar-timecard-heading{margin-bottom:6px!important}
+}
+@media(max-width:720px){
+  .app-sidebar{padding-left:8px!important;padding-right:8px!important}
+  .sidebar-timecard-area{margin:0!important;padding:8px 0!important}
+  .sidebar-timecard-heading{display:none}
+  .sidebar-attendance-now,.sidebar-attendance-line{display:none!important}
+  .sidebar-nav button,.sidebar-bottom-action,.sidebar-logout{padding:0!important;justify-content:center!important}
+}

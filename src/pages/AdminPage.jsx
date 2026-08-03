@@ -163,7 +163,7 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   }
 
   return <main className="app-page">
-    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={() => {}} onOpenMyPage={onOpenMyPage} />
+    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={() => {}} onOpenMyPage={onOpenMyPage} pageTitle="管理画面" />
     <section className="content admin-content">
       <div className="page-title"><div><button className="back-button" type="button" onClick={onBack}>← リスト一覧へ</button><p className="eyebrow">ADMIN CONSOLE</p><h1>管理画面</h1><p>ユーザーと権限を管理します。</p></div></div>
       <div className="admin-tabs">

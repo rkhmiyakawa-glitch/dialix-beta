@@ -138,6 +138,7 @@ function SidebarAttendance({ currentProfile }) {
 export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
   const canOpenAdmin = ["owner", "admin", "admin_a", "sv", "supervisor", "管理者", "管理者s", "管理者a", "オーナー"].includes(normalizedRole);
+  const isCurrent = (...titles) => titles.some((title) => pageTitle === title || pageTitle.endsWith(` / ${title}`));
 
   async function goLists() {
     await onGoLists?.();
@@ -153,33 +154,34 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
         </button>
 
         <nav className="sidebar-nav">
-          <button type="button" onClick={goLists}>
+          <button className={isCurrent("DIALIX", "リスト一覧", "顧客一覧", "顧客詳細") ? "active" : ""} aria-current={isCurrent("DIALIX", "リスト一覧", "顧客一覧", "顧客詳細") ? "page" : undefined} type="button" onClick={goLists}>
             <span className="sidebar-icon">☷</span><span>リスト一覧</span>
           </button>
-          <button type="button" onClick={() => emitNavigation("today-reminders")}>
+          <button className={isCurrent("本日のリマインド") ? "active" : ""} aria-current={isCurrent("本日のリマインド") ? "page" : undefined} type="button" onClick={() => emitNavigation("today-reminders")}>
             <span className="sidebar-icon">⏰</span><span>本日のリマインド</span>
           </button>
-          <button type="button" onClick={() => emitNavigation("reminders")}>
+          <button className={isCurrent("リマインド一覧") ? "active" : ""} aria-current={isCurrent("リマインド一覧") ? "page" : undefined} type="button" onClick={() => emitNavigation("reminders")}>
             <span className="sidebar-icon">✓</span><span>リマインド一覧</span>
           </button>
-          <button type="button" onClick={() => emitNavigation("links")}>
+          <button className={isCurrent("リンク") ? "active" : ""} aria-current={isCurrent("リンク") ? "page" : undefined} type="button" onClick={() => emitNavigation("links")}>
             <span className="sidebar-icon">↗</span><span>リンク</span>
           </button>
-          <button type="button" onClick={onOpenMyPage}>
+          <button className={isCurrent("マイページ") ? "active" : ""} aria-current={isCurrent("マイページ") ? "page" : undefined} type="button" onClick={onOpenMyPage}>
             <span className="sidebar-icon">👤</span><span>マイページ</span>
           </button>
-          <button type="button" onClick={() => emitNavigation("attendance")}>
+          <button className={isCurrent("勤怠") ? "active" : ""} aria-current={isCurrent("勤怠") ? "page" : undefined} type="button" onClick={() => emitNavigation("attendance")}>
             <span className="sidebar-icon">◷</span><span>勤怠</span>
           </button>
         </nav>
 
         <div className="sidebar-timecard-area">
+          <div className="sidebar-timecard-heading"><span>TIME CARD</span><i aria-hidden="true" /></div>
           <SidebarAttendance currentProfile={currentProfile} />
         </div>
 
         <div className="sidebar-bottom-area">
           {canOpenAdmin && onOpenAdmin && (
-            <button className="sidebar-bottom-action" type="button" onClick={onOpenAdmin}>
+            <button className={`sidebar-bottom-action ${isCurrent("管理画面") ? "active" : ""}`} aria-current={isCurrent("管理画面") ? "page" : undefined} type="button" onClick={onOpenAdmin}>
               <span className="sidebar-icon">⚙</span><span>管理画面</span>
             </button>
           )}
