@@ -17,6 +17,7 @@ function mapList(row) {
     updatedAt: row.updated_at || row.created_at || null,
     deletedAt,
     expiresAt: deletedAt ? new Date(new Date(deletedAt).getTime() + 30 * 86400000).toISOString() : null,
+    sortOrder: Number.isFinite(Number(row.sort_order)) ? Number(row.sort_order) : 0,
   };
 }
 
@@ -24,11 +25,26 @@ export async function fetchManagedLists({ trash = false } = {}) {
   if (!isSupabaseConfigured) return (trash ? demoState.trash : demoState.lists).map((item) => ({ ...item }));
   const { data, error } = await supabase
     .from("lists")
-    .select("id,name,customer_count,is_active,created_at,updated_at")
+    .select("id,name,customer_count,is_active,sort_order,created_at,updated_at")
     .eq("is_active", !trash)
-    .order("updated_at", { ascending: false });
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
   if (error) throw error;
   return (data || []).map(mapList);
+}
+
+export async function reorderLists(rows) {
+  if (!rows.length) return;
+  if (!isSupabaseConfigured) {
+    const orderById = new Map(rows.map((row) => [row.listId, row.sortOrder]));
+    demoState.lists.forEach((list) => {
+      if (orderById.has(list.id)) list.sortOrder = orderById.get(list.id);
+    });
+    demoState.lists.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    return;
+  }
+  const { error } = await supabase.rpc("reorder_dialix_lists", { order_rows: rows });
+  if (error) throw error;
 }
 
 export async function renameList(listId, { name }) {

@@ -232,7 +232,6 @@ export default function CustomerListPage({
                 <tr>
                   <th>顧客名</th>
                   <th>電話番号</th>
-                  <th>詳細</th>
                   <th>担当AP</th>
                   <th>ステータス</th>
                   <th>最終架電日時</th>
@@ -267,7 +266,6 @@ export default function CustomerListPage({
                       </button>
                     </td>
                     <td>{customer.phone}</td>
-                    <td>{customer.businessSubcategory || "―"}</td>
                     <td>{customer.status || customer.history?.length ? (customer.ap || "―") : ""}</td>
                     <td>
                       {customer.status ? (

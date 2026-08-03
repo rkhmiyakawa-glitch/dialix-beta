@@ -307,9 +307,9 @@ export async function fetchMyPerformance(userId) {
   }
 
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayJa = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(now);
+  const todayStart = new Date(`${todayJa}T00:00:00+09:00`);
+  const monthStart = new Date(`${todayJa.slice(0, 7)}-01T00:00:00+09:00`);
 
   const { data, error } = await withRetry(() => supabase
     .from("call_histories")
@@ -326,8 +326,8 @@ export async function fetchMyPerformance(userId) {
 export async function fetchTodayKpi(userId) {
   if (!isSupabaseConfigured || !userId) return todayKpi;
 
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
+  const todayJa = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
+  const start = new Date(`${todayJa}T00:00:00+09:00`);
 
   const { data, error } = await withRetry(() => supabase
     .from("call_histories")

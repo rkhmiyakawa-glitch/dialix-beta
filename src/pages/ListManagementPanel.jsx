@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { duplicateList, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, restoreList } from "../services/listManagementService";
+import { duplicateList, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, reorderLists, restoreList } from "../services/listManagementService";
 
 const dateText = (value) => value ? new Date(value).toLocaleString("ja-JP") : "―";
 const daysLeft = (value) => Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86400000));
 
-export default function ListManagementPanel() {
+export default function ListManagementPanel({ canReorder = false }) {
   const [lists, setLists] = useState([]);
   const [trash, setTrash] = useState([]);
   const [editing, setEditing] = useState(null);
@@ -50,20 +50,39 @@ export default function ListManagementPanel() {
     run(() => permanentlyDeleteList(list.id), "完全削除しました。");
   }
 
+  async function moveList(index, direction) {
+    const nextIndex = index + direction;
+    if (!canReorder || busy || nextIndex < 0 || nextIndex >= lists.length) return;
+    const previous = lists;
+    const reordered = [...lists];
+    [reordered[index], reordered[nextIndex]] = [reordered[nextIndex], reordered[index]];
+    const normalized = reordered.map((list, order) => ({ ...list, sortOrder: order + 1 }));
+    setLists(normalized);
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await reorderLists(normalized.map((list) => ({ listId: list.id, sortOrder: list.sortOrder })));
+      setMessage("リストの順番を保存しました。");
+    } catch (e) {
+      setLists(previous);
+      setError(e.message || "リストの順番を保存できませんでした。");
+    } finally { setBusy(false); }
+  }
+
   return <div className="list-management-stack">
     {error && <div className="admin-error">{error}</div>}
     {message && <div className="admin-success">{message}</div>}
 
     <section className="admin-panel">
       <div className="admin-panel-head">
-        <div><h2>リスト管理</h2><p>名称変更・複製・削除を管理します。</p></div>
+        <div><h2>リスト管理</h2><p>名称変更・複製・削除を管理します。{canReorder ? "リスト順はオーナーだけ変更できます。" : ""}</p></div>
         <input className="list-manager-search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="リスト名で検索" />
       </div>
-      <div className="table-scroll"><table className="admin-table"><thead><tr><th>リスト名</th><th>件数</th><th>更新日時</th><th>操作</th></tr></thead><tbody>
-        {visibleLists.map((list) => <tr key={list.id}>
+      <div className="table-scroll"><table className="admin-table"><thead><tr><th>リスト名</th><th>件数</th><th>更新日時</th><th>操作</th>{canReorder && <th>並び替え</th>}</tr></thead><tbody>
+        {visibleLists.map((list) => { const index = lists.findIndex((item) => item.id === list.id); return <tr key={list.id}>
           <td><strong>{list.name}</strong></td><td>{list.count.toLocaleString()}件</td><td>{dateText(list.updatedAt)}</td>
           <td><div className="user-action-group"><button className="table-action" onClick={() => setEditing({ ...list })}>編集</button><button className="table-action" onClick={() => startDuplicate(list)} disabled={busy}>複製</button><button className="table-action danger" onClick={() => trashList(list)} disabled={busy}>削除</button></div></td>
-        </tr>)}
+          {canReorder && <td><div className="user-order-controls"><button type="button" onClick={() => moveList(index, -1)} disabled={busy || index === 0} aria-label={`${list.name}を上へ`}>↑</button><button type="button" onClick={() => moveList(index, 1)} disabled={busy || index === lists.length - 1} aria-label={`${list.name}を下へ`}>↓</button></div></td>}
+        </tr>; })}
       </tbody></table></div>
     </section>
 

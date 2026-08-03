@@ -2,13 +2,15 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
 function periodRange(period) {
   const now = new Date();
-  const start = new Date(now);
+  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(now);
+  const start = new Date(`${today}T00:00:00+09:00`);
   if (period === "week") {
-    const day = (start.getDay() + 6) % 7;
-    start.setDate(start.getDate() - day); start.setHours(0, 0, 0, 0);
+    const day = (start.getUTCDay() + 6) % 7;
+    start.setUTCDate(start.getUTCDate() - day);
   } else if (period === "month") {
-    start.setDate(1); start.setHours(0, 0, 0, 0);
-  } else start.setHours(0, 0, 0, 0);
+    const month = today.slice(0, 7);
+    return { start: new Date(`${month}-01T00:00:00+09:00`), end: now, label: "今月" };
+  }
   return { start, end: now, label: period === "week" ? "今週" : period === "month" ? "今月" : "今日" };
 }
 
@@ -34,7 +36,7 @@ export async function fetchDashboardData(period = "today") {
   const { start, end, label } = periodRange(period);
   const historyColumns = "id,user_id,operator_name,status,memo,called_at,customers(company_name)";
   const [historyResult, profilesResult, overdueResult] = await Promise.all([
-    supabase.from("call_histories").select(historyColumns).gte("called_at", start.toISOString()).lte("called_at", end.toISOString()),
+    supabase.from("call_histories").select(historyColumns).gte("called_at", start.toISOString()).lte("called_at", end.toISOString()).order("called_at", { ascending: false }),
     supabase.from("profiles").select("id,display_name,role,is_active").eq("is_active", true),
     supabase.from("customers").select("id,list_id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
   ]);
@@ -103,6 +105,7 @@ export function subscribeDashboardChanges(onChange) {
     .on("postgres_changes", { event: "*", schema: "public", table: "call_histories" }, notify)
     .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, notify)
     .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, notify)
+    .on("postgres_changes", { event: "*", schema: "public", table: "attendance_records" }, notify)
     .subscribe();
   return () => { window.clearTimeout(timer); supabase.removeChannel(channel); };
 }
