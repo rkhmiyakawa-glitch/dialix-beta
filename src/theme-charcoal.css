@@ -1,30 +1,32 @@
-/* v1.0.44 — DIALIX white / charcoal system-wide design */
+/* v1.0.45 — DIALIX premium white / charcoal system-wide design */
 :root {
-  --ui-bg: #f6f6f5;
+  --ui-bg: #f7f6f3;
   --ui-surface: #ffffff;
-  --ui-surface-soft: #fafafa;
-  --ui-text: #202124;
-  --ui-muted: #707277;
-  --ui-faint: #96989d;
-  --ui-line: #e2e2df;
-  --ui-line-strong: #c9c9c5;
-  --ui-charcoal: #292a2d;
-  --ui-charcoal-hover: #17181a;
-  --ui-focus: #6d6f75;
+  --ui-surface-soft: #faf9f7;
+  --ui-text: #1d1d1f;
+  --ui-muted: #6f6d69;
+  --ui-faint: #96928b;
+  --ui-line: #e6e2da;
+  --ui-line-strong: #cbc5bb;
+  --ui-charcoal: #242321;
+  --ui-charcoal-hover: #11110f;
+  --ui-focus: #9b8050;
+  --ui-accent: #9b8050;
+  --ui-accent-soft: #f3eee5;
   --ui-danger: #b63a3a;
   --ui-success: #27764a;
   --ui-warning: #99600d;
-  --ui-radius: 12px;
-  --ui-radius-sm: 9px;
-  --ui-control: 42px;
-  --ui-shadow: 0 1px 2px rgba(20, 20, 18, .035);
-  --ui-shadow-float: 0 12px 32px rgba(20, 20, 18, .10);
+  --ui-radius: 14px;
+  --ui-radius-sm: 10px;
+  --ui-control: 44px;
+  --ui-shadow: 0 1px 2px rgba(29, 27, 22, .025), 0 8px 28px rgba(29, 27, 22, .035);
+  --ui-shadow-float: 0 20px 56px rgba(29, 27, 22, .12);
   color: var(--ui-text);
   background: var(--ui-bg);
 }
 
 html, body, #root, .app-page { background: var(--ui-bg) !important; color: var(--ui-text); }
-body { letter-spacing: .005em; }
+body { font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif; letter-spacing: .01em; -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { font: inherit; }
 button { transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease; }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
@@ -56,9 +58,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .sidebar-nav button, .sidebar-logout, .sidebar-bottom-action { color: #55575c !important; }
 .sidebar-nav button:hover, .sidebar-nav button.active {
-  background: #eeeeec !important;
+  background: var(--ui-accent-soft) !important;
   color: #17181a !important;
-  box-shadow: inset 3px 0 0 var(--ui-charcoal) !important;
+  box-shadow: inset 2px 0 0 var(--ui-accent) !important;
 }
 .sidebar-user, .sidebar-bottom-area, .sidebar-timecard-area { border-color: var(--ui-line) !important; }
 .sidebar-user small { color: var(--ui-muted) !important; }
@@ -69,7 +71,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .page-title, .customer-list-heading { margin-bottom: 24px !important; }
 .page-title h1, .customer-list-heading h1 { color: var(--ui-text) !important; font-size: 28px !important; letter-spacing: -.02em; }
 .page-title p:not(.eyebrow), .customer-list-heading p:not(.eyebrow), .admin-panel-head p { color: var(--ui-muted) !important; }
-.eyebrow { color: #55575c !important; letter-spacing: .10em; }
+.eyebrow { color: var(--ui-accent) !important; letter-spacing: .13em; }
 h1, h2, h3, strong { text-wrap: balance; }
 
 /* Shared surfaces */
@@ -113,8 +115,8 @@ textarea {
   box-shadow: none !important;
 }
 input:focus, select:focus, textarea:focus, .status-multi-trigger:focus {
-  border-color: #77797e !important;
-  box-shadow: 0 0 0 3px rgba(41,42,45,.10) !important;
+  border-color: var(--ui-accent) !important;
+  box-shadow: 0 0 0 3px rgba(155,128,80,.12) !important;
 }
 .primary-button, .primary-save-button, .start-call-button, .call-button,
 .search-row button, .customer-search-row button, .shift-save-button,
@@ -159,10 +161,10 @@ input:focus, select:focus, textarea:focus, .status-multi-trigger:focus {
 .danger-outline-button:hover:not(:disabled), .link-delete-button:hover:not(:disabled) { background: #fff5f5 !important; }
 
 /* Tabs and selection */
-.admin-tabs { gap: 6px !important; padding: 4px !important; border: 1px solid var(--ui-line) !important; border-radius: 11px !important; background: #eeeEec !important; }
+.admin-tabs { gap: 6px !important; padding: 4px !important; border: 1px solid var(--ui-line) !important; border-radius: 12px !important; background: #f0eee9 !important; }
 .admin-tab { min-height: 40px !important; padding: 0 15px !important; border: 0 !important; border-radius: 8px !important; background: transparent !important; color: #62646a !important; }
 .admin-tab:hover { background: rgba(255,255,255,.65) !important; }
-.admin-tab.active { background: #fff !important; color: #1e1f22 !important; box-shadow: 0 1px 3px rgba(20,20,18,.10) !important; }
+.admin-tab.active { background: #fff !important; color: #1e1f22 !important; box-shadow: 0 1px 4px rgba(20,20,18,.09), inset 0 -2px 0 var(--ui-accent) !important; }
 .status-button, .status-detail-button {
   border-color: var(--ui-line-strong) !important;
   border-radius: var(--ui-radius-sm) !important;
@@ -192,12 +194,15 @@ input:focus, select:focus, textarea:focus, .status-multi-trigger:focus {
   min-height: 112px;
   padding: 18px !important;
   border: 1px solid var(--ui-line) !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   background: #fff !important;
   box-shadow: none !important;
 }
 .kpi-card span, .dashboard-card p, .mypage-kpi-card span, .task-summary-card span { color: var(--ui-muted) !important; }
 .kpi-card strong, .dashboard-card strong, .mypage-kpi-card strong, .task-summary-card strong { color: var(--ui-text) !important; font-variant-numeric: tabular-nums; }
+.kpi-card::before, .dashboard-card::before, .mypage-kpi-card::before, .task-summary-card::before {
+  content: ""; display: block; width: 28px; height: 2px; margin-bottom: 14px; border-radius: 999px; background: var(--ui-accent);
+}
 .task-summary-card.active { border-color: #55575c !important; background: #f3f3f1 !important; box-shadow: inset 0 0 0 1px #55575c !important; }
 .ranking-rank { background: #ececea !important; color: #44464b !important; }
 .ranking-bar { background: #eeeeec !important; }
@@ -223,6 +228,7 @@ input:focus, select:focus, textarea:focus, .status-multi-trigger:focus {
   background: #fff !important;
   box-shadow: var(--ui-shadow-float) !important;
 }
+.login-card { border-top: 3px solid var(--ui-accent) !important; }
 .lock-overlay { background: rgba(31,32,35,.48) !important; }
 .toast, .data-loading { background: var(--ui-charcoal) !important; color: #fff !important; }
 .system-banner, .kpi-reset-note { border-radius: var(--ui-radius-sm) !important; box-shadow: var(--ui-shadow) !important; }
