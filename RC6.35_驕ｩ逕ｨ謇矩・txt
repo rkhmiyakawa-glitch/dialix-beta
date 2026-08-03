@@ -1,9 +1,0 @@
-DIALIX v1.0 RC6.35 適用手順
-
-1. ZIPを展開します。
-2. 展開したファイルをGitHub Desktopで管理しているDIALIXフォルダへ上書きします。
-3. GitHub Desktopで変更内容を確認し、mainへコミット・プッシュします。
-4. VercelのデプロイがReadyになったらDIALIXを再読み込みします。
-5. オーナーアカウントでCSVインポートを再実行します。
-
-今回の修正はフロントエンド側です。Supabase SQLの追加実行は不要です。

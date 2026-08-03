@@ -1,9 +1,0 @@
-DIALIX v1.0.0 RC6.38 適用手順
-
-1. ZIPを解凍します。
-2. GitHub Desktopで管理しているDIALIXフォルダへ全ファイルを上書きします。
-3. GitHub Desktopで変更内容を確認します。
-4. Commit summaryに「RC6.38 CSV取込件数表示修正」などを入力してCommitします。
-5. Push originを押します。
-6. VercelがReadyになった後、DIALIXを再読み込みします。
-7. リスト一覧の件数とCSVインポートを確認します。
