@@ -3149,3 +3149,58 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .dashboard-box-head{padding:15px 16px!important}
   .task-row{padding:15px 16px}
 }
+
+/* v1.0.65: use the actual management-panel construction on reminder/link/ranking surfaces. */
+.admin-panel.management-list-panel,
+.admin-panel.management-dashboard-box{
+  overflow:hidden;
+  padding:22px!important;
+  border:1px solid #d3dde8!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#fff 0%,#fbfdff 55%,#f3f7fb 100%)!important;
+  box-shadow:var(--ui-shadow-raised)!important;
+}
+.admin-panel-head.management-list-head{
+  min-height:44px!important;
+  margin:0 0 18px!important;
+  padding:0 0 14px!important;
+  border-bottom:1px solid #dfe6ee!important;
+  background:transparent!important;
+}
+.admin-panel-head.management-list-head h2,
+.admin-panel-head.management-list-head h3{
+  margin:0!important;
+  color:#17233a!important;
+  font-size:17px!important;
+  line-height:1.35!important;
+  font-weight:400!important;
+}
+.admin-panel-head.management-list-head>span{
+  color:#657287!important;
+  font-size:12px!important;
+}
+.management-list-panel .task-list,
+.management-dashboard-box .ranking-list,
+.management-dashboard-box .dashboard-overdue-list{
+  overflow:hidden;
+  border:1px solid #e0e7ef;
+  border-radius:10px;
+  background:#fff;
+}
+.management-dashboard-box .ranking-list{
+  padding:8px 16px 10px;
+}
+.management-list-panel .link-add-form{
+  margin:0 0 18px;
+  padding:16px;
+  border:1px solid #e0e7ef;
+  border-radius:10px;
+  background:#f7f9fc;
+}
+.management-dashboard-box.dashboard-overdue-panel{
+  margin-top:20px;
+}
+@media(max-width:820px){
+  .management-list-panel,
+  .management-dashboard-box{padding:18px!important}
+}

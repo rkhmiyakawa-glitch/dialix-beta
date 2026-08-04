@@ -57,8 +57,8 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
     <section className="content">
       <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
 
-      <section className="task-panel">
-        <div className="task-panel-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
+      <section className="admin-panel management-list-panel">
+        <div className="admin-panel-head management-list-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
         {overdueItems.length === 0 ? <div className="empty-state">現在、対象の顧客はいません。</div> : <div className="task-list">
           {overdueItems.map((item) => <button className="task-row" key={item.id} type="button" onClick={() => onOpenTask(item, overdueItems, "期限超過リマインド")}>
             <div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div>

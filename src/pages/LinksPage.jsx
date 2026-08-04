@@ -108,8 +108,8 @@ export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenA
           </div>
         </div>
 
-        <section className="task-panel reminder-page-panel links-page-panel">
-          <div className="task-panel-head">
+        <section className="admin-panel management-list-panel reminder-page-panel links-page-panel">
+          <div className="admin-panel-head management-list-head">
             <h2>リンク一覧</h2>
             <span>{loading ? "読み込み中" : `${links.length}件`}</span>
           </div>

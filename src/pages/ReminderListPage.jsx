@@ -37,8 +37,8 @@ export default function ReminderListPage({
           </div>
         </div>
 
-        <section className="task-panel reminder-page-panel">
-          <div className="task-panel-head">
+        <section className="admin-panel management-list-panel reminder-page-panel">
+          <div className="admin-panel-head management-list-head">
             <h2>{title}</h2>
             <span>最大{isToday ? 100 : 300}件を表示</span>
           </div>

@@ -12,8 +12,8 @@ function fmtDateTime(value) {
 
 function RankingBox({ title, rows, metricKey, emptyText }) {
   const maxValue = useMemo(() => Math.max(1, ...rows.map((row) => row[metricKey] || 0)), [rows, metricKey]);
-  return <section className="dashboard-box ranking-box">
-    <div className="dashboard-box-head"><h3>{title}</h3><span>上位順</span></div>
+  return <section className="admin-panel ranking-box management-dashboard-box">
+    <div className="admin-panel-head management-list-head"><h3>{title}</h3><span>上位順</span></div>
     {!rows.length ? <div className="empty-state">{emptyText}</div> :
       <div className="ranking-list">{rows.map((row, index) => <div className="ranking-row" key={row.userId || row.displayName}>
         <span className="ranking-rank">{index + 1}</span>
@@ -112,8 +112,8 @@ export default function DashboardPanel({ onOpenOverdueCustomer, canResetKpi = fa
       </div>
 
 
-      <section className="dashboard-box dashboard-full-width dashboard-overdue-panel">
-        <div className="dashboard-box-head dashboard-overdue-head">
+      <section className="admin-panel management-dashboard-box dashboard-full-width dashboard-overdue-panel">
+        <div className="admin-panel-head management-list-head dashboard-overdue-head">
           <h3>期限超過リマインド</h3>
           <div className="dashboard-overdue-filter">
             <label htmlFor="overdue-ap-filter">担当AP</label>
