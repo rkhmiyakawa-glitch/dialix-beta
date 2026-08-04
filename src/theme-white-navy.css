@@ -714,3 +714,40 @@ select,.status-multi-trigger,.page-size-select select,
   .sidebar-attendance-now,.sidebar-attendance-line{display:none!important}
   .sidebar-nav button,.sidebar-bottom-action,.sidebar-logout{padding:0!important;justify-content:center!important}
 }
+
+/* v1.0.66: one outer card only; inner lists use spacing and dividers. */
+.management-list-panel .task-list,
+.management-dashboard-box .ranking-list,
+.management-dashboard-box .dashboard-overdue-list{
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.management-dashboard-box .ranking-list{padding:0!important}
+.management-list-panel .link-add-form{
+  margin:0 0 18px!important;
+  padding:0 0 18px!important;
+  border:0!important;
+  border-bottom:1px solid #e3e9f0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.management-list-panel .task-row,
+.management-dashboard-box .dashboard-overdue-row{
+  border-right:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.management-list-panel .task-row:hover,
+.management-dashboard-box .dashboard-overdue-row:hover{
+  background:#f5f8fb!important;
+}
+.management-list-panel .task-row:first-child,
+.management-dashboard-box .dashboard-overdue-row:first-child{border-top:0!important}
+.management-list-panel .task-row:last-child,
+.management-dashboard-box .dashboard-overdue-row:last-child{border-bottom:0!important}
