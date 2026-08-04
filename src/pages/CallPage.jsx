@@ -95,7 +95,7 @@ export default function CallPage({
   }
 
   function handleSelectCategory(category) {
-    const directStatuses = ["留守", "対象外", "現アナ", "再コール", "再コール留守", "見込み留守", "トスアップ", "前確依頼", "前確OK", "前確NG"];
+    const directStatuses = ["留守", "対象外", "内容相違", "現アナ", "再コール", "再コール留守", "見込み留守", "トスアップ", "前確依頼", "前確OK", "前確NG", "内容修正"];
     const hasReminder = category === "見込み" || category === "見込み留守" || category === "前確依頼";
 
     setSelectedCategory(category);

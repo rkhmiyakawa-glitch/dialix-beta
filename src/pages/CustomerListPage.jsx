@@ -11,12 +11,14 @@ const statusTone = {
   決裁NG: "red",
   再コール: "blue",
   対象外: "slate",
+  内容相違: "slate",
   現アナ: "gray",
   再コール留守: "blue",
   見込み留守: "green",
   非決裁見込み: "green",
   決裁見込み: "green",
   トスアップ: "orange",
+  内容修正: "gray",
 };
 
 const groupedStatuses = {

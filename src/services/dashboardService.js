@@ -54,11 +54,12 @@ export async function fetchDashboardData(period = "today") {
   let decisionCount = 0;
   let prospectCount = 0;
   let tossupCount = 0;
-  histories.forEach((h) => {
+  const kpiHistories = histories.filter((history) => history.status !== "内容修正");
+  kpiHistories.forEach((h) => {
     const key = h.user_id || `name:${h.operator_name}`;
     if (!byUser.has(key)) byUser.set(key, { userId: key, displayName: h.operator_name || "不明", callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 });
     const row = byUser.get(key); row.callCount += 1;
-    if (["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)) { row.validCount += 1; validCount += 1; }
+    if (["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "対象外", "内容相違", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)) { row.validCount += 1; validCount += 1; }
     if (["決裁NG", "決裁見込み"].includes(h.status)) { row.decisionCount += 1; decisionCount += 1; }
     if (String(h.status || "").includes("見込み")) { row.prospectCount += 1; prospectCount += 1; }
     if (h.status === "トスアップ") { row.tossupCount += 1; tossupCount += 1; }
@@ -83,9 +84,9 @@ export async function fetchDashboardData(period = "today") {
     rangeLabel: label,
     activeApNames,
     metrics: {
-      callCount: histories.length,
+      callCount: kpiHistories.length,
       validCount,
-      validRate: histories.length ? Number((validCount / histories.length * 100).toFixed(1)) : 0,
+      validRate: kpiHistories.length ? Number((validCount / kpiHistories.length * 100).toFixed(1)) : 0,
       decisionCount,
       decisionRate: validCount ? Number((decisionCount / validCount * 100).toFixed(1)) : 0,
       prospectCount,

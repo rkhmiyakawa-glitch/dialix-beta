@@ -277,13 +277,16 @@ export async function saveCallResult({
 
 
 
-const VALID_STATUSES = ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"];
+const VALID_STATUSES = ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "対象外", "内容相違", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"];
 const DECISION_STATUSES = ["決裁NG", "決裁見込み"];
+const NON_CALL_STATUSES = ["内容修正"];
 
 function summarizePerformance(rows = []) {
-  const result = { calls: rows.length, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
+  const result = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
   for (const row of rows) {
     const status = row.status;
+    if (NON_CALL_STATUSES.includes(status)) continue;
+    result.calls += 1;
     if (VALID_STATUSES.includes(status)) result.valid += 1;
     if (DECISION_STATUSES.includes(status)) result.decisions += 1;
     if (String(status || "").includes("見込み")) result.prospects += 1;

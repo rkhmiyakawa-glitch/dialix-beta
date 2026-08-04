@@ -5,6 +5,7 @@ export const SEARCH_STATUS_OPTIONS = [
   ["留守", "留守"],
   ["NG", "NG"],
   ["対象外", "対象外"],
+  ["内容相違", "内容相違"],
   ["現アナ", "現アナ"],
   ["再コール", "再コール"],
   ["再コール留守", "再コール留守"],
@@ -14,6 +15,7 @@ export const SEARCH_STATUS_OPTIONS = [
   ["前確依頼", "前確依頼"],
   ["前確NG", "前確NG"],
   ["前確OK", "前確OK"],
+  ["内容修正", "内容修正"],
 ];
 
 export default function StatusMultiSelect({ value, onChange, ariaLabel = "ステータス" }) {
