@@ -24,11 +24,14 @@ export default defineConfig({
   },
   build: {
     target: "es2020",
+    minify: "esbuild",
     cssCodeSplit: true,
+    reportCompressedSize: true,
     sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
+          react: ["react", "react-dom"],
           supabase: ["@supabase/supabase-js"],
         },
       },

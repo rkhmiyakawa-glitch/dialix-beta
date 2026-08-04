@@ -3,9 +3,9 @@ import "./App.css";
 import "./theme-white-navy.css";
 import LoginPage from "./pages/LoginPage";
 import ListPage from "./pages/ListPage";
-import CustomerListPage from "./pages/CustomerListPage";
-import CallPage from "./pages/CallPage";
 
+const CustomerListPage = lazy(() => import("./pages/CustomerListPage"));
+const CallPage = lazy(() => import("./pages/CallPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const MyPage = lazy(() => import("./pages/MyPage"));
 const AttendancePage = lazy(() => import("./pages/AttendancePage"));
@@ -630,6 +630,7 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
       <CallPage
         selectedList={selectedList}
         selectedCustomer={selectedCustomer}
@@ -650,6 +651,7 @@ export default function App() {
         onOpenMyPage={openMyPage}
         onUnsavedChange={setHasUnsavedChanges}
       />
+      </Suspense>
     </>;
   }
 
@@ -657,6 +659,7 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
+      <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
       <CustomerListPage
         selectedList={selectedList}
         customers={customers}
@@ -674,6 +677,7 @@ export default function App() {
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
       />
+      </Suspense>
     </>;
   }
 
