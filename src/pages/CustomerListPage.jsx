@@ -146,14 +146,6 @@ export default function CustomerListPage({
             </p>
           </div>
 
-          <button
-            className="start-call-button"
-            type="button"
-            onClick={() => visibleCustomers[0] && onOpenCustomer(visibleCustomers[0], visibleCustomers, hasSearchConditions ? "条件検索結果" : "リスト")}
-            disabled={visibleCustomers.length === 0}
-          >
-            架電開始
-          </button>
         </div>
 
         <section className="customer-filter-panel">

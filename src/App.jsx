@@ -680,7 +680,17 @@ export default function App() {
   return <>
     {banner}
     {sessionNotice}
-    {dataLoading && <div className="data-loading">データ読込中...</div>}
+    {dataLoading && (
+      <div className="data-loading-overlay" role="status" aria-live="polite" aria-busy="true">
+        <div className="data-loading">
+          <span className="data-loading-spinner" aria-hidden="true" />
+          <div>
+            <strong>データを読み込んでいます</strong>
+            <span>完了までそのままお待ちください</span>
+          </div>
+        </div>
+      </div>
+    )}
     <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
   </>;
 }
