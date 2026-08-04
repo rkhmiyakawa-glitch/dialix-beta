@@ -3038,6 +3038,13 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-size:17px;
 }
 
+/* v1.0.62: slightly reduce the primary list name and total count text. */
+.list-card .list-name,
+.list-card .list-count strong,
+.list-card .list-count > span:not(.arrow){
+  font-size:15px;
+}
+
 /* v1.0.34: match the logo-to-menu spacing to the menu item gap */
 .sidebar-nav{
   padding-top:5px;
