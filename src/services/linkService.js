@@ -34,7 +34,14 @@ export async function deleteSharedLink(id) {
 
 export async function reorderSharedLinks(links) {
   ensureClient();
-  const rows = links.map((link, index) => ({ id: link.id, sort_order: index + 1 }));
-  const { error } = await supabase.from("shared_links").upsert(rows, { onConflict: "id" });
-  if (error) throw error;
+  const results = await Promise.all(
+    links.map((link, index) =>
+      supabase
+        .from("shared_links")
+        .update({ sort_order: index + 1 })
+        .eq("id", link.id)
+    )
+  );
+  const failed = results.find(({ error }) => error);
+  if (failed?.error) throw failed.error;
 }
