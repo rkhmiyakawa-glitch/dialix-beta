@@ -148,7 +148,7 @@ export async function resolveAttendanceCorrectionRequest(payload) {
       clockIn: payload.clockIn,
       clockOut: payload.clockOut,
       breakMinutes: payload.breakMinutes,
-      reason: payload.managerNote || "勤怠修正申請を承認",
+      reason: payload.managerNote || "勤怠修正依頼を承認",
       managerId: payload.managerId,
     });
   }

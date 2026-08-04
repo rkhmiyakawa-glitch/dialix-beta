@@ -49,8 +49,8 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
       const toIso = (date, time) => time ? new Date(`${date}T${time}:00+09:00`).toISOString() : null;
       await submitAttendanceCorrectionRequest({ userId, workDate: requestForm.workDate, clockIn: toIso(requestForm.workDate, requestForm.clockIn), clockOut: toIso(requestForm.workDate, requestForm.clockOut), reasonType: requestForm.reasonType, reasonDetail: requestForm.reasonDetail });
       setRequestForm({ workDate: dateNow(), clockIn: "", clockOut: "", reasonType: "出勤押し忘れ", reasonDetail: "" });
-      await reload(); window.alert("勤怠修正申請を送信しました。");
-    } catch (e) { setError(e.message || "勤怠修正申請に失敗しました。"); }
+      await reload(); window.alert("勤怠修正依頼を送信しました。");
+    } catch (e) { setError(e.message || "勤怠修正依頼に失敗しました。"); }
     finally { setRequestSaving(false); }
   }
 
@@ -63,16 +63,16 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
         {loading ? <div className="empty-state">読み込み中...</div> : <ShiftCalendarEditor month={month} shifts={shifts} onBulkSave={bulkSave} />}
       </section>
 
-      <section className="simple-panel attendance-correction-panel"><div className="admin-panel-head"><div><h2>勤怠修正申請</h2><p>打刻忘れや時刻間違いがある場合は、管理者へ修正を申請してください。</p></div></div>
+      <section className="simple-panel attendance-correction-panel"><div className="admin-panel-head"><div><h2>勤怠修正依頼</h2><p>打刻忘れや時刻間違いがある場合は、管理者へ修正を依頼してください。</p></div></div>
         <form className="attendance-correction-form" onSubmit={submitCorrection}>
           <label>対象日<input type="date" value={requestForm.workDate} onChange={(e)=>setRequestForm({...requestForm,workDate:e.target.value})} /></label>
           <label>希望出勤時刻<input type="time" value={requestForm.clockIn} onChange={(e)=>setRequestForm({...requestForm,clockIn:e.target.value})} /></label>
           <label>希望退勤時刻<input type="time" value={requestForm.clockOut} onChange={(e)=>setRequestForm({...requestForm,clockOut:e.target.value})} /></label>
           <label>理由<select value={requestForm.reasonType} onChange={(e)=>setRequestForm({...requestForm,reasonType:e.target.value})}><option>出勤押し忘れ</option><option>退勤押し忘れ</option><option>時間修正</option><option>その他</option></select></label>
           <label className="attendance-correction-detail">詳細<input value={requestForm.reasonDetail} onChange={(e)=>setRequestForm({...requestForm,reasonDetail:e.target.value})} placeholder="状況を入力してください" /></label>
-          <button className="primary-button" type="submit" disabled={requestSaving}>{requestSaving ? "申請中..." : "修正申請を送信"}</button>
+          <button className="primary-button" type="submit" disabled={requestSaving}>{requestSaving ? "依頼中..." : "修正依頼を送信"}</button>
         </form>
-        {requests.length > 0 && <div className="table-scroll"><table className="admin-table"><thead><tr><th>申請日</th><th>対象日</th><th>内容</th><th>理由</th><th>状態</th></tr></thead><tbody>{requests.map((r)=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("ja-JP")}</td><td>{r.work_date}</td><td>{fmtTime(r.requested_clock_in)}〜{fmtTime(r.requested_clock_out)}</td><td>{r.reason_type}{r.reason_detail ? `：${r.reason_detail}` : ""}</td><td><span className={`request-status ${r.status}`}>{({pending:"申請中",approved:"承認",rejected:"却下"})[r.status] || r.status}</span></td></tr>)}</tbody></table></div>}
+        {requests.length > 0 && <div className="table-scroll"><table className="admin-table"><thead><tr><th>依頼日</th><th>対象日</th><th>内容</th><th>理由</th><th>状態</th></tr></thead><tbody>{requests.map((r)=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("ja-JP")}</td><td>{r.work_date}</td><td>{fmtTime(r.requested_clock_in)}〜{fmtTime(r.requested_clock_out)}</td><td>{r.reason_type}{r.reason_detail ? `：${r.reason_detail}` : ""}</td><td><span className={`request-status ${r.status}`}>{({pending:"依頼中",approved:"承認",rejected:"却下"})[r.status] || r.status}</span></td></tr>)}</tbody></table></div>}
       </section>
       <section className="simple-panel"><h2>勤怠履歴</h2>{records.length ? <div className="table-scroll"><table className="admin-table"><thead><tr><th>日付</th><th>出勤</th><th>退勤</th></tr></thead><tbody>{records.map((r) => <tr key={r.id}><td>{r.work_date}</td><td>{fmtTime(r.clock_in)}</td><td>{fmtTime(r.clock_out)}</td></tr>)}</tbody></table></div> : <div className="empty-state">勤怠履歴はありません。</div>}</section>
     </section>
