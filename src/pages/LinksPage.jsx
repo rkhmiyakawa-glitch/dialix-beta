@@ -126,16 +126,18 @@ export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenA
           {loading && <div className="links-panel-message">リンクを読み込んでいます...</div>}
 
           {!loading && links.length > 0 && (
-            <div className="task-list links-task-list">
+            <div className="task-list">
               {links.map((link, index) => (
-                <article className="link-card" key={link.id}>
+                <article className="task-row link-task-row" key={link.id}>
                   <a href={link.url} target="_blank" rel="noreferrer">
-                    <strong>{link.name}</strong>
-                    <small>{link.url}</small>
+                    <div>
+                      <strong>{link.name}</strong>
+                      <small>{link.url}</small>
+                    </div>
                   </a>
 
-                  <div className="link-card-actions">
-                    <span className="link-open-label">開く ›</span>
+                  <div className="task-row-meta link-card-actions">
+                    <b className="link-open-label">開く ›</b>
                     {canManageLinks && (
                       <div className="link-order-actions" aria-label={`${link.name}の表示順`}>
                         <button type="button" className="link-order-button" onClick={() => moveLink(index, -1)} disabled={saving || index === 0} aria-label={`${link.name}を上へ移動`} title="上へ移動">↑</button>

@@ -1481,7 +1481,7 @@ input,select,textarea,button{max-width:100%}
 .link-card small { color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .link-card button { border:0; background:transparent; color:#dc2626; cursor:pointer; }
 
-/* v1.0.56: align the Links page with the reminder list pages */
+/* v1.0.57: use the exact reminder-list panel and row geometry on Links */
 .links-page-panel { margin-top:0; }
 .links-page-panel .link-add-form {
   border:0;
@@ -1501,24 +1501,23 @@ input,select,textarea,button{max-width:100%}
   box-shadow:0 0 0 3px rgba(31,79,214,.1);
 }
 .links-page-panel .link-add-form button:disabled { opacity:.55; cursor:not-allowed; }
-.links-task-list { border:0; }
-.links-page-panel .link-card {
-  min-height:70px;
-  padding:15px 18px;
-  border:0;
-  border-bottom:1px solid #edf0f5;
-  border-radius:0;
-  box-shadow:none;
-  background:#fff;
-  transition:background-color .15s ease;
+.links-page-panel .link-task-row { cursor:default; }
+.links-page-panel .link-task-row > a {
+  min-width:0;
+  flex:1 1 auto;
+  color:inherit;
+  text-decoration:none;
 }
-.links-page-panel .link-card:last-child { border-bottom:0; }
-.links-page-panel .link-card:hover { background:#f7f9ff; }
-.links-page-panel .link-card a { gap:4px; }
-.links-page-panel .link-card strong { font-size:16px; font-weight:400; }
-.links-page-panel .link-card small { color:#748198; }
+.links-page-panel .link-task-row > a > div { display:grid; gap:4px; }
+.links-page-panel .link-task-row small {
+  display:block;
+  color:#748198;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 .link-card-actions { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
-.link-open-label { color:#1f4fd6; font-size:13px; white-space:nowrap; }
+.link-open-label { white-space:nowrap; }
 .link-order-actions { display:flex; align-items:center; gap:4px; }
 .links-page-panel .link-order-button {
   width:32px;
@@ -1534,7 +1533,7 @@ input,select,textarea,button{max-width:100%}
 .links-panel-message { padding:32px 18px; text-align:center; color:#718098; background:#fff; }
 
 @media (max-width: 640px) {
-  .links-page-panel .link-card { align-items:flex-start; gap:12px; }
+  .links-page-panel .link-task-row { align-items:flex-start; gap:12px; }
   .link-card-actions { gap:7px; }
   .link-open-label { display:none; }
 }
