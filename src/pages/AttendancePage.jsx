@@ -7,7 +7,7 @@ const monthNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/
 const dateNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
 const fmtTime = (value) => value ? new Date(value).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tokyo" }) : "--:--";
 
-export default function AttendancePage({ currentProfile, onGoLists, onLogout, onOpenAdmin, onOpenMyPage }) {
+export default function AttendancePage({ currentProfile, onGoLists, onLogout, onOpenAdmin, onOpenMyPage, overdueReminderCount }) {
   const [month, setMonth] = useState(monthNow);
   const [records, setRecords] = useState([]);
   const [shifts, setShifts] = useState([]);
@@ -55,7 +55,7 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
   }
 
   return <main className="app-page">
-    <Header currentProfile={currentProfile} onGoLists={onGoLists} onLogout={onLogout} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="勤怠" />
+    <Header currentProfile={currentProfile} onGoLists={onGoLists} onLogout={onLogout} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="勤怠" overdueReminderCount={overdueReminderCount} />
     <section className="content">
       <div className="page-title"><div><p className="eyebrow">ATTENDANCE</p><h1>勤怠</h1><p>出退勤の登録と、自分のシフト登録・確認ができます。</p></div></div>
       {error && <div className="admin-error">{error}</div>}

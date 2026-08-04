@@ -60,6 +60,7 @@ export default function CustomerListPage({
   currentUserId,
   presenceByCustomer = {},
   currentProfile,
+  overdueReminderCount,
   onOpenAdmin,
   onOpenMyPage,
 }) {
@@ -132,7 +133,7 @@ export default function CustomerListPage({
 
   return (
     <main className="app-page">
-      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客一覧`} />
+      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客一覧`} overdueReminderCount={overdueReminderCount} />
 
       <section className="content customer-list-content">
         <div className="customer-list-heading">

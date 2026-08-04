@@ -3080,6 +3080,33 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-size:12px;
   font-weight: 400;
 }
+.sidebar-overdue-badge{
+  min-width:22px;
+  height:22px;
+  margin-left:auto;
+  padding:0 6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:#c83b36;
+  color:#fff;
+  font-size:11px;
+  line-height:1;
+  font-weight:400;
+  box-shadow:0 0 0 3px rgba(200,59,54,.12);
+}
+.task-row.is-overdue-reminder{box-shadow:inset 3px 0 0 #d45a50}
+.overdue-reminder-label{
+  padding:4px 8px;
+  border-radius:999px;
+  background:#fde8e6;
+  color:#b43c32;
+  font-size:11px;
+  font-style:normal;
+  font-weight:400;
+  white-space:nowrap;
+}
 .danger-outline-button{min-height:42px;padding:0 14px;border:1px solid #d04444;border-radius:9px;background:#fff;color:#b52f2f;font-weight: 400}.danger-outline-button:hover{background:#fff2f2}.danger-outline-button:disabled{opacity:.5;cursor:not-allowed}.kpi-reset-note{margin:-8px 0 18px;padding:10px 12px;border-radius:8px;background:#fff7e8;color:#8a5b0b;font-size:13px;font-weight: 400}
 
 /* v1.0.64: unify reminder, links and dashboard cards with management panels. */

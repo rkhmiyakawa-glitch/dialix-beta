@@ -30,7 +30,7 @@ function PerformancePanel({ title, values, loading }) {
   </section>;
 }
 
-export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoLists, onLogout, onOpenAdmin }) {
+export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoLists, onLogout, onOpenAdmin, overdueReminderCount }) {
   const [displayName, setDisplayName] = useState(currentProfile?.displayName || "");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -83,7 +83,7 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
   }
 
   return <main className="app-page">
-    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle="マイページ" />
+    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} pageTitle="マイページ" overdueReminderCount={overdueReminderCount} />
     <section className="content mypage-content">
       <div className="page-title"><div>
         <p className="eyebrow">MY PAGE</p><h1>マイページ</h1><p>アカウント情報と自分の実績を確認できます。</p>

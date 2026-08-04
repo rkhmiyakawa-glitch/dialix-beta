@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import StatusMultiSelect from "../components/StatusMultiSelect";
 import { fetchProfiles } from "../services/profileService";
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers }) {
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers, overdueReminderCount }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apQuery, setApQuery] = useState("");
   const [apOptions, setApOptions] = useState([]);
@@ -53,7 +53,7 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
   const overdueItems = tasks?.reminders || [];
 
   return <main className="app-page">
-    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" />
+    <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" overdueReminderCount={overdueReminderCount} />
     <section className="content">
       <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
 

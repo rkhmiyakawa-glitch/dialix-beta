@@ -135,7 +135,7 @@ function SidebarAttendance({ currentProfile }) {
   );
 }
 
-export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX" }) {
+export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmin, onOpenMyPage, pageTitle = "DIALIX", overdueReminderCount = 0 }) {
   const normalizedRole = String(currentProfile?.role || "").trim().toLowerCase();
   const canOpenAdmin = ["owner", "admin", "admin_a", "sv", "supervisor", "管理者", "管理者s", "管理者a", "オーナー"].includes(normalizedRole);
   const isCurrent = (...titles) => titles.some((title) => pageTitle === title || pageTitle.endsWith(` / ${title}`));
@@ -162,6 +162,11 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
           </button>
           <button className={isCurrent("リマインド一覧") ? "active" : ""} aria-current={isCurrent("リマインド一覧") ? "page" : undefined} type="button" onClick={() => emitNavigation("reminders")}>
             <span className="sidebar-icon">✓</span><span>リマインド一覧</span>
+            {overdueReminderCount > 0 && (
+              <span className="sidebar-overdue-badge" title={`期限超過 ${overdueReminderCount}件`} aria-label={`期限超過 ${overdueReminderCount}件`}>
+                {overdueReminderCount > 99 ? "99+" : overdueReminderCount}
+              </span>
+            )}
           </button>
           <button className={isCurrent("リンク") ? "active" : ""} aria-current={isCurrent("リンク") ? "page" : undefined} type="button" onClick={() => emitNavigation("links")}>
             <span className="sidebar-icon">↗</span><span>リンク</span>

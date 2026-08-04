@@ -29,6 +29,7 @@ export default function CallPage({
   lockedUsers = [],
   onCallStateChange,
   currentProfile,
+  overdueReminderCount,
   onOpenAdmin,
   onOpenMyPage,
   onUnsavedChange,
@@ -193,7 +194,7 @@ export default function CallPage({
   return (
     <main className="app-page">
       <CustomerLockModal customerName={selectedCustomer.companyName} lockedUsers={lockedUsers} onClose={onBack} />
-      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客詳細`} />
+      <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle={`${selectedList.name} / 顧客詳細`} overdueReminderCount={overdueReminderCount} />
       <Toast message={message} />
 
       <section className="content call-content">

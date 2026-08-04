@@ -84,6 +84,7 @@ export default function App() {
     () => selectedCustomer ? presence.getOtherUsers(selectedCustomer.id) : [],
     [selectedCustomer, presence.rows]
   );
+  const overdueReminderCount = tasks.reminders.length;
 
   useLayoutEffect(() => {
     scrollPageTop();
@@ -569,6 +570,7 @@ export default function App() {
           onOpenAdmin={openAdmin}
           onOpenMyPage={openMyPage}
           onOpenTask={openTaskCustomer}
+          overdueReminderCount={overdueReminderCount}
         />
       </Suspense>
     </>;
@@ -580,7 +582,7 @@ export default function App() {
       {banner}
       {sessionNotice}
       <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
-        <AttendancePage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+        <AttendancePage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} overdueReminderCount={overdueReminderCount} />
       </Suspense>
     </>;
   }
@@ -590,7 +592,7 @@ export default function App() {
       {banner}
       {sessionNotice}
       <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
-        <LinksPage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+        <LinksPage currentProfile={currentProfile} onGoLists={goToLists} onLogout={handleLogout} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} overdueReminderCount={overdueReminderCount} />
       </Suspense>
     </>;
   }
@@ -608,6 +610,7 @@ export default function App() {
         onLogout={handleLogout}
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
+        overdueReminderCount={overdueReminderCount}
       />
       </Suspense>
     </>;
@@ -621,7 +624,7 @@ export default function App() {
       {banner}
       {sessionNotice}
       <Suspense fallback={<main className="loading-screen">管理画面を読み込んでいます...</main>}>
-        <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} onOpenOverdueCustomer={(item, items) => { setShowAdmin(false); openTaskCustomer(item, items, "期限超過一覧").catch((error) => setDataError(error.message || "顧客を開けませんでした。")); }} />
+        <AdminPage currentProfile={currentProfile} onBack={closeAdmin} onGoLists={goToLists} onLogout={handleLogout} onOpenMyPage={openMyPage} overdueReminderCount={overdueReminderCount} onOpenOverdueCustomer={(item, items) => { setShowAdmin(false); openTaskCustomer(item, items, "期限超過一覧").catch((error) => setDataError(error.message || "顧客を開けませんでした。")); }} />
       </Suspense>
     </>;
   }
@@ -650,6 +653,7 @@ export default function App() {
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
         onUnsavedChange={setHasUnsavedChanges}
+        overdueReminderCount={overdueReminderCount}
       />
       </Suspense>
     </>;
@@ -676,6 +680,7 @@ export default function App() {
         currentProfile={currentProfile}
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
+        overdueReminderCount={overdueReminderCount}
       />
       </Suspense>
     </>;
@@ -687,6 +692,6 @@ export default function App() {
     {dataLoading && (
       <div className="data-loading-overlay" role="status" aria-label="データ更新中" aria-live="polite" aria-busy="true" />
     )}
-    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} />
+    <ListPage onGoLists={goToLists} lists={lists} tasks={tasks} onOpenTask={openTaskCustomer} onSearchCustomers={searchCustomersAcrossLists} onLogout={handleLogout} onOpenCall={openList} currentProfile={currentProfile} onOpenAdmin={openAdmin} onOpenMyPage={openMyPage} overdueReminderCount={overdueReminderCount} />
   </>;
 }

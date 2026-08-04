@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import Header from "../components/Header";
 import { createSharedLink, deleteSharedLink, fetchSharedLinks, reorderSharedLinks } from "../services/linkService";
 
-export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenAdmin, onOpenMyPage }) {
+export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenAdmin, onOpenMyPage, overdueReminderCount }) {
   const [links, setLinks] = useState([]);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
@@ -97,6 +97,7 @@ export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenA
         onOpenAdmin={onOpenAdmin}
         onOpenMyPage={onOpenMyPage}
         pageTitle="リンク"
+        overdueReminderCount={overdueReminderCount}
       />
 
       <section className="content">

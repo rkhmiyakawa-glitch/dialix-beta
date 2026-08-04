@@ -9,6 +9,7 @@ export default function ReminderListPage({
   onOpenAdmin,
   onOpenMyPage,
   onOpenTask,
+  overdueReminderCount,
 }) {
   const isToday = mode === "today";
   const items = isToday ? (tasks?.dueToday || []) : (tasks?.allReminders || []);
@@ -16,7 +17,7 @@ export default function ReminderListPage({
   const eyebrow = isToday ? "TODAY REMINDERS" : "REMINDERS";
   const description = isToday
     ? "本日対応予定のリマインド案件を確認できます。"
-    : "本日以降に設定されているリマインド案件を確認できます。";
+    : "期限超過を含む、設定済みのリマインド案件を確認できます。";
 
   return (
     <main className="app-page">
@@ -27,6 +28,7 @@ export default function ReminderListPage({
         onOpenAdmin={onOpenAdmin}
         onOpenMyPage={onOpenMyPage}
         pageTitle={title}
+        overdueReminderCount={overdueReminderCount}
       />
       <section className="content">
         <div className="page-title">
@@ -46,9 +48,11 @@ export default function ReminderListPage({
             <div className="empty-state">現在、対象の顧客はいません。</div>
           ) : (
             <div className="task-list">
-              {items.map((item) => (
+              {items.map((item) => {
+                const isOverdue = Boolean(item.reminderAtRaw) && new Date(item.reminderAtRaw).getTime() < Date.now();
+                return (
                 <button
-                  className="task-row"
+                  className={`task-row${isOverdue ? " is-overdue-reminder" : ""}`}
                   key={item.id}
                   type="button"
                   onClick={() => onOpenTask(item, items, title)}
@@ -58,11 +62,13 @@ export default function ReminderListPage({
                     <small>{item.listName}・{item.phone}</small>
                   </div>
                   <div className="task-row-meta">
+                    {isOverdue && <em className="overdue-reminder-label">期限超過</em>}
                     <span>{item.reminderAt || item.status || "未架電"}</span>
                     <b>開く ›</b>
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

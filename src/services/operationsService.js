@@ -75,7 +75,6 @@ export async function fetchOperationalTasks(currentUser = {}) {
   const allReminderQuery = supabase.from("customers").select(baseColumns)
     .not("reminder_at", "is", null)
     .or(assigneeFilter)
-    .gte("reminder_at", startOfToday.toISOString())
     .order("reminder_at", { ascending: true })
     .limit(300);
 
@@ -95,7 +94,7 @@ export async function fetchOperationalTasks(currentUser = {}) {
 
   const futureReminders = allReminderResult.data || [];
   const dueToday = futureReminders
-    .filter((row) => row.reminder_at <= endOfToday.toISOString())
+    .filter((row) => row.reminder_at >= startOfToday.toISOString() && row.reminder_at <= endOfToday.toISOString())
     .slice(0, 100);
   return {
     reminders: (reminderResult.data || []).map(mapTask),
