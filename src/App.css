@@ -3081,18 +3081,20 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-weight: 400;
 }
 .sidebar-overdue-badge{
+  width:22px;
   min-width:22px;
   height:22px;
   margin-left:auto;
-  padding:0 6px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
+  padding:0;
+  display:inline-grid;
+  place-items:center;
   border-radius:999px;
   background:#c83b36;
   color:#fff;
   font-size:11px;
-  line-height:1;
+  line-height:22px;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
   font-weight:400;
   box-shadow:0 0 0 3px rgba(200,59,54,.12);
 }

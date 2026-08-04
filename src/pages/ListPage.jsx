@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import StatusMultiSelect from "../components/StatusMultiSelect";
 import { fetchProfiles } from "../services/profileService";
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, tasks, onOpenTask, onSearchCustomers, overdueReminderCount }) {
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, onSearchCustomers, overdueReminderCount }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apQuery, setApQuery] = useState("");
   const [apOptions, setApOptions] = useState([]);
@@ -50,23 +50,9 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
     finally { setSearching(false); }
   }
 
-  const overdueItems = tasks?.reminders || [];
-
   return <main className="app-page">
     <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" overdueReminderCount={overdueReminderCount} />
     <section className="content">
-      <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
-
-      <section className="admin-panel management-list-panel">
-        <div className="admin-panel-head management-list-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
-        {overdueItems.length === 0 ? <div className="empty-state">現在、対象の顧客はいません。</div> : <div className="task-list">
-          {overdueItems.map((item) => <button className="task-row" key={item.id} type="button" onClick={() => onOpenTask(item, overdueItems, "期限超過リマインド")}>
-            <div><strong>{item.companyName}</strong><small>{item.listName}・{item.phone}</small></div>
-            <div className="task-row-meta"><span>{item.reminderAt || item.status || "未架電"}</span><b>開く ›</b></div>
-          </button>)}
-        </div>}
-      </section>
-
       <div className="page-title list-section-title"><div><p className="eyebrow">CALL LISTS</p><h1>リスト一覧</h1><p>架電するリストを選択してください。</p></div></div>
       <form className="search-panel global-search-panel" onSubmit={handleCustomerSearch}>
         <label htmlFor="customer-search">全検索</label>
