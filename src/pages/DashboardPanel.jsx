@@ -112,7 +112,7 @@ export default function DashboardPanel({ onOpenOverdueCustomer, canResetKpi = fa
       </div>
 
 
-      <section className="dashboard-box dashboard-full-width dashboard-overdue-panel customer-list-surface">
+      <section className="dashboard-box dashboard-full-width dashboard-overdue-panel">
         <div className="dashboard-box-head dashboard-overdue-head">
           <h3>期限超過リマインド</h3>
           <div className="dashboard-overdue-filter">
