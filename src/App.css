@@ -3066,3 +3066,116 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-weight: 400;
 }
 .danger-outline-button{min-height:42px;padding:0 14px;border:1px solid #d04444;border-radius:9px;background:#fff;color:#b52f2f;font-weight: 400}.danger-outline-button:hover{background:#fff2f2}.danger-outline-button:disabled{opacity:.5;cursor:not-allowed}.kpi-reset-note{margin:-8px 0 18px;padding:10px 12px;border-radius:8px;background:#fff7e8;color:#8a5b0b;font-size:13px;font-weight: 400}
+
+/* v1.0.60: unify list/reminder/link surfaces with the customer-list design */
+.unified-list-page .customer-list-heading{
+  align-items:flex-end;
+  margin-bottom:24px;
+}
+.unified-list-page .customer-list-heading .eyebrow{
+  margin:0 0 6px;
+}
+.unified-list-page .task-panel,
+.unified-list-page .list-grid{
+  overflow:hidden;
+  border:1px solid #e0e7f1;
+  border-radius:14px!important;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(32,48,78,.04)!important;
+}
+.unified-list-page .task-panel-head{
+  min-height:47px;
+  padding:15px 14px;
+  border-bottom:1px solid #e8edf5;
+  background:#f7f9fc;
+}
+.unified-list-page .task-panel-head h2{
+  color:#5c687c;
+  font-size:12px;
+  font-weight:400;
+}
+.unified-list-page .task-row,
+.unified-list-page .list-card{
+  min-height:65px;
+  padding:15px 14px!important;
+  border:0!important;
+  border-bottom:1px solid #e8edf5!important;
+  border-radius:0!important;
+  background:#fff;
+  box-shadow:none!important;
+  font-size:13px;
+}
+.unified-list-page .task-row:last-child,
+.unified-list-page .list-card:last-child{
+  border-bottom:0!important;
+}
+.unified-list-page .task-row:hover,
+.unified-list-page .list-card:hover{
+  transform:none;
+  background:#f9fbff;
+  box-shadow:none!important;
+}
+.unified-list-page .task-row strong{
+  color:#2458df;
+  font-size:13px;
+  font-weight:400;
+}
+.unified-list-page .task-row small,
+.unified-list-page .task-row-meta,
+.unified-list-page .list-progress-summary{
+  font-size:13px;
+}
+.unified-list-page .list-grid{
+  display:grid;
+  gap:0!important;
+}
+.unified-list-page .list-card{
+  margin:0!important;
+}
+.unified-list-page .list-name{
+  color:#2458df;
+  font-size:18px;
+  font-weight:400;
+}
+.unified-list-page .list-count strong,
+.unified-list-page .list-count>span:not(.arrow){
+  font-size:13px;
+}
+.unified-list-page .links-page-panel .link-add-form{
+  border-bottom:1px solid #e8edf5;
+  background:#fff;
+}
+.unified-list-page .links-panel-message{
+  border:0;
+  border-radius:0;
+}
+.dashboard-overdue-panel.customer-list-surface{
+  overflow:hidden;
+  padding:0!important;
+  border:1px solid #e0e7f1!important;
+  border-radius:14px!important;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(32,48,78,.04)!important;
+}
+.dashboard-overdue-panel.customer-list-surface .dashboard-overdue-head{
+  min-height:47px;
+  padding:15px 14px;
+  border-bottom:1px solid #e8edf5;
+  background:#f7f9fc;
+}
+.dashboard-overdue-panel.customer-list-surface .dashboard-overdue-row{
+  min-height:65px;
+  padding:15px 14px;
+  border-bottom:1px solid #e8edf5;
+  background:#fff;
+}
+.dashboard-overdue-panel.customer-list-surface .dashboard-overdue-row:hover{
+  background:#f9fbff;
+}
+.dashboard-overdue-panel.customer-list-surface .empty-state{
+  border:0;
+  border-radius:0;
+}
+@media(max-width:720px){
+  .unified-list-page .customer-list-heading{align-items:stretch}
+}

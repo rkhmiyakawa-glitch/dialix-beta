@@ -99,8 +99,8 @@ export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenA
         pageTitle="リンク"
       />
 
-      <section className="content">
-        <div className="page-title">
+      <section className="content customer-list-content unified-list-page">
+        <div className="customer-list-heading">
           <div>
             <p className="eyebrow">LINKS</p>
             <h1>リンク</h1>

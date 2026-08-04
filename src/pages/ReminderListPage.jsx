@@ -28,8 +28,8 @@ export default function ReminderListPage({
         onOpenMyPage={onOpenMyPage}
         pageTitle={title}
       />
-      <section className="content">
-        <div className="page-title">
+      <section className="content customer-list-content unified-list-page">
+        <div className="customer-list-heading">
           <div>
             <p className="eyebrow">{eyebrow}</p>
             <h1>{title}</h1>

@@ -54,8 +54,8 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
 
   return <main className="app-page">
     <Header onLogout={onLogout} onGoLists={onGoLists} currentProfile={currentProfile} onOpenAdmin={onOpenAdmin} onOpenMyPage={onOpenMyPage} pageTitle="リスト一覧" />
-    <section className="content">
-      <div className="page-title"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
+    <section className="content customer-list-content unified-list-page">
+      <div className="customer-list-heading"><div><p className="eyebrow">OVERDUE</p><h1>期限超過リマインド</h1><p>期限を過ぎている顧客を確認できます。</p></div></div>
 
       <section className="task-panel">
         <div className="task-panel-head"><h2>期限超過リマインド一覧</h2><span>最大100件を表示</span></div>
@@ -67,7 +67,7 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, curre
         </div>}
       </section>
 
-      <div className="page-title list-section-title"><div><p className="eyebrow">CALL LISTS</p><h1>リスト一覧</h1><p>架電するリストを選択してください。</p></div></div>
+      <div className="customer-list-heading list-section-title"><div><p className="eyebrow">CALL LISTS</p><h1>リスト一覧</h1><p>架電するリストを選択してください。</p></div></div>
       <form className="search-panel global-search-panel" onSubmit={handleCustomerSearch}>
         <label htmlFor="customer-search">全検索</label>
         <div className="global-search-fields">
