@@ -45,13 +45,7 @@
 .system-banner{position:fixed;left:50%;top:78px;z-index:60;transform:translateX(-50%);padding:9px 15px;border:1px solid #f1c574;border-radius:999px;background:#fff8e9;color:#985b05;font-size:12px;font-weight: 400;box-shadow:0 8px 22px rgba(32,48,78,.12)}
 .system-banner.error{border-color:#e6aaaa;background:#fff0f0;color:#aa3030}
 .loading-screen{min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#536078;font-weight: 400}
-.data-loading-overlay{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:rgba(238,243,249,.66);backdrop-filter:blur(2px)}
-.data-loading{display:flex;align-items:center;gap:15px;min-width:300px;padding:20px 22px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:#172033;color:#fff;box-shadow:0 18px 48px rgba(9,24,42,.28)}
-.data-loading-spinner{width:27px;height:27px;flex:0 0 auto;border:3px solid rgba(255,255,255,.28);border-top-color:#fff;border-radius:50%;animation:data-loading-spin .75s linear infinite}
-.data-loading strong,.data-loading span{display:block}.data-loading strong{font-size:14px;font-weight:500;letter-spacing:.01em}.data-loading div>span{margin-top:4px;color:#b9c6d6;font-size:12px}
-@keyframes data-loading-spin{to{transform:rotate(360deg)}}
-@media(max-width:480px){.data-loading{min-width:0;width:100%;max-width:340px}}
-@media(prefers-reduced-motion:reduce){.data-loading-spinner{animation-duration:1.5s}}
+.data-loading-overlay{position:fixed;inset:0;z-index:90;background:rgba(238,243,249,.18);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);cursor:wait}
 .form-error{margin:8px 0 0;color:#b93636;font-size:13px;font-weight: 400}
 .login-form button:disabled{cursor:wait;opacity:.65}
 @media(max-width:720px){.system-banner{top:auto;bottom:12px;width:calc(100% - 24px);border-radius:12px;text-align:center}}
@@ -3052,6 +3046,11 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .list-card .list-count strong,
 .list-card .list-count > span:not(.arrow){
   font-size:15px;
+}
+
+/* v1.0.69: lower the list name and its status figures slightly. */
+.list-card .list-info{
+  transform:translateY(4px);
 }
 
 /* v1.0.34: match the logo-to-menu spacing to the menu item gap */
