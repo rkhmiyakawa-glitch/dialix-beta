@@ -607,6 +607,9 @@ input,select,textarea,button{max-width:100%}
   max-height:none!important;
   overflow-x:auto!important;
   overflow-y:visible!important;
+  /* v1.0.68: allow vertical wheel gestures to continue to the page. */
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto;
   position:static!important;
 }
 .customer-table{
