@@ -38,33 +38,34 @@ export async function fetchDashboardData(period = "today") {
   const resetState = await fetchKpiResetState();
   const resetAt = resetState.resetAt ? new Date(resetState.resetAt) : null;
   const effectiveStart = resetAt && resetAt > start ? resetAt : start;
-  const historyColumns = "id,user_id,operator_name,status,memo,called_at,customers(company_name)";
-  const [historyResult, profilesResult, overdueResult] = await Promise.all([
-    supabase.from("call_histories").select(historyColumns).gte("called_at", effectiveStart.toISOString()).lte("called_at", end.toISOString()).order("called_at", { ascending: false }),
+  const [kpiResult, profilesResult, overdueResult] = await Promise.all([
+    supabase.rpc("get_management_dashboard_kpi", {
+      start_at: effectiveStart.toISOString(),
+      end_at: end.toISOString(),
+    }),
     supabase.from("profiles").select("id,display_name,role,is_active").eq("is_active", true),
     supabase.from("customers").select("id,list_id,company_name,ap_name,status,reminder_at,lists(name)").not("reminder_at", "is", null).lt("reminder_at", new Date().toISOString()).order("reminder_at", { ascending: true }).limit(100),
   ]);
-  const failed = [historyResult, profilesResult, overdueResult].find((r) => r.error);
+  const failed = [kpiResult, profilesResult, overdueResult].find((r) => r.error);
   if (failed?.error) throw failed.error;
 
-  const histories = historyResult.data || [];
   const profiles = profilesResult.data || [];
-  const byUser = new Map(profiles.map((p) => [p.id, { userId: p.id, displayName: p.display_name || "名称未設定", callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 }]));
-  let validCount = 0;
-  let decisionCount = 0;
-  let prospectCount = 0;
-  let tossupCount = 0;
-  const kpiHistories = histories.filter((history) => history.status !== "内容修正");
-  kpiHistories.forEach((h) => {
-    const key = h.user_id || `name:${h.operator_name}`;
-    if (!byUser.has(key)) byUser.set(key, { userId: key, displayName: h.operator_name || "不明", callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 });
-    const row = byUser.get(key); row.callCount += 1;
-    if (["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "対象外", "内容相違", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"].includes(h.status)) { row.validCount += 1; validCount += 1; }
-    if (["決裁NG", "決裁見込み"].includes(h.status)) { row.decisionCount += 1; decisionCount += 1; }
-    if (String(h.status || "").includes("見込み")) { row.prospectCount += 1; prospectCount += 1; }
-    if (h.status === "トスアップ") { row.tossupCount += 1; tossupCount += 1; }
-  });
-  const operators = [...byUser.values()];
+  const operators = (kpiResult.data || []).map((row) => ({
+    userId: row.user_key,
+    displayName: row.display_name || "名称未設定",
+    callCount: Number(row.call_count || 0),
+    validCount: Number(row.valid_count || 0),
+    decisionCount: Number(row.decision_count || 0),
+    prospectCount: Number(row.prospect_count || 0),
+    tossupCount: Number(row.tossup_count || 0),
+  }));
+  const totals = operators.reduce((sum, row) => ({
+    callCount: sum.callCount + row.callCount,
+    validCount: sum.validCount + row.validCount,
+    decisionCount: sum.decisionCount + row.decisionCount,
+    prospectCount: sum.prospectCount + row.prospectCount,
+    tossupCount: sum.tossupCount + row.tossupCount,
+  }), { callCount: 0, validCount: 0, decisionCount: 0, prospectCount: 0, tossupCount: 0 });
   const sortRanking = (metricKey) => operators
     .filter((row) => row[metricKey] > 0)
     .sort((a, b) => b[metricKey] - a[metricKey] || b.callCount - a.callCount || a.displayName.localeCompare(b.displayName, "ja"));
@@ -84,13 +85,13 @@ export async function fetchDashboardData(period = "today") {
     rangeLabel: label,
     activeApNames,
     metrics: {
-      callCount: kpiHistories.length,
-      validCount,
-      validRate: kpiHistories.length ? Number((validCount / kpiHistories.length * 100).toFixed(1)) : 0,
-      decisionCount,
-      decisionRate: validCount ? Number((decisionCount / validCount * 100).toFixed(1)) : 0,
-      prospectCount,
-      tossupCount,
+      callCount: totals.callCount,
+      validCount: totals.validCount,
+      validRate: totals.callCount ? Number((totals.validCount / totals.callCount * 100).toFixed(1)) : 0,
+      decisionCount: totals.decisionCount,
+      decisionRate: totals.validCount ? Number((totals.decisionCount / totals.validCount * 100).toFixed(1)) : 0,
+      prospectCount: totals.prospectCount,
+      tossupCount: totals.tossupCount,
       activeOperatorCount: callRanking.length,
       totalOperatorCount: profiles.length,
       overdueCount: overdue.length,
