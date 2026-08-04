@@ -3096,6 +3096,10 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-weight:400;
   box-shadow:0 0 0 3px rgba(200,59,54,.12);
 }
+.sidebar-nav button .sidebar-overdue-badge{
+  width:auto!important;
+  flex:0 0 auto!important;
+}
 .task-row.is-overdue-reminder{box-shadow:inset 3px 0 0 #d45a50}
 .overdue-reminder-label{
   padding:4px 8px;
