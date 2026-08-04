@@ -1481,6 +1481,64 @@ input,select,textarea,button{max-width:100%}
 .link-card small { color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .link-card button { border:0; background:transparent; color:#dc2626; cursor:pointer; }
 
+/* v1.0.56: align the Links page with the reminder list pages */
+.links-page-panel { margin-top:0; }
+.links-page-panel .link-add-form {
+  border:0;
+  border-bottom:1px solid #e7ecf4;
+  border-radius:0;
+  box-shadow:none;
+  background:#fff;
+  padding:16px 18px;
+}
+.links-page-panel .link-add-form input {
+  border-color:#cfd8e6;
+  border-radius:9px;
+}
+.links-page-panel .link-add-form input:focus {
+  border-color:#1f4fd6;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(31,79,214,.1);
+}
+.links-page-panel .link-add-form button:disabled { opacity:.55; cursor:not-allowed; }
+.links-task-list { border:0; }
+.links-page-panel .link-card {
+  min-height:70px;
+  padding:15px 18px;
+  border:0;
+  border-bottom:1px solid #edf0f5;
+  border-radius:0;
+  box-shadow:none;
+  background:#fff;
+  transition:background-color .15s ease;
+}
+.links-page-panel .link-card:last-child { border-bottom:0; }
+.links-page-panel .link-card:hover { background:#f7f9ff; }
+.links-page-panel .link-card a { gap:4px; }
+.links-page-panel .link-card strong { font-size:16px; font-weight:400; }
+.links-page-panel .link-card small { color:#748198; }
+.link-card-actions { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+.link-open-label { color:#1f4fd6; font-size:13px; white-space:nowrap; }
+.link-order-actions { display:flex; align-items:center; gap:4px; }
+.links-page-panel .link-order-button {
+  width:32px;
+  height:32px;
+  border:1px solid #d9e1ec;
+  border-radius:8px;
+  background:#fff;
+  color:#59667a;
+}
+.links-page-panel .link-order-button:hover:not(:disabled) { border-color:#aebfe8; background:#f4f7ff; color:#1f4fd6; }
+.links-page-panel .link-order-button:disabled { color:#b8c1cf; cursor:not-allowed; }
+.links-page-panel .link-delete-button { padding:7px 4px; color:#c33b3b; }
+.links-panel-message { padding:32px 18px; text-align:center; color:#718098; background:#fff; }
+
+@media (max-width: 640px) {
+  .links-page-panel .link-card { align-items:flex-start; gap:12px; }
+  .link-card-actions { gap:7px; }
+  .link-open-label { display:none; }
+}
+
 @media (max-width: 820px) {
   .app-sidebar { width: 76px; }
   .sidebar-brand { padding:0; justify-content:center; }

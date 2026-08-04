@@ -108,40 +108,50 @@ export default function LinksPage({ currentProfile, onGoLists, onLogout, onOpenA
           </div>
         </div>
 
-        {canManageLinks && (
-          <form className="link-add-form" onSubmit={addLink}>
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="リンク名" disabled={saving} />
-            <input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com" disabled={saving} />
-            <button type="submit" disabled={saving}>{saving ? "保存中..." : "追加"}</button>
-          </form>
-        )}
+        <section className="task-panel reminder-page-panel links-page-panel">
+          <div className="task-panel-head">
+            <h2>リンク一覧</h2>
+            <span>{loading ? "読み込み中" : `${links.length}件`}</span>
+          </div>
 
-        {error && <div className="empty-state">{error}</div>}
+          {canManageLinks && (
+            <form className="link-add-form" onSubmit={addLink}>
+              <input value={name} onChange={(event) => setName(event.target.value)} placeholder="リンク名" disabled={saving} />
+              <input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com" disabled={saving} />
+              <button type="submit" disabled={saving}>{saving ? "保存中..." : "追加"}</button>
+            </form>
+          )}
 
-        <section className="links-grid">
-          {loading && <div className="empty-state">リンクを読み込んでいます...</div>}
-          {!loading && links.map((link, index) => (
-            <article className="link-card" key={link.id}>
-              <a href={link.url} target="_blank" rel="noreferrer">
-                <strong>{link.name}</strong>
-                <small>{link.url}</small>
-              </a>
+          {error && <div className="links-panel-message">{error}</div>}
+          {loading && <div className="links-panel-message">リンクを読み込んでいます...</div>}
 
-              <div className="link-card-actions">
-                {canManageLinks && (
-                  <div className="link-order-actions" aria-label={`${link.name}の表示順`}>
-                    <button type="button" className="link-order-button" onClick={() => moveLink(index, -1)} disabled={saving || index === 0} aria-label={`${link.name}を上へ移動`} title="上へ移動">↑</button>
-                    <button type="button" className="link-order-button" onClick={() => moveLink(index, 1)} disabled={saving || index === links.length - 1} aria-label={`${link.name}を下へ移動`} title="下へ移動">↓</button>
+          {!loading && links.length > 0 && (
+            <div className="task-list links-task-list">
+              {links.map((link, index) => (
+                <article className="link-card" key={link.id}>
+                  <a href={link.url} target="_blank" rel="noreferrer">
+                    <strong>{link.name}</strong>
+                    <small>{link.url}</small>
+                  </a>
+
+                  <div className="link-card-actions">
+                    <span className="link-open-label">開く ›</span>
+                    {canManageLinks && (
+                      <div className="link-order-actions" aria-label={`${link.name}の表示順`}>
+                        <button type="button" className="link-order-button" onClick={() => moveLink(index, -1)} disabled={saving || index === 0} aria-label={`${link.name}を上へ移動`} title="上へ移動">↑</button>
+                        <button type="button" className="link-order-button" onClick={() => moveLink(index, 1)} disabled={saving || index === links.length - 1} aria-label={`${link.name}を下へ移動`} title="下へ移動">↓</button>
+                      </div>
+                    )}
+                    {canManageLinks && (
+                      <button type="button" className="link-delete-button" disabled={saving} onClick={() => removeLink(link.id)}>削除</button>
+                    )}
                   </div>
-                )}
-                {canManageLinks && (
-                  <button type="button" className="link-delete-button" disabled={saving} onClick={() => removeLink(link.id)}>削除</button>
-                )}
-              </div>
-            </article>
-          ))}
+                </article>
+              ))}
+            </div>
+          )}
 
-          {!loading && !links.length && !error && <div className="empty-state">登録されているリンクはありません。</div>}
+          {!loading && !links.length && !error && <div className="links-panel-message">登録されているリンクはありません。</div>}
         </section>
       </section>
     </main>
