@@ -751,3 +751,38 @@ select,.status-multi-trigger,.page-size-select select,
 .management-dashboard-box .dashboard-overdue-row:first-child{border-top:0!important}
 .management-list-panel .task-row:last-child,
 .management-dashboard-box .dashboard-overdue-row:last-child{border-bottom:0!important}
+
+/* v1.0.67: unified zebra rows across every list-style screen. */
+:root{
+  --dialix-row-odd:#fff;
+  --dialix-row-even:#f7f9fc;
+  --dialix-row-hover:#f1f5fa;
+}
+.customer-table tbody tr:nth-child(odd),
+.admin-table tbody tr:nth-child(odd),
+.dashboard-table tbody tr:nth-child(odd),
+.task-list>.task-row:nth-child(odd),
+.ranking-list>.ranking-row:nth-child(odd),
+.dashboard-overdue-list>.dashboard-overdue-row:nth-child(odd),
+.list-grid>.list-card:nth-child(odd){background:var(--dialix-row-odd)!important}
+.customer-table tbody tr:nth-child(even),
+.admin-table tbody tr:nth-child(even),
+.dashboard-table tbody tr:nth-child(even),
+.task-list>.task-row:nth-child(even),
+.ranking-list>.ranking-row:nth-child(even),
+.dashboard-overdue-list>.dashboard-overdue-row:nth-child(even),
+.list-grid>.list-card:nth-child(even){background:var(--dialix-row-even)!important}
+.customer-table tbody tr:hover,
+.admin-table tbody tr:hover,
+.dashboard-table tbody tr:hover,
+.task-list>.task-row:hover,
+.ranking-list>.ranking-row:hover,
+.dashboard-overdue-list>.dashboard-overdue-row:hover,
+.list-grid>.list-card:hover{background:var(--dialix-row-hover)!important}
+
+/* Operational warning states remain stronger than the neutral zebra colors. */
+.customer-table tbody tr.is-reminder-due{background:#fffaf2!important}
+.customer-table tbody tr.is-reminder-due:hover{background:#fff6e7!important}
+.customer-table tbody tr.is-locked{background:#f0f2f5!important}
+.admin-table tbody tr.late-row{background:#fff6f6!important}
+.admin-table tbody tr.late-row:hover{background:#ffeded!important}
