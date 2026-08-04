@@ -163,7 +163,7 @@ export default function Header({ onLogout, onGoLists, currentProfile, onOpenAdmi
           <button className={isCurrent("リマインド一覧") ? "active" : ""} aria-current={isCurrent("リマインド一覧") ? "page" : undefined} type="button" onClick={() => emitNavigation("reminders")}>
             <span className="sidebar-icon">✓</span><span>リマインド一覧</span>
             {overdueReminderCount > 0 && (
-              <span className="sidebar-overdue-badge" title={`期限超過 ${overdueReminderCount}件`} aria-label={`期限超過 ${overdueReminderCount}件`}>
+              <span className={`sidebar-overdue-badge${overdueReminderCount > 99 ? " is-wide" : ""}`} title={`期限超過 ${overdueReminderCount}件`} aria-label={`期限超過 ${overdueReminderCount}件`}>
                 {overdueReminderCount > 99 ? "99+" : overdueReminderCount}
               </span>
             )}

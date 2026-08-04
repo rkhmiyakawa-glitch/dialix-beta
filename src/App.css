@@ -3096,9 +3096,18 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   font-weight:400;
   box-shadow:0 0 0 3px rgba(200,59,54,.12);
 }
-.sidebar-nav button .sidebar-overdue-badge{
-  width:auto!important;
-  flex:0 0 auto!important;
+.sidebar-nav button > span.sidebar-overdue-badge:last-child{
+  width:22px!important;
+  min-width:22px!important;
+  max-width:22px!important;
+  padding:0!important;
+  flex:0 0 22px!important;
+}
+.sidebar-nav button > span.sidebar-overdue-badge.is-wide:last-child{
+  width:30px!important;
+  min-width:30px!important;
+  max-width:30px!important;
+  flex-basis:30px!important;
 }
 .task-row.is-overdue-reminder{box-shadow:inset 3px 0 0 #d45a50}
 .overdue-reminder-label{
