@@ -146,6 +146,41 @@ export async function fetchListCustomers(listId) {
   return data.map((row) => ({ id: row.id, companyName: row.company_name, phone: row.phone, status: row.status || "", reminderAt: row.reminder_at || "" }));
 }
 
+export async function fetchListExportCustomers(listId) {
+  if (!isSupabaseConfigured) {
+    return (customersByList[listId] || []).map((customer) => ({
+        customerId: customer.id,
+        companyName: customer.companyName || "",
+        phone: customer.phone || "",
+        address: customer.address || "",
+        detail: customer.businessSubcategory || "",
+        apName: customer.ap || "",
+        status: customer.status || "",
+        lastCalledAt: customer.lastCallAt || "",
+        reminderAt: customer.reminderAt || "",
+      }));
+  }
+
+  const rows = await fetchAllRows(() => supabase
+    .from("customers")
+    .select("id,company_name,phone,address,business_subcategory,ap_name,status,last_called_at,reminder_at,sort_order")
+    .eq("list_id", listId)
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("id", { ascending: true }));
+
+  return rows.map((row) => ({
+    customerId: row.id,
+    companyName: row.company_name || "",
+    phone: row.phone || "",
+    address: row.address || "",
+    detail: row.business_subcategory || "",
+    apName: row.ap_name || "",
+    status: row.status || "",
+    lastCalledAt: row.last_called_at || "",
+    reminderAt: row.reminder_at || "",
+  }));
+}
+
 export async function bulkUpdateCustomers({ customerIds, status, reminderAt, destinationListId }) {
   if (!customerIds.length || !isSupabaseConfigured) return;
   const changes = { updated_at: new Date().toISOString() };
@@ -169,4 +204,26 @@ export function downloadCustomersCsv(listName, customers) {
   const lines = [["会社名", "電話番号", "ステータス", "次回架電日時"], ...customers.map((item) => [item.companyName, item.phone, item.status, item.reminderAt])];
   const blob = new Blob(["\uFEFF" + lines.map((row) => row.map(csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = `${listName || "DIALIXリスト"}.csv`; anchor.click(); URL.revokeObjectURL(url);
+}
+
+export function downloadListDataCsv(listName, customers) {
+  const lines = [["顧客ID", "顧客名", "電話番号", "住所", "詳細", "最終担当AP", "コールステータス", "最終架電日時", "次回架電日時"], ...customers.map((item) => [
+    item.customerId,
+    item.companyName,
+    item.phone,
+    item.address,
+    item.detail,
+    item.apName,
+    item.status,
+    item.lastCalledAt,
+    item.reminderAt,
+  ])];
+  const blob = new Blob(["\uFEFF" + lines.map((row) => row.map(csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  const safeName = String(listName || "DIALIXリスト").replace(/[\\/:*?"<>|]/g, "_");
+  anchor.download = `${safeName}_全データ_${new Date().toLocaleDateString("sv-SE")}.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }

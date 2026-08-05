@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { duplicateList, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, reorderLists, restoreList } from "../services/listManagementService";
+import { downloadListDataCsv, duplicateList, fetchListExportCustomers, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, reorderLists, restoreList } from "../services/listManagementService";
 
 const dateText = (value) => value ? new Date(value).toLocaleString("ja-JP") : "―";
 const daysLeft = (value) => Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86400000));
 
-export default function ListManagementPanel({ canReorder = false }) {
+export default function ListManagementPanel({ canReorder = false, canExportData = false }) {
   const [lists, setLists] = useState([]);
   const [trash, setTrash] = useState([]);
   const [editing, setEditing] = useState(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
+  const [exportingListId, setExportingListId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -68,6 +69,18 @@ export default function ListManagementPanel({ canReorder = false }) {
     } finally { setBusy(false); }
   }
 
+  async function exportListData(list) {
+    if (!canExportData || busy) return;
+    setBusy(true); setExportingListId(list.id); setError(""); setMessage("");
+    try {
+      const customers = await fetchListExportCustomers(list.id);
+      downloadListDataCsv(list.name, customers);
+      setMessage(`「${list.name}」の顧客データ${customers.length.toLocaleString()}件をCSVへ抽出しました。`);
+    } catch (e) {
+      setError(e.message || "リストのCSV抽出に失敗しました。");
+    } finally { setBusy(false); setExportingListId(null); }
+  }
+
   return <div className="list-management-stack">
     {error && <div className="admin-error">{error}</div>}
     {message && <div className="admin-success">{message}</div>}
@@ -80,7 +93,7 @@ export default function ListManagementPanel({ canReorder = false }) {
       <div className="table-scroll"><table className="admin-table"><thead><tr><th>リスト名</th><th>件数</th><th>更新日時</th><th>操作</th>{canReorder && <th>並び替え</th>}</tr></thead><tbody>
         {visibleLists.map((list) => { const index = lists.findIndex((item) => item.id === list.id); return <tr key={list.id}>
           <td><strong>{list.name}</strong></td><td>{list.count.toLocaleString()}件</td><td>{dateText(list.updatedAt)}</td>
-          <td><div className="user-action-group"><button className="table-action" onClick={() => setEditing({ ...list })}>編集</button><button className="table-action" onClick={() => startDuplicate(list)} disabled={busy}>複製</button><button className="table-action danger" onClick={() => trashList(list)} disabled={busy}>削除</button></div></td>
+          <td><div className="user-action-group">{canExportData && <button className="table-action" type="button" onClick={() => exportListData(list)} disabled={busy}>{exportingListId === list.id ? "作成中..." : "CSV抽出"}</button>}<button className="table-action" onClick={() => setEditing({ ...list })}>編集</button><button className="table-action" onClick={() => startDuplicate(list)} disabled={busy}>複製</button><button className="table-action danger" onClick={() => trashList(list)} disabled={busy}>削除</button></div></td>
           {canReorder && <td><div className="user-order-controls"><button type="button" onClick={() => moveList(index, -1)} disabled={busy || index === 0} aria-label={`${list.name}を上へ`}>↑</button><button type="button" onClick={() => moveList(index, 1)} disabled={busy || index === lists.length - 1} aria-label={`${list.name}を下へ`}>↓</button></div></td>}
         </tr>; })}
       </tbody></table></div>
