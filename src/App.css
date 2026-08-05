@@ -846,6 +846,7 @@ input,select,textarea,button{max-width:100%}
   min-width:0;
 }
 .customer-details-v106 .phone-number-link{
+  font-size:16px;
   white-space:nowrap;
 }
 
