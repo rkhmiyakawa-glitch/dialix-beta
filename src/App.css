@@ -3290,3 +3290,11 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   white-space:pre-wrap;
   overflow-wrap:anywhere;
 }
+
+/* v1.0.91: balance the customer heading and status/detail columns. */
+.customer-panel .panel-heading .eyebrow{
+  margin-bottom:10px;
+}
+.status-panel .status-workspace{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
