@@ -505,7 +505,7 @@ input,select,textarea,button{max-width:100%}
 .customer-details-v104 .phone-number{
   flex:0 0 auto;
   white-space:nowrap!important;
-  font-size:20px;
+  font-size:18px;
   font-weight: 400;
   letter-spacing:.02em;
 }
@@ -846,7 +846,7 @@ input,select,textarea,button{max-width:100%}
   min-width:0;
 }
 .customer-details-v106 .phone-number-link{
-  font-size:20px!important;
+  font-size:18px!important;
   line-height:1.4;
   white-space:nowrap;
 }
