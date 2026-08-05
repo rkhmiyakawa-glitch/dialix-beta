@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import StatusMultiSelect from "../components/StatusMultiSelect";
 import { fetchProfiles } from "../services/profileService";
 
-export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, currentProfile, onOpenAdmin, onOpenMyPage, onSearchCustomers, overdueReminderCount }) {
+export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, onOpenTask, currentProfile, onOpenAdmin, onOpenMyPage, onSearchCustomers, overdueReminderCount }) {
   const [customerQuery, setCustomerQuery] = useState("");
   const [apQuery, setApQuery] = useState("");
   const [apOptions, setApOptions] = useState([]);
