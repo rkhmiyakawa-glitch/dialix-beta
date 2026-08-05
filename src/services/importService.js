@@ -43,22 +43,56 @@ function parseDate(value) {
   const date = new Date(normalized);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
-function parseCsvLine(line) {
-  const cells = []; let value = ""; let quoted = false;
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    if (char === '"') { if (quoted && line[i + 1] === '"') { value += '"'; i += 1; } else quoted = !quoted; }
-    else if (char === "," && !quoted) { cells.push(value); value = ""; } else value += char;
+function parseCsvRecords(text) {
+  const source = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const records = [];
+  let cells = [];
+  let value = "";
+  let quoted = false;
+  let lineNumber = 1;
+  let recordStartLine = 1;
+
+  const finishRecord = () => {
+    cells.push(value);
+    if (cells.some((cell) => cell.trim() !== "")) records.push({ cells, rowNumber: recordStartLine });
+    cells = [];
+    value = "";
+  };
+
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i];
+    if (quoted) {
+      if (char === '"') {
+        if (source[i + 1] === '"') { value += '"'; i += 1; }
+        else quoted = false;
+      } else {
+        value += char;
+        if (char === "\n") lineNumber += 1;
+      }
+    } else if (char === '"' && value === "") {
+      quoted = true;
+    } else if (char === ",") {
+      cells.push(value);
+      value = "";
+    } else if (char === "\n") {
+      finishRecord();
+      lineNumber += 1;
+      recordStartLine = lineNumber;
+    } else {
+      value += char;
+    }
   }
-  cells.push(value); return cells.map((cell) => cell.trim());
+
+  if (quoted) throw new Error(`CSV ${recordStartLine}行目の引用符（\"）が閉じられていません。`);
+  if (cells.length > 0 || value !== "") finishRecord();
+  return records;
 }
 export function parseCsv(text) {
-  const lines = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter((line) => line.trim() !== "");
-  if (lines.length < 2) throw new Error("ヘッダー行とデータ行を含むCSVを選択してください。");
-  const headers = parseCsvLine(lines[0]).map(normalizeHeader);
-  const rows = lines.slice(1).map((line, index) => {
-    const cells = parseCsvLine(line);
-    return { rowNumber: index + 2, raw: Object.fromEntries(headers.map((header, i) => [header, cells[i] ?? ""])) };
+  const records = parseCsvRecords(text);
+  if (records.length < 2) throw new Error("ヘッダー行とデータ行を含むCSVを選択してください。");
+  const headers = records[0].cells.map(normalizeHeader);
+  const rows = records.slice(1).map(({ cells, rowNumber }) => {
+    return { rowNumber, raw: Object.fromEntries(headers.map((header, i) => [header, cells[i] ?? ""])) };
   });
   return { headers, rows };
 }
