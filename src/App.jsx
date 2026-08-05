@@ -99,6 +99,7 @@ export default function App() {
   const taskRefreshTimerRef = useRef(null);
   const customerDetailCacheRef = useRef(new Map());
   const customerRequestIdRef = useRef(0);
+  const navigationItemsRef = useRef([]);
   const savedNavigationRef = useRef(readSavedNavigation());
 
   const userId = session?.user?.id || "";
@@ -227,7 +228,9 @@ export default function App() {
               const restoredCustomer = detailedCustomer || customer;
               if (detailedCustomer) customerDetailCacheRef.current.set(customer.id, detailedCustomer);
               setSelectedCustomer(restoredCustomer);
-              setNavigationItems(nextCustomers.map((item) => ({ id: item.id, listId: list.id })));
+              const restoredNavigationItems = nextCustomers.map((item) => ({ id: item.id, listId: list.id }));
+              navigationItemsRef.current = restoredNavigationItems;
+              setNavigationItems(restoredNavigationItems);
               presence.trackCustomer(customer.id)?.catch?.(() => {});
             }
           }
@@ -293,7 +296,9 @@ export default function App() {
     setShowLinks(false);
     setReminderPage("");
     setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
-    setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
+    const taskNavigationItems = contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId }));
+    navigationItemsRef.current = taskNavigationItems;
+    setNavigationItems(taskNavigationItems);
     setNavigationLabel(contextLabel);
     const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0 };
     if (!list.id || !task.id) throw new Error("顧客の移動先情報が不足しています。");
@@ -359,10 +364,9 @@ export default function App() {
 
   async function openCustomer(customer, sequence = null, label = "リスト") {
     scrollPageTop();
-    if (sequence) {
-      setNavigationItems(sequence.map((item) => ({ id: item.id, listId: item.listId || selectedList?.id })));
-      setNavigationLabel(label);
-    }
+    const requestedNavigationItems = sequence
+      ? sequence.map((item) => ({ id: item.id, listId: item.listId || selectedList?.id }))
+      : navigationItemsRef.current;
     const users = presence.getOtherUsers(customer.id);
     if (users.length) {
       window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
@@ -393,11 +397,16 @@ export default function App() {
     }
 
     customerDetailCacheRef.current.set(customer.id, detailedCustomer);
+    if (sequence) {
+      navigationItemsRef.current = requestedNavigationItems;
+      setNavigationItems(requestedNavigationItems);
+      setNavigationLabel(label);
+    }
     setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
     setSelectedCustomer(detailedCustomer);
     presence.trackCustomer(customer.id)?.catch?.(() => {});
 
-    const items = sequence || navigationItems;
+    const items = requestedNavigationItems;
     const index = items.findIndex((item) => item.id === customer.id);
     [items[index - 1], items[index + 1]].forEach((item) => item && prefetchCustomerDetails(item.id));
   }
@@ -421,6 +430,7 @@ export default function App() {
     setSelectedCustomer(null);
     setSelectedList(null);
     setCustomers([]);
+    navigationItemsRef.current = [];
     setNavigationItems([]);
     setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
     invalidateListCache();
@@ -544,24 +554,25 @@ export default function App() {
 
   async function navigateCustomer(offset) {
     scrollPageTop();
-    if (!selectedCustomer || !navigationItems.length) return;
-    const currentIndex = navigationItems.findIndex((item) => item.id === selectedCustomer.id);
+    const activeNavigationItems = navigationItemsRef.current;
+    if (!selectedCustomer || !activeNavigationItems.length) return;
+    const currentIndex = activeNavigationItems.findIndex((item) => item.id === selectedCustomer.id);
     let targetIndex = currentIndex + offset;
     const skipped = [];
-    while (targetIndex >= 0 && targetIndex < navigationItems.length) {
-      const candidate = navigationItems[targetIndex];
+    while (targetIndex >= 0 && targetIndex < activeNavigationItems.length) {
+      const candidate = activeNavigationItems[targetIndex];
       if (candidate.listId && candidate.listId !== selectedList?.id) break;
       const users = presence.getOtherUsers(candidate.id);
       if (!users.length) break;
       skipped.push(`${users[0].userName || "他のオペレーター"}さん`);
       targetIndex += offset;
     }
-    if (targetIndex < 0 || targetIndex >= navigationItems.length) {
+    if (targetIndex < 0 || targetIndex >= activeNavigationItems.length) {
       if (skipped.length) window.alert("入室中の顧客をスキップしましたが、その先に移動できる顧客がありません。");
       return;
     }
     if (skipped.length) window.alert(`入室中（${[...new Set(skipped)].join("、")}）の顧客をスキップし、次の未入室顧客へ移動します。`);
-    const target = navigationItems[targetIndex];
+    const target = activeNavigationItems[targetIndex];
 
     presence.clearCustomer()?.catch?.(() => {});
     if (target.listId && target.listId !== selectedList?.id) {

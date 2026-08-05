@@ -134,11 +134,6 @@ export default function StatusButtons({
             </div>
           )}
 
-          {!details.length && selectedCategory !== "見込み留守" && selectedCategory !== "前確依頼" && (
-            <div className="status-side-placeholder">
-              ステータスを選択すると、必要な詳細項目がここに表示されます。
-            </div>
-          )}
         </div>
       </div>
 
