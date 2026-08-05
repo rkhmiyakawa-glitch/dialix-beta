@@ -16,7 +16,7 @@ import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
 import useDeploymentRefresh from "./hooks/useDeploymentRefresh";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
-import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, saveCallResult } from "./services/dataService";
+import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, invalidateMyKpiSummaryCache, saveCallResult } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
 import { fetchOperationalTasks, searchCustomersAcrossLists, subscribeOperationalTasks } from "./services/operationsService";
 
@@ -179,13 +179,14 @@ export default function App() {
   useEffect(() => {
     if (!session) return;
     setDataLoading(true);
-    Promise.all([fetchLists(), fetchTodayKpi(session.user?.id), fetchMyProfile(session.user)])
-      .then(async ([nextLists, nextKpi, nextProfile]) => {
-        const nextTasks = await fetchOperationalTasks({
+    const profilePromise = fetchMyProfile(session.user);
+    const taskPromise = profilePromise.then((nextProfile) => fetchOperationalTasks({
           userId: session.user?.id,
           displayName: nextProfile?.displayName,
           email: nextProfile?.email || session.user?.email,
-        });
+        }));
+    Promise.all([fetchLists(), fetchTodayKpi(session.user?.id), profilePromise, taskPromise])
+      .then(([nextLists, nextKpi, nextProfile, nextTasks]) => {
         setLists(nextLists);
         setKpi(nextKpi);
         setCurrentProfile(nextProfile);
@@ -532,6 +533,7 @@ export default function App() {
     setCustomers((current) => current.map((customer) => customer.id === payload.customerId ? optimistic : customer));
     setSelectedCustomer((current) => current?.id === payload.customerId ? optimistic : current);
 
+    invalidateMyKpiSummaryCache();
     Promise.all([
       fetchCustomerDetails(payload.customerId),
       fetchTodayKpi(userId),

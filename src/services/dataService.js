@@ -277,22 +277,44 @@ export async function saveCallResult({
 
 
 
-const VALID_STATUSES = ["NG", "フロントNG", "担当NG", "非決裁NG", "決裁NG", "対象外", "内容相違", "再コール", "見込み", "非決裁見込み", "決裁見込み", "トスアップ"];
-const DECISION_STATUSES = ["決裁NG", "決裁見込み"];
-const NON_CALL_STATUSES = ["内容修正"];
+let myKpiSummaryCache = null;
 
-function summarizePerformance(rows = []) {
-  const result = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
-  for (const row of rows) {
-    const status = row.status;
-    if (NON_CALL_STATUSES.includes(status)) continue;
-    result.calls += 1;
-    if (VALID_STATUSES.includes(status)) result.valid += 1;
-    if (DECISION_STATUSES.includes(status)) result.decisions += 1;
-    if (String(status || "").includes("見込み")) result.prospects += 1;
-    if (status === "トスアップ") result.tossups += 1;
+export function invalidateMyKpiSummaryCache() {
+  myKpiSummaryCache = null;
+}
+
+async function fetchMyKpiSummary(userId) {
+  if (!userId) return null;
+  const now = new Date();
+  const todayJa = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(now);
+  const cacheKey = `${userId}:${todayJa}`;
+  if (myKpiSummaryCache?.key === cacheKey && Date.now() - myKpiSummaryCache.createdAt < 15000) {
+    return myKpiSummaryCache.promise;
   }
-  return result;
+
+  const todayStart = new Date(`${todayJa}T00:00:00+09:00`);
+  const monthStart = new Date(`${todayJa.slice(0, 7)}-01T00:00:00+09:00`);
+  const promise = withRetry(() => supabase.rpc("get_my_kpi_summary", {
+    today_start: todayStart.toISOString(),
+    month_start: monthStart.toISOString(),
+    end_at: now.toISOString(),
+  })).then(({ data, error }) => {
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    const mapPeriod = (prefix) => ({
+      calls: Number(row?.[`${prefix}_calls`] || 0),
+      valid: Number(row?.[`${prefix}_valid`] || 0),
+      decisions: Number(row?.[`${prefix}_decisions`] || 0),
+      prospects: Number(row?.[`${prefix}_prospects`] || 0),
+      tossups: Number(row?.[`${prefix}_tossups`] || 0),
+    });
+    return { today: mapPeriod("today"), month: mapPeriod("month") };
+  });
+  myKpiSummaryCache = { key: cacheKey, createdAt: Date.now(), promise };
+  promise.catch(() => {
+    if (myKpiSummaryCache?.promise === promise) myKpiSummaryCache = null;
+  });
+  return promise;
 }
 
 export async function fetchMyPerformance(userId) {
@@ -310,41 +332,13 @@ export async function fetchMyPerformance(userId) {
     return { today, month: today };
   }
 
-  const now = new Date();
-  const todayJa = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(now);
-  const todayStart = new Date(`${todayJa}T00:00:00+09:00`);
-  const monthStart = new Date(`${todayJa.slice(0, 7)}-01T00:00:00+09:00`);
-
-  const { data, error } = await withRetry(() => supabase
-    .from("call_histories")
-    .select("status,called_at")
-    .eq("user_id", userId)
-    .eq("counts_toward_kpi", true)
-    .gte("called_at", monthStart.toISOString()));
-
-  if (error) throw error;
-  const monthRows = data || [];
-  const todayRows = monthRows.filter((row) => new Date(row.called_at).getTime() >= todayStart.getTime());
-  return { today: summarizePerformance(todayRows), month: summarizePerformance(monthRows) };
+  return fetchMyKpiSummary(userId);
 }
 
 export async function fetchTodayKpi(userId) {
   if (!isSupabaseConfigured || !userId) return todayKpi;
 
-  const todayJa = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
-  const start = new Date(`${todayJa}T00:00:00+09:00`);
-
-  const { data, error } = await withRetry(() => supabase
-    .from("call_histories")
-    .select("status")
-    .eq("user_id", userId)
-    .eq("counts_toward_kpi", true)
-    .gte("called_at", start.toISOString()));
-
-  if (error) throw error;
-
-  const rows = data || [];
-  const summary = summarizePerformance(rows);
+  const { today: summary } = await fetchMyKpiSummary(userId);
   return [
     { label: "コール", value: summary.calls, unit: "件" },
     { label: "有効", value: summary.valid, unit: "件" },
