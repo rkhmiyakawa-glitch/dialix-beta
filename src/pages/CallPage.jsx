@@ -7,6 +7,7 @@ import CustomerInfoCard from "../components/CustomerInfoCard";
 import StatusButtons from "../components/StatusButtons";
 import SaveBar from "../components/SaveBar";
 import MemoBox from "../components/MemoBox";
+import PinnedMemoBox from "../components/PinnedMemoBox";
 import LastContactCard from "../components/LastContactCard";
 import HistoryTimeline from "../components/HistoryTimeline";
 import useToast from "../hooks/useToast";
@@ -34,6 +35,8 @@ export default function CallPage({
   onOpenAdmin,
   onOpenMyPage,
   onUnsavedChange,
+  onSaveCustomer,
+  onSavePinnedMemo,
 }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -192,6 +195,26 @@ export default function CallPage({
     }
   }
 
+  async function handleSaveCustomer(values) {
+    try {
+      await onSaveCustomer(values);
+      showToast("顧客情報を更新しました。");
+    } catch (error) {
+      dialog.alert(error.message || "顧客情報の更新に失敗しました。");
+      throw error;
+    }
+  }
+
+  async function handleSavePinnedMemo(value) {
+    try {
+      await onSavePinnedMemo(value);
+      showToast("ピン留めメモを保存しました。");
+    } catch (error) {
+      dialog.alert(error.message || "ピン留めメモの保存に失敗しました。");
+      throw error;
+    }
+  }
+
   return (
     <main className="app-page">
       <CustomerLockModal customerName={selectedCustomer.companyName} lockedUsers={lockedUsers} onClose={onBack} />
@@ -216,7 +239,12 @@ export default function CallPage({
                 onZoomCall={handleZoomCall}
                 onCopyField={handleCopyField}
                 isSaving={isSaving}
+                onSaveCustomer={handleSaveCustomer}
               />
+            </section>
+
+            <section className="call-column pinned-memo-column-v107">
+              <PinnedMemoBox value={selectedCustomer.pinnedMemo || ""} onSave={handleSavePinnedMemo} disabled={isSaving} />
             </section>
 
             <section className="call-column memo-column-v106">

@@ -16,7 +16,7 @@ import useAuth from "./hooks/useAuth";
 import useCustomerPresence from "./hooks/useCustomerPresence";
 import useDeploymentRefresh from "./hooks/useDeploymentRefresh";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
-import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, invalidateMyKpiSummaryCache, saveCallResult } from "./services/dataService";
+import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, invalidateMyKpiSummaryCache, saveCallResult, updateCustomerInfo, updatePinnedMemo } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
 import { dialog } from "./services/dialogService";
 import { fetchOperationalTasks, searchCustomersAcrossLists, subscribeOperationalTasks } from "./services/operationsService";
@@ -597,6 +597,24 @@ export default function App() {
     return result;
   }
 
+  async function handleUpdateCustomerInfo(values) {
+    if (!selectedCustomer) return;
+    const updated = await updateCustomerInfo(selectedCustomer.id, values);
+    const next = { ...selectedCustomer, ...updated };
+    customerDetailCacheRef.current.set(selectedCustomer.id, next);
+    setSelectedCustomer(next);
+    setCustomers((current) => current.map((customer) => customer.id === next.id ? { ...customer, ...updated } : customer));
+  }
+
+  async function handleUpdatePinnedMemo(value) {
+    if (!selectedCustomer) return;
+    const updated = await updatePinnedMemo(selectedCustomer.id, value);
+    const next = { ...selectedCustomer, ...updated };
+    customerDetailCacheRef.current.set(selectedCustomer.id, next);
+    setSelectedCustomer(next);
+    setCustomers((current) => current.map((customer) => customer.id === next.id ? { ...customer, ...updated } : customer));
+  }
+
   async function navigateCustomer(offset) {
     scrollPageTop();
     const activeNavigationItems = navigationItemsRef.current;
@@ -776,6 +794,8 @@ export default function App() {
         navigationTotal={navigationItems.length || customers.length || 1}
         navigationLabel={navigationLabel}
         onSaveCall={handleSaveCall}
+        onSaveCustomer={handleUpdateCustomerInfo}
+        onSavePinnedMemo={handleUpdatePinnedMemo}
         onCallStateChange={presence.setCallState}
         onLogout={handleLogout}
         currentProfile={currentProfile}

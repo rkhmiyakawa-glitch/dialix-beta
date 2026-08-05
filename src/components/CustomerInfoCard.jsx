@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 function CopyIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17">
@@ -46,7 +48,42 @@ export default function CustomerInfoCard({
   onZoomCall,
   onCopyField,
   isSaving = false,
+  onSaveCustomer,
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState({});
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setIsEditing(false);
+    setDraft({
+      companyName: customer.companyName || "",
+      phone: customer.phone || "",
+      address: customer.address || "",
+      businessSubcategory: customer.businessSubcategory || "",
+    });
+  }, [customer.id]);
+
+  function beginEdit() {
+    setDraft({
+      companyName: customer.companyName || "",
+      phone: customer.phone || "",
+      address: customer.address || "",
+      businessSubcategory: customer.businessSubcategory || "",
+    });
+    setIsEditing(true);
+  }
+
+  async function saveEdit() {
+    setIsUpdating(true);
+    try {
+      await onSaveCustomer(draft);
+      setIsEditing(false);
+    } finally {
+      setIsUpdating(false);
+    }
+  }
+
   return (
     <section className="panel customer-panel">
       <div className="panel-heading">
@@ -56,6 +93,7 @@ export default function CustomerInfoCard({
         </div>
 
         <div className="presence-badges">
+          {!isEditing && <button className="customer-edit-button" type="button" onClick={beginEdit} disabled={isSaving}>編集</button>}
           <span className="room-status">入室中</span>
           <span className={callState === "calling" ? "call-status active" : "call-status"}>
             {callState === "calling" ? "架電中" : "待機中"}
@@ -63,7 +101,18 @@ export default function CustomerInfoCard({
         </div>
       </div>
 
-      <dl className="customer-details customer-details-v106">
+      {isEditing ? (
+        <div className="customer-edit-form">
+          <label>顧客名<input value={draft.companyName} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} /></label>
+          <label>電話番号<input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} /></label>
+          <label>住所<input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} /></label>
+          <label>詳細<textarea rows="3" value={draft.businessSubcategory} onChange={(e) => setDraft({ ...draft, businessSubcategory: e.target.value })} /></label>
+          <div className="customer-edit-actions">
+            <button className="secondary-button" type="button" onClick={() => setIsEditing(false)} disabled={isUpdating}>キャンセル</button>
+            <button className="primary-button" type="button" onClick={saveEdit} disabled={isUpdating}>{isUpdating ? "保存中..." : "顧客情報を保存"}</button>
+          </div>
+        </div>
+      ) : <dl className="customer-details customer-details-v106">
         <DetailRow
           label="顧客ID"
           value={customer.id}
@@ -125,7 +174,7 @@ export default function CustomerInfoCard({
             </dd>
           </div>
         )}
-      </dl>
+      </dl>}
     </section>
   );
 }
