@@ -38,19 +38,6 @@ function getTodayHistory(customer) {
   });
 }
 
-function confirmOpeningCalledCustomer(customer) {
-  const history = getTodayHistory(customer);
-  if (!history) return true;
-
-  const calledAt = new Date(history.calledAt).toLocaleTimeString("ja-JP", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return window.confirm(
-    `本日架電済みの案件です。\n\n直近の架電：${calledAt}\nAP：${history.ap || "不明"}\nステータス：${history.status || "未設定"}\n\n重複架電に注意してください。\nこのまま顧客情報を開く場合は「OK」を押してください。`
-  );
-}
-
 const NAVIGATION_STORAGE_KEY = "dialix:navigation:v1";
 const DEFAULT_CUSTOMER_LIST_VIEW = {
   customerQuery: "",
@@ -96,11 +83,13 @@ export default function App() {
   const [navigationReady, setNavigationReady] = useState(false);
   const [initialDataReady, setInitialDataReady] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [calledCustomerPrompt, setCalledCustomerPrompt] = useState(null);
   const taskRefreshTimerRef = useRef(null);
   const customerDetailCacheRef = useRef(new Map());
   const customerRequestIdRef = useRef(0);
   const navigationItemsRef = useRef([]);
   const savedNavigationRef = useRef(readSavedNavigation());
+  const calledCustomerPromptResolverRef = useRef(null);
 
   const userId = session?.user?.id || "";
   const userName = currentProfile?.displayName || session?.user?.user_metadata?.display_name || session?.user?.email || "オペレーター";
@@ -363,6 +352,54 @@ export default function App() {
       .catch(() => {});
   }
 
+  function confirmOpeningCalledCustomer(customer) {
+    const history = getTodayHistory(customer);
+    if (!history) return Promise.resolve("open");
+
+    const calledAt = new Date(history.calledAt).toLocaleTimeString("ja-JP", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return new Promise((resolve) => {
+      calledCustomerPromptResolverRef.current = resolve;
+      setCalledCustomerPrompt({
+        calledAt,
+        ap: history.ap || "不明",
+        status: history.status || "未設定",
+      });
+    });
+  }
+
+  function resolveCalledCustomerPrompt(action) {
+    const resolve = calledCustomerPromptResolverRef.current;
+    calledCustomerPromptResolverRef.current = null;
+    setCalledCustomerPrompt(null);
+    resolve?.(action);
+  }
+
+  async function openNextUncalledCustomer(currentCustomer, items) {
+    const currentIndex = items.findIndex((item) => item.id === currentCustomer.id);
+    const orderedCandidates = [
+      ...items.slice(currentIndex + 1),
+      ...items.slice(0, Math.max(0, currentIndex)),
+    ];
+
+    for (const candidate of orderedCandidates) {
+      if (candidate.listId && candidate.listId !== selectedList?.id) continue;
+      if (presence.getOtherUsers(candidate.id).length) continue;
+      let detail;
+      try {
+        detail = await fetchCustomerDetails(candidate.id);
+      } catch {
+        continue;
+      }
+      if (!detail || getTodayHistory(detail)) continue;
+      await openCustomer(detail);
+      return;
+    }
+    window.alert("現在の一覧・検索条件内に、本日未架電の案件がありません。");
+  }
+
   async function openCustomer(customer, sequence = null, label = "リスト") {
     scrollPageTop();
     const requestedNavigationItems = sequence
@@ -388,7 +425,12 @@ export default function App() {
     }
     if (customerRequestIdRef.current !== requestId) return;
 
-    if (!confirmOpeningCalledCustomer(detailedCustomer)) return;
+    const calledCustomerAction = await confirmOpeningCalledCustomer(detailedCustomer);
+    if (calledCustomerAction === "cancel") return;
+    if (calledCustomerAction === "uncalled") {
+      await openNextUncalledCustomer(detailedCustomer, requestedNavigationItems);
+      return;
+    }
 
     // 履歴確認中に別の利用者が入室した場合も、画面を開く直前に再判定する。
     const latestUsers = presence.getOtherUsers(customer.id);
@@ -620,6 +662,25 @@ export default function App() {
     </div>
   );
 
+  const calledCustomerDialog = calledCustomerPrompt && (
+    <div className="lock-overlay called-customer-overlay" role="dialog" aria-modal="true" aria-labelledby="called-customer-title">
+      <section className="edit-modal called-customer-modal">
+        <h2 id="called-customer-title">本日架電済みの案件です</h2>
+        <dl className="called-customer-details">
+          <div><dt>直近の架電</dt><dd>{calledCustomerPrompt.calledAt}</dd></div>
+          <div><dt>AP</dt><dd>{calledCustomerPrompt.ap}</dd></div>
+          <div><dt>ステータス</dt><dd>{calledCustomerPrompt.status}</dd></div>
+        </dl>
+        <p>重複架電に注意してください。</p>
+        <div className="modal-actions called-customer-actions">
+          <button type="button" className="secondary-button" onClick={() => resolveCalledCustomerPrompt("cancel")}>閉じる</button>
+          <button type="button" className="secondary-button" onClick={() => resolveCalledCustomerPrompt("uncalled")}>本日未架電へ移動</button>
+          <button type="button" className="primary-button" onClick={() => resolveCalledCustomerPrompt("open")}>この案件を開く</button>
+        </div>
+      </section>
+    </div>
+  );
+
 
 
   if (reminderPage) {
@@ -699,6 +760,7 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
+      {calledCustomerDialog}
       <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
       <CallPage
         selectedList={selectedList}
@@ -729,6 +791,7 @@ export default function App() {
     return <>
       {banner}
       {sessionNotice}
+      {calledCustomerDialog}
       <Suspense fallback={<main className="loading-screen">画面を読み込んでいます...</main>}>
       <CustomerListPage
         selectedList={selectedList}

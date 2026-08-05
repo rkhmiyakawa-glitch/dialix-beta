@@ -3302,3 +3302,43 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .status-panel .status-workspace{
   grid-template-columns:repeat(2,minmax(0,1fr));
 }
+.called-customer-modal {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.called-customer-details {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.called-customer-details > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.called-customer-details dt {
+  color: var(--text-muted, #64748b);
+}
+
+.called-customer-details dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.called-customer-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 560px) {
+  .called-customer-details > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .called-customer-actions button {
+    width: 100%;
+  }
+}
