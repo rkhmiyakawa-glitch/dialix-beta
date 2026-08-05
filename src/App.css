@@ -333,23 +333,16 @@ body{background:#f4f7fb;color:#142039}.app-page{min-height:100vh;padding-left:21
   .phone-actions{grid-template-columns:1fr!important}
 }
 
-/* v1.0.97: customer editing and pinned memo */
+/* v1.0.98: customer editing and remarks */
 .customer-edit-button{min-height:34px;padding:7px 13px;border:1px solid #c9d4e3;border-radius:9px;background:#fff;color:#263b57;font-size:13px}
 .customer-edit-button:hover{border-color:#527ba8;color:#2f5b8b}
 .customer-edit-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 18px;margin-top:22px}
 .customer-edit-form label{display:grid;gap:7px;color:#647187;font-size:13px}
-.customer-edit-form label:nth-child(3),.customer-edit-form label:nth-child(4){grid-column:1/-1}
+.customer-edit-form label:nth-child(3),.customer-edit-form label:nth-child(4),.customer-edit-form label:nth-child(5){grid-column:1/-1}
 .customer-edit-form input{height:44px;padding:0 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff}
 .customer-edit-form textarea{margin-top:0;min-height:82px}
 .customer-edit-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
-.pinned-memo-box{border-color:#cbd8e8!important;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%)!important}
-.pinned-memo-heading>div{display:flex;align-items:center;gap:8px}
-.pin-mark{width:9px;height:9px;border-radius:50%;background:#2f5b8b;color:transparent;box-shadow:0 0 0 4px rgba(47,91,139,.10)}
-.pinned-memo-box textarea{min-height:112px;margin-top:12px}
-.pinned-memo-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}
-.pinned-memo-actions>span{color:#7b8799;font-size:12px}
-.pinned-memo-actions .primary-button{padding:9px 14px;font-size:13px;white-space:nowrap}
-@media(max-width:720px){.customer-edit-form{grid-template-columns:1fr}.customer-edit-form label{grid-column:1!important}.pinned-memo-actions{align-items:stretch;flex-direction:column}.pinned-memo-actions .primary-button{width:100%}}
+@media(max-width:720px){.customer-edit-form{grid-template-columns:1fr}.customer-edit-form label{grid-column:1!important}}
 @media(max-width:720px){
   .app-page{padding-top:62px!important}
   .app-header{height:62px!important}

@@ -61,6 +61,7 @@ export default function CustomerInfoCard({
       phone: customer.phone || "",
       address: customer.address || "",
       businessSubcategory: customer.businessSubcategory || "",
+      pinnedMemo: customer.pinnedMemo || "",
     });
   }, [customer.id]);
 
@@ -70,6 +71,7 @@ export default function CustomerInfoCard({
       phone: customer.phone || "",
       address: customer.address || "",
       businessSubcategory: customer.businessSubcategory || "",
+      pinnedMemo: customer.pinnedMemo || "",
     });
     setIsEditing(true);
   }
@@ -107,6 +109,7 @@ export default function CustomerInfoCard({
           <label>電話番号<input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} /></label>
           <label>住所<input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} /></label>
           <label>詳細<textarea rows="3" value={draft.businessSubcategory} onChange={(e) => setDraft({ ...draft, businessSubcategory: e.target.value })} /></label>
+          <label>備考<textarea rows="4" value={draft.pinnedMemo} onChange={(e) => setDraft({ ...draft, pinnedMemo: e.target.value })} placeholder="常に表示しておきたい情報を入力" /></label>
           <div className="customer-edit-actions">
             <button className="secondary-button" type="button" onClick={() => setIsEditing(false)} disabled={isUpdating}>キャンセル</button>
             <button className="primary-button" type="button" onClick={saveEdit} disabled={isUpdating}>{isUpdating ? "保存中..." : "顧客情報を保存"}</button>
@@ -157,6 +160,13 @@ export default function CustomerInfoCard({
           value={customer.businessSubcategory}
           onCopy={onCopyField}
           copyLabel="詳細"
+        />
+
+        <DetailRow
+          label="備考"
+          value={customer.pinnedMemo}
+          onCopy={onCopyField}
+          copyLabel="備考"
         />
 
         {(customer.status || customer.history?.length > 0) && customer.ap && (

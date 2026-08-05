@@ -220,6 +220,7 @@ export async function updateCustomerInfo(customerId, values) {
     phone: String(values.phone || "").trim(),
     address: String(values.address || "").trim(),
     businessSubcategory: String(values.businessSubcategory || "").trim(),
+    pinnedMemo: String(values.pinnedMemo || ""),
   };
   if (!normalized.companyName) throw new Error("顧客名を入力してください。");
   if (!normalized.phone) throw new Error("電話番号を入力してください。");
@@ -230,21 +231,11 @@ export async function updateCustomerInfo(customerId, values) {
     phone: normalized.phone,
     address: normalized.address,
     business_subcategory: normalized.businessSubcategory,
+    pinned_memo: normalized.pinnedMemo,
     updated_at: new Date().toISOString(),
   }).eq("id", customerId);
   if (error) throw error;
   return { ...normalized, demoMode: false };
-}
-
-export async function updatePinnedMemo(customerId, pinnedMemo) {
-  const value = String(pinnedMemo || "");
-  if (!isSupabaseConfigured) return { pinnedMemo: value, demoMode: true };
-  const { error } = await supabase.from("customers").update({
-    pinned_memo: value,
-    updated_at: new Date().toISOString(),
-  }).eq("id", customerId);
-  if (error) throw error;
-  return { pinnedMemo: value, demoMode: false };
 }
 
 export async function saveCallResult({
