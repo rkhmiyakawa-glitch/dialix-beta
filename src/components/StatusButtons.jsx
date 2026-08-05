@@ -35,16 +35,18 @@ export default function StatusButtons({
         <h2>コールステータス</h2>
         <div className="status-heading-actions">
           <span>必須</span>
-          {(selectedCategory || selectedStatus) && (
-            <button
-              type="button"
-              className="status-clear-button"
-              onClick={onClearStatus}
-              disabled={disabled}
-            >
-              選択を取り消す
-            </button>
-          )}
+          <button
+            type="button"
+            className={`status-clear-button${
+              selectedCategory || selectedStatus ? "" : " is-placeholder"
+            }`}
+            onClick={onClearStatus}
+            disabled={disabled || (!selectedCategory && !selectedStatus)}
+            aria-hidden={!selectedCategory && !selectedStatus}
+            tabIndex={selectedCategory || selectedStatus ? 0 : -1}
+          >
+            選択を取り消す
+          </button>
         </div>
       </div>
 
