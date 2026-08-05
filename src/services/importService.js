@@ -186,6 +186,7 @@ export async function importCustomers({ listMode, listId, newListName, rows, use
       status: row.status || "未架電",
       memo: row.memo || "",
       reminder_at: row.reminderAt,
+      counts_toward_kpi: false,
     }));
   for (let i = 0; i < histories.length; i += 200) {
     const historyChunk = histories.slice(i, i + 200);

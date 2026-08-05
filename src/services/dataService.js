@@ -319,6 +319,7 @@ export async function fetchMyPerformance(userId) {
     .from("call_histories")
     .select("status,called_at")
     .eq("user_id", userId)
+    .eq("counts_toward_kpi", true)
     .gte("called_at", monthStart.toISOString()));
 
   if (error) throw error;
@@ -337,6 +338,7 @@ export async function fetchTodayKpi(userId) {
     .from("call_histories")
     .select("status")
     .eq("user_id", userId)
+    .eq("counts_toward_kpi", true)
     .gte("called_at", start.toISOString()));
 
   if (error) throw error;
