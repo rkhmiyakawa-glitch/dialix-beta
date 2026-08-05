@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import { updateMyDisplayName } from "../services/profileService";
 import { updateMyPassword } from "../services/authService";
 import { fetchMyPerformance } from "../services/dataService";
+import { dialog } from "../services/dialogService";
 
 const roleLabels = { owner: "オーナー", admin: "管理者S", admin_a: "管理者A", sv: "SV", supervisor: "SV", operator: "オペレーター", 管理者: "管理者S", 管理者s: "管理者S", 管理者a: "管理者A", オーナー: "オーナー" };
 const emptyPerformance = { calls: 0, valid: 0, decisions: 0, prospects: 0, tossups: 0 };
@@ -57,28 +58,28 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
   async function saveProfile(event) {
     event.preventDefault();
     const nextName = displayName.trim();
-    if (!nextName) return window.alert("表示名を入力してください。");
+    if (!nextName) return dialog.alert("表示名を入力してください。");
     setProfileSaving(true); setMessage("");
     try {
       const updated = await updateMyDisplayName(nextName);
       onProfileUpdated?.({ ...currentProfile, ...updated, displayName: nextName });
       setMessage("表示名を更新しました。");
     } catch (error) {
-      window.alert(error.message || "表示名の更新に失敗しました。");
+      dialog.alert(error.message || "表示名の更新に失敗しました。");
     } finally { setProfileSaving(false); }
   }
 
   async function savePassword(event) {
     event.preventDefault();
-    if (newPassword.length < 8) return window.alert("パスワードは8文字以上で入力してください。");
-    if (newPassword !== confirmPassword) return window.alert("確認用パスワードが一致しません。");
+    if (newPassword.length < 8) return dialog.alert("パスワードは8文字以上で入力してください。");
+    if (newPassword !== confirmPassword) return dialog.alert("確認用パスワードが一致しません。");
     setPasswordSaving(true); setMessage("");
     try {
       await updateMyPassword(newPassword);
       setNewPassword(""); setConfirmPassword("");
       setMessage("パスワードを変更しました。");
     } catch (error) {
-      window.alert(error.message || "パスワードの変更に失敗しました。");
+      dialog.alert(error.message || "パスワードの変更に失敗しました。");
     } finally { setPasswordSaving(false); }
   }
 

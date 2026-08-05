@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { downloadOperatorReportCsv, fetchOperatorReport } from "../services/reportService";
 import { fetchKpiResetState, resetManagementKpi, undoManagementKpiReset } from "../services/kpiResetService";
+import { dialog } from "../services/dialogService";
 
 const today = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
 const firstOfMonth = () => `${today().slice(0, 7)}-01`;
@@ -32,17 +33,17 @@ export default function ReportsPanel({ canResetKpi = false }) {
   useEffect(() => { reload(); }, []);
 
   async function handleReset() {
-    if (!window.confirm("管理ダッシュボードとレポートの集計をリセットしますか？\n顧客の架電履歴は削除されません。")) return;
+    if (!await dialog.confirm("管理ダッシュボードとレポートの集計をリセットしますか？\n顧客の架電履歴は削除されません。", { confirmLabel: "リセット", danger: true })) return;
     setResetting(true); setError("");
-    try { await resetManagementKpi(); await reload(); window.alert("集計をリセットしました。"); }
+    try { await resetManagementKpi(); await reload(); dialog.alert("集計をリセットしました。"); }
     catch (e) { setError(e.message || "リセットできませんでした。"); }
     finally { setResetting(false); }
   }
 
   async function handleUndo() {
-    if (!window.confirm("直前のリセットを元に戻しますか？")) return;
+    if (!await dialog.confirm("直前のリセットを元に戻しますか？", { confirmLabel: "元に戻す" })) return;
     setResetting(true); setError("");
-    try { await undoManagementKpiReset(); await reload(); window.alert("直前のリセットを元に戻しました。"); }
+    try { await undoManagementKpiReset(); await reload(); dialog.alert("直前のリセットを元に戻しました。"); }
     catch (e) { setError(e.message || "元に戻せませんでした。"); }
     finally { setResetting(false); }
   }

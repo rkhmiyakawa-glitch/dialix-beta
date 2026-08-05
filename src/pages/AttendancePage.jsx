@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import ShiftCalendarEditor from "../components/ShiftCalendarEditor";
 import { clockIn, clockOut, fetchMyAttendance, fetchMyShifts, saveShifts, submitAttendanceCorrectionRequest, fetchMyAttendanceCorrectionRequests } from "../services/attendanceService";
+import { dialog } from "../services/dialogService";
 
 const monthNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" }).slice(0, 7);
 const dateNow = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
@@ -43,13 +44,13 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
   async function bulkSave(dates, settings) { try { await saveShifts(userId, dates, settings); await reload(); } catch(e) { setError(e.message || "シフト登録に失敗しました。"); throw e; } }
   async function submitCorrection(e) {
     e.preventDefault();
-    if (!requestForm.workDate || (!requestForm.clockIn && !requestForm.clockOut)) return window.alert("修正する日付と時刻を入力してください。");
+    if (!requestForm.workDate || (!requestForm.clockIn && !requestForm.clockOut)) return dialog.alert("修正する日付と時刻を入力してください。");
     setRequestSaving(true); setError("");
     try {
       const toIso = (date, time) => time ? new Date(`${date}T${time}:00+09:00`).toISOString() : null;
       await submitAttendanceCorrectionRequest({ userId, workDate: requestForm.workDate, clockIn: toIso(requestForm.workDate, requestForm.clockIn), clockOut: toIso(requestForm.workDate, requestForm.clockOut), reasonType: requestForm.reasonType, reasonDetail: requestForm.reasonDetail });
       setRequestForm({ workDate: dateNow(), clockIn: "", clockOut: "", reasonType: "出勤押し忘れ", reasonDetail: "" });
-      await reload(); window.alert("勤怠修正依頼を送信しました。");
+      await reload(); dialog.alert("勤怠修正依頼を送信しました。");
     } catch (e) { setError(e.message || "勤怠修正依頼に失敗しました。"); }
     finally { setRequestSaving(false); }
   }

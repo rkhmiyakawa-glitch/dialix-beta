@@ -18,6 +18,7 @@ import useDeploymentRefresh from "./hooks/useDeploymentRefresh";
 import { fetchMyProfile, touchUserActivity } from "./services/profileService";
 import { fetchCustomerDetails, fetchCustomers, fetchLists, fetchTodayKpi, invalidateListCache, invalidateMyKpiSummaryCache, saveCallResult } from "./services/dataService";
 import { todayKpi as fallbackKpi } from "./data/sampleData";
+import { dialog } from "./services/dialogService";
 import { fetchOperationalTasks, searchCustomersAcrossLists, subscribeOperationalTasks } from "./services/operationsService";
 
 function scrollPageTop() {
@@ -397,7 +398,7 @@ export default function App() {
       await openCustomer(detail);
       return;
     }
-    window.alert("現在の一覧・検索条件内に、本日未架電の案件がありません。");
+    dialog.alert("現在の一覧・検索条件内に、本日未架電の案件がありません。");
   }
 
   async function openCustomer(customer, sequence = null, label = "リスト") {
@@ -407,7 +408,7 @@ export default function App() {
       : navigationItemsRef.current;
     const users = presence.getOtherUsers(customer.id);
     if (users.length) {
-      window.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
+      dialog.alert(`${users[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
 
@@ -435,7 +436,7 @@ export default function App() {
     // 履歴確認中に別の利用者が入室した場合も、画面を開く直前に再判定する。
     const latestUsers = presence.getOtherUsers(customer.id);
     if (latestUsers.length) {
-      window.alert(`${latestUsers[0].userName || "他のオペレーター"}さんが利用中です。`);
+      dialog.alert(`${latestUsers[0].userName || "他のオペレーター"}さんが利用中です。`);
       return;
     }
 
@@ -612,10 +613,10 @@ export default function App() {
       targetIndex += offset;
     }
     if (targetIndex < 0 || targetIndex >= activeNavigationItems.length) {
-      if (skipped.length) window.alert("入室中の顧客をスキップしましたが、その先に移動できる顧客がありません。");
+      if (skipped.length) dialog.alert("入室中の顧客をスキップしましたが、その先に移動できる顧客がありません。");
       return;
     }
-    if (skipped.length) window.alert(`入室中（${[...new Set(skipped)].join("、")}）の顧客をスキップし、次の未入室顧客へ移動します。`);
+    if (skipped.length) dialog.alert(`入室中（${[...new Set(skipped)].join("、")}）の顧客をスキップし、次の未入室顧客へ移動します。`);
     const target = activeNavigationItems[targetIndex];
 
     presence.clearCustomer()?.catch?.(() => {});

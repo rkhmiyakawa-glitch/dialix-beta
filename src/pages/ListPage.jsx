@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import StatusMultiSelect from "../components/StatusMultiSelect";
 import { fetchProfiles } from "../services/profileService";
+import { dialog } from "../services/dialogService";
 
 export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, onOpenTask, currentProfile, onOpenAdmin, onOpenMyPage, onSearchCustomers, overdueReminderCount }) {
   const [customerQuery, setCustomerQuery] = useState("");
@@ -41,12 +42,12 @@ export default function ListPage({ lists, onLogout, onGoLists, onOpenCall, onOpe
       lastCalledSort,
     };
     if (!conditions.keyword && !conditions.ap && conditions.statuses.length === 0 && !conditions.lastCalledSort) {
-      return window.alert("検索条件を1つ以上入力してください。");
+      return dialog.alert("検索条件を1つ以上入力してください。");
     }
     setSearching(true);
     setHasSearched(true);
     try { setSearchResults(await onSearchCustomers(conditions)); }
-    catch (error) { window.alert(error.message || "検索に失敗しました。"); }
+    catch (error) { dialog.alert(error.message || "検索に失敗しました。"); }
     finally { setSearching(false); }
   }
 

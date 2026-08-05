@@ -3332,6 +3332,14 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   flex-wrap: wrap;
 }
 
+/* v1.0.96: all notices, confirmations and text prompts use the same dialog language. */
+.app-dialog-modal{width:min(520px,calc(100vw - 32px));}
+.app-dialog-modal h2{margin:0 0 14px;}
+.app-dialog-message{margin:0;color:var(--text,#172033);white-space:pre-line;line-height:1.7;overflow-wrap:anywhere;}
+.app-dialog-input{width:100%;height:46px;box-sizing:border-box;margin-top:18px;padding:0 12px;border:1px solid #ccd5e3;border-radius:9px;background:#fff;color:inherit;font:inherit;}
+.app-dialog-input:focus{outline:2px solid rgba(31,79,214,.18);border-color:#1f4fd6;}
+.app-dialog-actions{flex-wrap:wrap;}
+
 @media (max-width: 560px) {
   .called-customer-details > div {
     grid-template-columns: 1fr;
@@ -3341,4 +3349,5 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .called-customer-actions button {
     width: 100%;
   }
+  .app-dialog-actions button{flex:1;}
 }

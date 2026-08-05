@@ -12,6 +12,7 @@ import HistoryTimeline from "../components/HistoryTimeline";
 import useToast from "../hooks/useToast";
 import { statuses } from "../data/sampleData";
 import { fetchAssignableProfiles } from "../services/dataService";
+import { dialog } from "../services/dialogService";
 
 export default function CallPage({
   selectedList,
@@ -123,7 +124,7 @@ export default function CallPage({
   async function handleSave() {
     if (isSaving || !isDirty) return;
     if (!selectedStatus) {
-      window.alert("コールステータスを選択してください");
+      dialog.alert("コールステータスを選択してください");
       return;
     }
 
@@ -144,7 +145,7 @@ export default function CallPage({
 
       showToast("保存しました。");
     } catch (error) {
-      window.alert(error.message || "保存に失敗しました。通信状態を確認して、もう一度お試しください。");
+      dialog.alert(error.message || "保存に失敗しました。通信状態を確認して、もう一度お試しください。");
     } finally {
       setIsSaving(false);
     }
@@ -153,14 +154,14 @@ export default function CallPage({
 
   async function handleNavigate(direction) {
     if (isSaving) return;
-    if (isDirty && !window.confirm("保存されていない内容があります。破棄して移動しますか？")) return;
+    if (isDirty && !await dialog.confirm("保存されていない内容があります。破棄して移動しますか？", { confirmLabel: "破棄して移動", danger: true })) return;
     if (direction === "previous") onOpenPrevious?.();
     else onOpenNext?.();
   }
 
-  function handleBack() {
+  async function handleBack() {
     if (isSaving) return;
-    if (isDirty && !window.confirm("保存されていない内容があります。破棄して戻りますか？")) return;
+    if (isDirty && !await dialog.confirm("保存されていない内容があります。破棄して戻りますか？", { confirmLabel: "破棄して戻る", danger: true })) return;
     onBack();
   }
 
@@ -168,7 +169,7 @@ export default function CallPage({
     if (isSaving) return;
     const phone = String(phoneValue || "").replace(/[^0-9+]/g, "");
     if (!phone) {
-      window.alert("電話番号が登録されていません。");
+      dialog.alert("電話番号が登録されていません。");
       return;
     }
     setCallState("calling");
@@ -180,14 +181,14 @@ export default function CallPage({
   async function handleCopyField(value, label) {
     const copyValue = String(value || "").trim();
     if (!copyValue) {
-      window.alert(`${label}が登録されていません。`);
+      dialog.alert(`${label}が登録されていません。`);
       return;
     }
     try {
       await navigator.clipboard.writeText(copyValue);
       showToast(`${label}をコピーしました。`);
     } catch {
-      window.prompt(`${label}をコピーしてください。`, copyValue);
+      await dialog.prompt(`${label}をコピーしてください。`, copyValue, { confirmLabel: "閉じる" });
     }
   }
 

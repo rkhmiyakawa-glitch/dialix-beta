@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { dialog } from "../services/dialogService";
 
 const pad = (n) => String(n).padStart(2, "0");
 const isoDate = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
@@ -33,7 +34,7 @@ export default function ShiftCalendarEditor({ month, shifts, onBulkSave, disable
   }
 
   async function saveBulk() {
-    if (!selected.length) return window.alert("登録する日付を選択してください。");
+    if (!selected.length) return dialog.alert("登録する日付を選択してください。");
     setSaving(true);
     try { await onBulkSave(selected, bulk); setSelected([]); }
     finally { setSaving(false); }

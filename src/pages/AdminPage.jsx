@@ -8,6 +8,7 @@ import DashboardPanel from "./DashboardPanel";
 import ReportsPanel from "./ReportsPanel";
 import ListManagementPanel from "./ListManagementPanel";
 import ShiftManagementPanel from "./ShiftManagementPanel";
+import { dialog } from "../services/dialogService";
 
 const roleLabels = { owner: "オーナー", admin: "管理者S", admin_a: "管理者A", sv: "SV", operator: "オペレーター" };
 
@@ -74,22 +75,22 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
   }
 
   async function claimOwner() {
-    if (!window.confirm("あなたをDIALIXのオーナーに設定します。オーナーは1名のみで、他の管理者から削除・降格・停止されません。実行しますか？")) return;
+    if (!await dialog.confirm("あなたをDIALIXのオーナーに設定します。オーナーは1名のみで、他の管理者から削除・降格・停止されません。実行しますか？", { confirmLabel: "オーナーに設定" })) return;
     setSaving(true); setError("");
     try {
       await claimOwnerRole();
-      window.alert("オーナー権限を設定しました。画面を再読み込みします。");
+      await dialog.alert("オーナー権限を設定しました。画面を再読み込みします。");
       window.location.reload();
     } catch (e) { setError(e.message || "オーナー設定に失敗しました。"); }
     finally { setSaving(false); }
   }
 
   async function saveEdit() {
-    if (!editing.displayName.trim() || !editing.email.trim()) return window.alert("名前とメールアドレスを入力してください。");
+    if (!editing.displayName.trim() || !editing.email.trim()) return dialog.alert("名前とメールアドレスを入力してください。");
     const original = users.find((u) => u.id === editing.id);
-    if (original?.role === "owner") return window.alert("オーナーは編集できません。");
+    if (original?.role === "owner") return dialog.alert("オーナーは編集できません。");
     const removingLastAdmin = original?.role === "admin" && original.isActive && activeAdminCount <= 1 && !ownerExists && (editing.role !== "admin" || !editing.isActive);
-    if (removingLastAdmin) return window.alert("最後の管理者は降格・停止できません。");
+    if (removingLastAdmin) return dialog.alert("最後の管理者は降格・停止できません。");
 
     setSaving(true); setError("");
     try {
@@ -102,39 +103,39 @@ export default function AdminPage({ currentProfile, onBack, onGoLists, onLogout,
       }
       setUsers(refreshedUsers);
       setEditing(null);
-      window.alert("ユーザー情報を更新しました。変更後のメールアドレスは次回ログインから使用できます。");
+      dialog.alert("ユーザー情報を更新しました。変更後のメールアドレスは次回ログインから使用できます。");
     } catch (e) { setError(e.message || "更新に失敗しました。"); }
     finally { setSaving(false); }
   }
 
   async function createUser() {
-    if (!newUser.displayName.trim() || !newUser.email.trim()) return window.alert("名前とメールアドレスを入力してください。");
-    if (newUser.password.length < 8) return window.alert("初期パスワードは8文字以上で入力してください。");
-    if (newUser.password !== newUser.passwordConfirm) return window.alert("確認用パスワードが一致しません。");
+    if (!newUser.displayName.trim() || !newUser.email.trim()) return dialog.alert("名前とメールアドレスを入力してください。");
+    if (newUser.password.length < 8) return dialog.alert("初期パスワードは8文字以上で入力してください。");
+    if (newUser.password !== newUser.passwordConfirm) return dialog.alert("確認用パスワードが一致しません。");
     setSaving(true); setError("");
     try {
       await createManagedUser({ displayName: newUser.displayName, email: newUser.email, password: newUser.password, role: newUser.role, isActive: newUser.isActive });
       setCreating(false);
       setNewUser({ displayName: "", email: "", password: "", passwordConfirm: "", role: "operator", isActive: true });
       await reload();
-      window.alert("ユーザーを追加しました。初期パスワードを本人へ安全に共有してください。");
+      dialog.alert("ユーザーを追加しました。初期パスワードを本人へ安全に共有してください。");
     } catch (e) { setError(e.message || "ユーザー追加に失敗しました。"); }
     finally { setSaving(false); }
   }
 
   async function resetPassword(user) {
-    if (!canOperateTarget(user)) return window.alert("オーナーのパスワードは本人だけがマイページから変更できます。");
-    const password = window.prompt(`${user.displayName}さんの新しいパスワードを入力してください（8文字以上）`);
+    if (!canOperateTarget(user)) return dialog.alert("オーナーのパスワードは本人だけがマイページから変更できます。");
+    const password = await dialog.prompt(`${user.displayName}さんの新しいパスワードを入力してください（8文字以上）`, "", { confirmLabel: "変更" });
     if (!password) return;
-    if (password.length < 8) return window.alert("パスワードは8文字以上で入力してください。");
-    try { await resetManagedUserPassword(user.id, password); window.alert("パスワードを変更しました。"); }
+    if (password.length < 8) return dialog.alert("パスワードは8文字以上で入力してください。");
+    try { await resetManagedUserPassword(user.id, password); dialog.alert("パスワードを変更しました。"); }
     catch (e) { setError(e.message || "パスワード変更に失敗しました。"); }
   }
 
   async function removeUser(user) {
-    if (user.role === "owner") return window.alert("オーナーは削除できません。");
-    if (user.id === currentProfile?.id) return window.alert("自分自身は削除できません。");
-    if (!window.confirm(`${user.displayName}さんを削除しますか？この操作は元に戻せません。`)) return;
+    if (user.role === "owner") return dialog.alert("オーナーは削除できません。");
+    if (user.id === currentProfile?.id) return dialog.alert("自分自身は削除できません。");
+    if (!await dialog.confirm(`${user.displayName}さんを削除しますか？この操作は元に戻せません。`, { confirmLabel: "削除", danger: true })) return;
     try { await deleteManagedUser(user.id); await reload(); }
     catch (e) { setError(e.message || "削除に失敗しました。"); }
   }

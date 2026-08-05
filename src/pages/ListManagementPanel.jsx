@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { downloadListDataCsv, duplicateList, fetchListExportCustomers, fetchManagedLists, moveListToTrash, permanentlyDeleteList, renameList, reorderLists, restoreList } from "../services/listManagementService";
+import { dialog } from "../services/dialogService";
 
 const dateText = (value) => value ? new Date(value).toLocaleString("ja-JP") : "―";
 const daysLeft = (value) => Math.max(0, Math.ceil((new Date(value).getTime() - Date.now()) / 86400000));
@@ -34,19 +35,19 @@ export default function ListManagementPanel({ canReorder = false, canExportData 
     finally { setBusy(false); }
   }
 
-  function startDuplicate(list) {
-    const name = window.prompt("複製後のリスト名", `${list.name}（コピー）`);
+  async function startDuplicate(list) {
+    const name = await dialog.prompt("複製後のリスト名", `${list.name}（コピー）`, { confirmLabel: "複製" });
     if (!name?.trim()) return;
     run(() => duplicateList(list.id, name.trim()), "リストを複製しました。");
   }
 
-  function trashList(list) {
-    if (!window.confirm(`「${list.name}」をゴミ箱へ移動しますか？\n顧客・履歴・メモ・リマインドは30日間保持されます。`)) return;
+  async function trashList(list) {
+    if (!await dialog.confirm(`「${list.name}」をゴミ箱へ移動しますか？\n顧客・履歴・メモ・リマインドは30日間保持されます。`, { confirmLabel: "ゴミ箱へ移動", danger: true })) return;
     run(() => moveListToTrash(list.id), "リストをゴミ箱へ移動しました。");
   }
 
-  function deleteForever(list) {
-    const text = window.prompt(`「${list.name}」と顧客${list.count}件を完全削除します。\n実行するには「完全削除」と入力してください。`);
+  async function deleteForever(list) {
+    const text = await dialog.prompt(`「${list.name}」と顧客${list.count}件を完全削除します。\n実行するには「完全削除」と入力してください。`, "", { confirmLabel: "確認", danger: true });
     if (text !== "完全削除") return;
     run(() => permanentlyDeleteList(list.id), "完全削除しました。");
   }
