@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Header from "../components/Header";
 import StatusMultiSelect from "../components/StatusMultiSelect";
 
@@ -63,13 +63,17 @@ export default function CustomerListPage({
   overdueReminderCount,
   onOpenAdmin,
   onOpenMyPage,
+  viewState,
+  onViewStateChange,
 }) {
-  const [customerQuery, setCustomerQuery] = useState("");
-  const [apFilter, setApFilter] = useState("");
-  const [statusFilters, setStatusFilters] = useState([]);
-  const [lastCalledSort, setLastCalledSort] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const {
+    customerQuery,
+    apFilter,
+    statusFilters,
+    lastCalledSort,
+    page,
+    pageSize,
+  } = viewState;
 
   const apOptions = useMemo(
     () => [...new Set(customers.map((customer) => String(customer.ap || "").trim()).filter(Boolean))]
@@ -110,13 +114,12 @@ export default function CustomerListPage({
   const safePage = Math.min(page, totalPages);
   const pageCustomers = visibleCustomers.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  function updateFilter(setter, value) {
-    setter(value);
-    setPage(1);
+  function updateFilter(key, value) {
+    onViewStateChange({ [key]: value, page: 1 });
   }
 
   function changePage(nextPage) {
-    setPage(nextPage);
+    onViewStateChange({ page: nextPage });
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }
 
@@ -124,11 +127,13 @@ export default function CustomerListPage({
     Boolean(customerQuery.trim()) || Boolean(apFilter) || statusFilters.length > 0 || Boolean(lastCalledSort);
 
   function clearSearchConditions() {
-    setCustomerQuery("");
-    setApFilter("");
-    setStatusFilters([]);
-    setLastCalledSort("");
-    setPage(1);
+    onViewStateChange({
+      customerQuery: "",
+      apFilter: "",
+      statusFilters: [],
+      lastCalledSort: "",
+      page: 1,
+    });
   }
 
   return (
@@ -157,7 +162,7 @@ export default function CustomerListPage({
               type="search"
               placeholder="顧客名または電話番号を入力"
               value={customerQuery}
-              onChange={(event) => updateFilter(setCustomerQuery, event.target.value)}
+              onChange={(event) => updateFilter("customerQuery", event.target.value)}
             />
           </label>
 
@@ -166,7 +171,7 @@ export default function CustomerListPage({
             <select
               id="customer-list-ap-filter"
               value={apFilter}
-              onChange={(event) => updateFilter(setApFilter, event.target.value)}
+              onChange={(event) => updateFilter("apFilter", event.target.value)}
             >
               <option value="">すべてのAP</option>
               {apOptions.map((apName) => (
@@ -179,7 +184,7 @@ export default function CustomerListPage({
             ステータス
             <StatusMultiSelect
               value={statusFilters}
-              onChange={(value) => updateFilter(setStatusFilters, value)}
+              onChange={(value) => updateFilter("statusFilters", value)}
             />
           </label>
 
@@ -188,7 +193,7 @@ export default function CustomerListPage({
             <select
               id="customer-list-last-called-sort"
               value={lastCalledSort}
-              onChange={(event) => updateFilter(setLastCalledSort, event.target.value)}
+              onChange={(event) => updateFilter("lastCalledSort", event.target.value)}
             >
               <option value="">指定なし</option>
               <option value="desc">新しい順</option>
@@ -209,7 +214,7 @@ export default function CustomerListPage({
         <div className="customer-summary">
           <span>表示件数：{visibleCustomers.length}件（{safePage} / {totalPages}ページ）</span>
           <label className="page-size-select">1ページ
-            <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}>
+            <select value={pageSize} onChange={(event) => onViewStateChange({ pageSize: Number(event.target.value), page: 1 })}>
               <option value={25}>25件</option><option value={50}>50件</option><option value={100}>100件</option>
             </select>
           </label>

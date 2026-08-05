@@ -52,6 +52,14 @@ function confirmOpeningCalledCustomer(customer) {
 }
 
 const NAVIGATION_STORAGE_KEY = "dialix:navigation:v1";
+const DEFAULT_CUSTOMER_LIST_VIEW = {
+  customerQuery: "",
+  apFilter: "",
+  statusFilters: [],
+  lastCalledSort: "",
+  page: 1,
+  pageSize: 50,
+};
 
 function readSavedNavigation() {
   try {
@@ -81,6 +89,10 @@ export default function App() {
   const [pendingCustomerId, setPendingCustomerId] = useState("");
   const [navigationItems, setNavigationItems] = useState([]);
   const [navigationLabel, setNavigationLabel] = useState("リスト");
+  const [customerListView, setCustomerListView] = useState(() => ({
+    ...DEFAULT_CUSTOMER_LIST_VIEW,
+    ...(readSavedNavigation().customerListView || {}),
+  }));
   const [navigationReady, setNavigationReady] = useState(false);
   const [initialDataReady, setInitialDataReady] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -245,8 +257,9 @@ export default function App() {
       page,
       listId: selectedList?.id || "",
       customerId: selectedCustomer?.id || "",
+      customerListView,
     }));
-  }, [navigationReady, session, reminderPage, showAttendance, showLinks, showMyPage, showAdmin, selectedList?.id, selectedCustomer?.id]);
+  }, [navigationReady, session, reminderPage, showAttendance, showLinks, showMyPage, showAdmin, selectedList?.id, selectedCustomer?.id, customerListView]);
 
 
   useEffect(() => {
@@ -279,6 +292,7 @@ export default function App() {
     setShowAttendance(false);
     setShowLinks(false);
     setReminderPage("");
+    setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
     setNavigationItems(contextItems.map((item) => ({ id: item.id, listId: item.listId || task.listId })));
     setNavigationLabel(contextLabel);
     const list = lists.find((item) => item.id === task.listId) || { id: task.listId, name: task.listName, count: 0 };
@@ -324,6 +338,7 @@ export default function App() {
     setDataLoading(true);
     try {
       setCustomers(await fetchCustomers(list.id));
+      setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
       setSelectedList(list);
       setSelectedCustomer(null);
     } catch (error) {
@@ -407,6 +422,7 @@ export default function App() {
     setSelectedList(null);
     setCustomers([]);
     setNavigationItems([]);
+    setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
     invalidateListCache();
     fetchLists({ force: true })
       .then(setLists)
@@ -709,6 +725,7 @@ export default function App() {
         onBack={async () => {
           scrollPageTop();
           await presence.clearCustomer();
+          setCustomerListView({ ...DEFAULT_CUSTOMER_LIST_VIEW });
           setSelectedList(null);
         }}
         onGoLists={goToLists}
@@ -718,6 +735,8 @@ export default function App() {
         onOpenAdmin={openAdmin}
         onOpenMyPage={openMyPage}
         overdueReminderCount={overdueReminderCount}
+        viewState={customerListView}
+        onViewStateChange={(patch) => setCustomerListView((current) => ({ ...current, ...patch }))}
       />
       </Suspense>
     </>;
