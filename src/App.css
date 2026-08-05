@@ -3284,3 +3284,8 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 .management-dashboard-box .dashboard-overdue-row:last-child{
   border-bottom:0;
 }
+/* v1.0.78: preserve memo line breaks in call history. */
+.timeline-card .history-memo{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}

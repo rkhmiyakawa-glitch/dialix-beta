@@ -34,7 +34,7 @@ export default function HistoryTimeline({ history }) {
                   <time>{item.at}</time>
                 </div>
                 <p className="history-ap">AP：{item.ap}</p>
-                <p>{item.memo}</p>
+                <p className="history-memo">{item.memo}</p>
               </div>
             </article>
           ))}
