@@ -27,6 +27,30 @@ function scrollPageTop() {
   });
 }
 
+function getTodayHistory(customer) {
+  const now = new Date();
+  return (customer?.history || []).find((history) => {
+    const calledAt = new Date(history.calledAt);
+    return !Number.isNaN(calledAt.getTime())
+      && calledAt.getFullYear() === now.getFullYear()
+      && calledAt.getMonth() === now.getMonth()
+      && calledAt.getDate() === now.getDate();
+  });
+}
+
+function confirmOpeningCalledCustomer(customer) {
+  const history = getTodayHistory(customer);
+  if (!history) return true;
+
+  const calledAt = new Date(history.calledAt).toLocaleTimeString("ja-JP", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return window.confirm(
+    `本日架電済みの案件です。\n\n直近の架電：${calledAt}\nAP：${history.ap || "不明"}\nステータス：${history.status || "未設定"}\n\n重複架電に注意してください。\nこのまま顧客情報を開く場合は「OK」を押してください。`
+  );
+}
+
 const NAVIGATION_STORAGE_KEY = "dialix:navigation:v1";
 
 function readSavedNavigation() {
@@ -330,20 +354,33 @@ export default function App() {
       return;
     }
 
-    // 画面遷移を通信待ちにしない。キャッシュまたは一覧データを即時表示し、詳細は後から差し替える。
-    const cached = customerDetailCacheRef.current.get(customer.id);
-    setSelectedCustomer(cached || customer);
-    presence.trackCustomer(customer.id)?.catch?.(() => {});
-
+    // 重複架電防止の判定には、キャッシュではなく開く直前の最新履歴を使用する。
     const requestId = ++customerRequestIdRef.current;
-    fetchCustomerDetails(customer.id)
-      .then((detailedCustomer) => {
-        if (!detailedCustomer) throw new Error("顧客が見つかりませんでした。");
-        customerDetailCacheRef.current.set(customer.id, detailedCustomer);
-        setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
-        if (customerRequestIdRef.current === requestId) setSelectedCustomer(detailedCustomer);
-      })
-      .catch((error) => setDataError(error.message || "顧客詳細の取得に失敗しました。"));
+    let detailedCustomer;
+    try {
+      detailedCustomer = await fetchCustomerDetails(customer.id);
+      if (!detailedCustomer) throw new Error("顧客が見つかりませんでした。");
+    } catch (error) {
+      if (customerRequestIdRef.current === requestId) {
+        setDataError(error.message || "顧客詳細の取得に失敗しました。");
+      }
+      return;
+    }
+    if (customerRequestIdRef.current !== requestId) return;
+
+    if (!confirmOpeningCalledCustomer(detailedCustomer)) return;
+
+    // 履歴確認中に別の利用者が入室した場合も、画面を開く直前に再判定する。
+    const latestUsers = presence.getOtherUsers(customer.id);
+    if (latestUsers.length) {
+      window.alert(`${latestUsers[0].userName || "他のオペレーター"}さんが利用中です。`);
+      return;
+    }
+
+    customerDetailCacheRef.current.set(customer.id, detailedCustomer);
+    setCustomers((current) => current.map((item) => item.id === detailedCustomer.id ? detailedCustomer : item));
+    setSelectedCustomer(detailedCustomer);
+    presence.trackCustomer(customer.id)?.catch?.(() => {});
 
     const items = sequence || navigationItems;
     const index = items.findIndex((item) => item.id === customer.id);
