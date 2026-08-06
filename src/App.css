@@ -3392,3 +3392,43 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
 @media(max-width:720px){
   .customer-remarks-row dd{grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important}
 }
+
+/* v1.0.105: align remarks spacing, action edge and editor with the memo field. */
+.customer-details-v106 > .customer-remarks-row{
+  padding:16px 0!important;
+}
+.customer-details-v106 > .customer-remarks-row > dt{
+  padding-top:0!important;
+}
+.customer-details-v106 > .customer-remarks-row > dd{
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.customer-remarks-value{
+  min-height:38px;
+  padding:0!important;
+  line-height:1.6;
+}
+.customer-remarks-action{
+  justify-self:end;
+  margin-right:0!important;
+}
+.customer-remarks-row textarea{
+  box-sizing:border-box;
+  padding:13px 14px!important;
+  border:1px solid var(--ui-line-strong)!important;
+  border-radius:var(--ui-radius-sm)!important;
+  background:linear-gradient(180deg,#fff,#fbfcfe)!important;
+  color:var(--ui-text)!important;
+  box-shadow:inset 0 2px 4px rgba(11,31,58,.06),0 1px 0 #fff!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:inherit;
+  line-height:1.6;
+}
+.customer-remarks-row textarea:focus{
+  outline:2px solid #4777ab!important;
+  outline-offset:2px;
+  border-color:#527ba8!important;
+  box-shadow:0 0 0 3px rgba(47,91,139,.11)!important;
+}
