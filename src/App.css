@@ -3433,20 +3433,26 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   box-shadow:0 0 0 3px rgba(47,91,139,.11)!important;
 }
 
-/* v1.0.106: pin the remarks edit/save control to the divider's right edge. */
-.customer-details-v106 > .customer-remarks-row{
-  position:relative;
-}
+/* v1.0.107: reserve a real right-edge action column for remarks. */
 .customer-details-v106 > .customer-remarks-row > dd{
-  display:block!important;
-  padding-right:82px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 72px!important;
+  align-items:start!important;
+  column-gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:0!important;
 }
 .customer-details-v106 > .customer-remarks-row .customer-remarks-action{
-  position:absolute!important;
-  top:16px;
-  right:0!important;
+  position:static!important;
+  width:72px!important;
+  min-width:72px!important;
   margin:0!important;
+  justify-self:end!important;
 }
-.customer-details-v106 > .customer-remarks-row textarea{
+.customer-details-v106 > .customer-remarks-row textarea,
+.customer-details-v106 > .customer-remarks-row .customer-remarks-value{
   display:block;
+  width:100%!important;
+  min-width:0!important;
 }
