@@ -149,36 +149,47 @@ export async function fetchListCustomers(listId) {
 export async function fetchListExportCustomers(listId) {
   if (!isSupabaseConfigured) {
     return (customersByList[listId] || []).map((customer) => ({
-        customerId: customer.id,
-        companyName: customer.companyName || "",
-        phone: customer.phone || "",
-        address: customer.address || "",
-        detail: customer.businessSubcategory || "",
-        apName: customer.ap || "",
-        status: customer.status || "",
-        lastCalledAt: customer.lastCallAt || "",
-        reminderAt: customer.reminderAt || "",
-      }));
+      id: customer.id,
+      list_id: listId,
+      company_name: customer.companyName || "",
+      phone: customer.phone || "",
+      phone_2: customer.phone2 || "",
+      address: customer.address || "",
+      business_subcategory: customer.businessSubcategory || "",
+      pinned_memo: customer.pinnedMemo || "",
+      ap_name: customer.ap || "",
+      status: customer.status || "",
+      last_called_at: customer.lastCallAt || "",
+      reminder_at: customer.reminderAt || "",
+      call_histories: customer.history || [],
+    }));
   }
 
   const rows = await fetchAllRows(() => supabase
     .from("customers")
-    .select("id,company_name,phone,address,business_subcategory,ap_name,status,last_called_at,reminder_at,sort_order")
+    .select("*")
     .eq("list_id", listId)
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("id", { ascending: true }));
 
-  return rows.map((row) => ({
-    customerId: row.id,
-    companyName: row.company_name || "",
-    phone: row.phone || "",
-    address: row.address || "",
-    detail: row.business_subcategory || "",
-    apName: row.ap_name || "",
-    status: row.status || "",
-    lastCalledAt: row.last_called_at || "",
-    reminderAt: row.reminder_at || "",
-  }));
+  const historiesByCustomer = new Map();
+  const customerIds = rows.map((row) => row.id);
+  for (let i = 0; i < customerIds.length; i += 500) {
+    const ids = customerIds.slice(i, i + 500);
+    const histories = await fetchAllRows(() => supabase
+      .from("call_histories")
+      .select("*")
+      .in("customer_id", ids)
+      .order("called_at", { ascending: false, nullsFirst: false })
+      .order("id", { ascending: false }));
+    histories.forEach((history) => {
+      const current = historiesByCustomer.get(history.customer_id) || [];
+      current.push(history);
+      historiesByCustomer.set(history.customer_id, current);
+    });
+  }
+
+  return rows.map((row) => ({ ...row, call_histories: historiesByCustomer.get(row.id) || [] }));
 }
 
 export async function bulkUpdateCustomers({ customerIds, status, reminderAt, destinationListId }) {
@@ -207,17 +218,22 @@ export function downloadCustomersCsv(listName, customers) {
 }
 
 export function downloadListDataCsv(listName, customers) {
-  const lines = [["顧客ID", "顧客名", "電話番号", "住所", "詳細", "最終担当AP", "コールステータス", "最終架電日時", "次回架電日時"], ...customers.map((item) => [
-    item.customerId,
-    item.companyName,
-    item.phone,
-    item.address,
-    item.detail,
-    item.apName,
-    item.status,
-    item.lastCalledAt,
-    item.reminderAt,
-  ])];
+  const preferredColumns = ["id", "list_id", "company_name", "phone", "phone_2", "address", "business_subcategory", "pinned_memo", "ap_name", "status", "last_called_at", "reminder_at", "sort_order", "created_at", "updated_at", "call_histories"];
+  const allColumns = [...new Set(customers.flatMap((item) => Object.keys(item)))];
+  const columns = [...preferredColumns, ...allColumns.filter((column) => !preferredColumns.includes(column))];
+  const headerLabels = {
+    id: "顧客ID", list_id: "リストID", company_name: "顧客名", phone: "電話番号", phone_2: "電話番号2",
+    address: "住所", business_subcategory: "詳細", pinned_memo: "備考", ap_name: "最終担当AP", status: "コールステータス",
+    last_called_at: "最終架電日時", reminder_at: "次回架電日時", sort_order: "表示順", created_at: "顧客登録日時",
+    updated_at: "顧客更新日時", call_histories: "架電履歴（全件）",
+  };
+  const valueForCsv = (value) => {
+    if (value == null) return "";
+    if (Array.isArray(value)) return value.map((item) => JSON.stringify(item)).join("\n");
+    if (typeof value === "object") return JSON.stringify(value);
+    return value;
+  };
+  const lines = [columns.map((column) => headerLabels[column] || column), ...customers.map((item) => columns.map((column) => valueForCsv(item[column])))];
   const blob = new Blob(["\uFEFF" + lines.map((row) => row.map(csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
