@@ -3432,3 +3432,21 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   border-color:#527ba8!important;
   box-shadow:0 0 0 3px rgba(47,91,139,.11)!important;
 }
+
+/* v1.0.106: pin the remarks edit/save control to the divider's right edge. */
+.customer-details-v106 > .customer-remarks-row{
+  position:relative;
+}
+.customer-details-v106 > .customer-remarks-row > dd{
+  display:block!important;
+  padding-right:82px!important;
+}
+.customer-details-v106 > .customer-remarks-row .customer-remarks-action{
+  position:absolute!important;
+  top:16px;
+  right:0!important;
+  margin:0!important;
+}
+.customer-details-v106 > .customer-remarks-row textarea{
+  display:block;
+}
