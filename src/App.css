@@ -341,11 +341,13 @@ body{background:#f4f7fb;color:#142039}.app-page{min-height:100vh;padding-left:21
 .customer-edit-form input{height:44px;padding:0 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff}
 .customer-edit-form textarea{margin-top:0;min-height:82px}
 .customer-edit-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
-.customer-remarks-row{grid-column:1/-1!important}
+.customer-details-v106>.customer-remarks-row{grid-column:1/-1!important;align-items:start!important;padding:10px 0!important}
+.customer-remarks-row dt{padding-top:0}
 .customer-remarks-row dd{display:grid;gap:10px}
 .customer-remarks-row textarea{width:100%;min-height:112px;margin:0;padding:12px 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff;color:#18243b;font:inherit;line-height:1.6;resize:vertical;white-space:pre-wrap}
 .customer-remarks-row textarea:focus{outline:0;border-color:#527ba8;box-shadow:0 0 0 3px rgba(82,123,168,.12)}
-.customer-remarks-actions{display:flex;justify-content:flex-end}
+.customer-remarks-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.customer-remarks-actions .secondary-button{min-height:38px;padding:8px 15px}
 .customer-remarks-actions .primary-button{min-height:38px;padding:8px 15px}
 @media(max-width:720px){.customer-edit-form{grid-template-columns:1fr}.customer-edit-form label{grid-column:1!important}}
 @media(max-width:720px){

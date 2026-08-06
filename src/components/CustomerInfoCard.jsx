@@ -97,7 +97,6 @@ export default function CustomerInfoCard({
         </div>
 
         <div className="presence-badges">
-          {!isEditing && <button className="secondary-button customer-edit-button" type="button" onClick={beginEdit} disabled={isSaving}>編集</button>}
           <span className="room-status">入室中</span>
           <span className={callState === "calling" ? "call-status active" : "call-status"}>
             {callState === "calling" ? "架電中" : "待機中"}
@@ -205,12 +204,20 @@ export default function CustomerInfoCard({
             />
             <div className="customer-remarks-actions">
               <button
+                className="secondary-button customer-edit-button"
+                type="button"
+                onClick={beginEdit}
+                disabled={isSaving || isUpdating}
+              >
+                編集
+              </button>
+              <button
                 className="primary-button"
                 type="button"
                 onClick={saveEdit}
                 disabled={isSaving || isUpdating || (draft.pinnedMemo || "") === (customer.pinnedMemo || "")}
               >
-                {isUpdating ? "保存中..." : "備考を保存"}
+                {isUpdating ? "保存中..." : "保存"}
               </button>
             </div>
           </dd>
