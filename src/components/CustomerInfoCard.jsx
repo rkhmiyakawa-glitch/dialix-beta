@@ -212,7 +212,7 @@ export default function CustomerInfoCard({
                 編集
               </button>
               <button
-                className="primary-button"
+                className="primary-button customer-remarks-save-button"
                 type="button"
                 onClick={saveEdit}
                 disabled={isSaving || isUpdating || (draft.pinnedMemo || "") === (customer.pinnedMemo || "")}

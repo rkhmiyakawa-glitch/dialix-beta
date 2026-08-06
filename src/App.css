@@ -3368,3 +3368,24 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   }
   .app-dialog-actions button{flex:1;}
 }
+
+/* v1.0.102: keep the remarks action buttons compact and right aligned. */
+.customer-remarks-row .customer-remarks-actions{
+  display:flex!important;
+  width:100%!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.customer-remarks-row .customer-remarks-actions .customer-edit-button,
+.customer-remarks-row .customer-remarks-actions .customer-remarks-save-button{
+  display:inline-flex!important;
+  flex:0 0 72px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  min-height:38px!important;
+  padding:8px 12px!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
