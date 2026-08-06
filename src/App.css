@@ -3456,3 +3456,52 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   width:100%!important;
   min-width:0!important;
 }
+
+/* v1.0.108: make remarks a true three-column row so the action reaches the
+   card edge and can never overlap the editor. */
+.customer-details-v106 > .customer-remarks-row{
+  grid-template-columns:100px minmax(0,1fr) 72px!important;
+  column-gap:16px!important;
+  align-items:start!important;
+}
+.customer-details-v106 > .customer-remarks-row > .customer-remarks-body{
+  grid-column:2!important;
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden;
+}
+.customer-details-v106 > .customer-remarks-row > .customer-remarks-action{
+  grid-column:3!important;
+  display:flex!important;
+  width:72px!important;
+  min-width:72px!important;
+  margin:0!important;
+  padding:0!important;
+  justify-self:end!important;
+  justify-content:flex-end!important;
+}
+.customer-details-v106 > .customer-remarks-row > .customer-remarks-body textarea{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+@media(max-width:620px){
+  .customer-details-v106 > .customer-remarks-row{
+    grid-template-columns:minmax(0,1fr) 72px!important;
+    column-gap:10px!important;
+  }
+  .customer-details-v106 > .customer-remarks-row > dt{
+    grid-column:1/-1!important;
+  }
+  .customer-details-v106 > .customer-remarks-row > .customer-remarks-body{
+    grid-column:1!important;
+  }
+  .customer-details-v106 > .customer-remarks-row > .customer-remarks-action{
+    grid-column:2!important;
+  }
+}

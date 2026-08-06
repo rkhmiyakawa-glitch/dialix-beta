@@ -182,7 +182,7 @@ export default function CustomerInfoCard({
 
         <div className="customer-remarks-row">
           <dt>備考</dt>
-          <dd className={isEditingRemarks ? "is-editing" : "is-viewing"}>
+          <dd className={`customer-remarks-body ${isEditingRemarks ? "is-editing" : "is-viewing"}`}>
             {isEditingRemarks ? (
               <textarea
                 rows="4"
@@ -195,17 +195,17 @@ export default function CustomerInfoCard({
             ) : (
               <div className="customer-remarks-value">{customer.pinnedMemo || "―"}</div>
             )}
-            <div className="customer-remarks-action">
-              <button
-                className={isEditingRemarks ? "primary-button customer-remarks-save-button" : "secondary-button customer-edit-button"}
-                type="button"
-                onClick={isEditingRemarks ? saveRemarks : beginRemarksEdit}
-                disabled={isSaving || isUpdating}
-              >
-                {isEditingRemarks ? (isUpdating ? "保存中..." : "保存") : "編集"}
-              </button>
-            </div>
           </dd>
+          <div className="customer-remarks-action">
+            <button
+              className={isEditingRemarks ? "primary-button customer-remarks-save-button" : "secondary-button customer-edit-button"}
+              type="button"
+              onClick={isEditingRemarks ? saveRemarks : beginRemarksEdit}
+              disabled={isSaving || isUpdating}
+            >
+              {isEditingRemarks ? (isUpdating ? "保存中..." : "保存") : "編集"}
+            </button>
+          </div>
         </div>
 
         {customer.reminderAt && (
