@@ -3389,3 +3389,8 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   align-items:center!important;
   justify-content:center!important;
 }
+
+/* v1.0.103: match the remarks field's top spacing to the other customer values. */
+.customer-details-v106 > .customer-remarks-row > dd{
+  padding-top:6px!important;
+}
