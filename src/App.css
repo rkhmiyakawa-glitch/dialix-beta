@@ -334,14 +334,19 @@ body{background:#f4f7fb;color:#142039}.app-page{min-height:100vh;padding-left:21
 }
 
 /* v1.0.98: customer editing and remarks */
-.customer-edit-button{min-height:34px;padding:7px 13px;border:1px solid #c9d4e3;border-radius:9px;background:#fff;color:#263b57;font-size:13px}
-.customer-edit-button:hover{border-color:#527ba8;color:#2f5b8b}
+.customer-edit-button{min-height:38px;padding:8px 15px;font-size:14px}
 .customer-edit-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 18px;margin-top:22px}
 .customer-edit-form label{display:grid;gap:7px;color:#647187;font-size:13px}
-.customer-edit-form label:nth-child(3),.customer-edit-form label:nth-child(4),.customer-edit-form label:nth-child(5){grid-column:1/-1}
+.customer-edit-form label:nth-child(4),.customer-edit-form label:nth-child(5){grid-column:1/-1}
 .customer-edit-form input{height:44px;padding:0 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff}
 .customer-edit-form textarea{margin-top:0;min-height:82px}
 .customer-edit-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
+.customer-remarks-row{grid-column:1/-1!important}
+.customer-remarks-row dd{display:grid;gap:10px}
+.customer-remarks-row textarea{width:100%;min-height:112px;margin:0;padding:12px 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff;color:#18243b;font:inherit;line-height:1.6;resize:vertical;white-space:pre-wrap}
+.customer-remarks-row textarea:focus{outline:0;border-color:#527ba8;box-shadow:0 0 0 3px rgba(82,123,168,.12)}
+.customer-remarks-actions{display:flex;justify-content:flex-end}
+.customer-remarks-actions .primary-button{min-height:38px;padding:8px 15px}
 @media(max-width:720px){.customer-edit-form{grid-template-columns:1fr}.customer-edit-form label{grid-column:1!important}}
 @media(max-width:720px){
   .app-page{padding-top:62px!important}

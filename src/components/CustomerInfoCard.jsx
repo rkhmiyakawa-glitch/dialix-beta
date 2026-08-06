@@ -59,6 +59,7 @@ export default function CustomerInfoCard({
     setDraft({
       companyName: customer.companyName || "",
       phone: customer.phone || "",
+      phone2: customer.phone2 || "",
       address: customer.address || "",
       businessSubcategory: customer.businessSubcategory || "",
       pinnedMemo: customer.pinnedMemo || "",
@@ -69,6 +70,7 @@ export default function CustomerInfoCard({
     setDraft({
       companyName: customer.companyName || "",
       phone: customer.phone || "",
+      phone2: customer.phone2 || "",
       address: customer.address || "",
       businessSubcategory: customer.businessSubcategory || "",
       pinnedMemo: customer.pinnedMemo || "",
@@ -95,7 +97,7 @@ export default function CustomerInfoCard({
         </div>
 
         <div className="presence-badges">
-          {!isEditing && <button className="customer-edit-button" type="button" onClick={beginEdit} disabled={isSaving}>編集</button>}
+          {!isEditing && <button className="secondary-button customer-edit-button" type="button" onClick={beginEdit} disabled={isSaving}>編集</button>}
           <span className="room-status">入室中</span>
           <span className={callState === "calling" ? "call-status active" : "call-status"}>
             {callState === "calling" ? "架電中" : "待機中"}
@@ -107,9 +109,9 @@ export default function CustomerInfoCard({
         <div className="customer-edit-form">
           <label>顧客名<input value={draft.companyName} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} /></label>
           <label>電話番号<input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} /></label>
+          <label>電話番号2<input value={draft.phone2} onChange={(e) => setDraft({ ...draft, phone2: e.target.value })} /></label>
           <label>住所<input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} /></label>
           <label>詳細<textarea rows="3" value={draft.businessSubcategory} onChange={(e) => setDraft({ ...draft, businessSubcategory: e.target.value })} /></label>
-          <label>備考<textarea rows="4" value={draft.pinnedMemo} onChange={(e) => setDraft({ ...draft, pinnedMemo: e.target.value })} placeholder="常に表示しておきたい情報を入力" /></label>
           <div className="customer-edit-actions">
             <button className="secondary-button" type="button" onClick={() => setIsEditing(false)} disabled={isUpdating}>キャンセル</button>
             <button className="primary-button" type="button" onClick={saveEdit} disabled={isUpdating}>{isUpdating ? "保存中..." : "顧客情報を保存"}</button>
@@ -148,6 +150,31 @@ export default function CustomerInfoCard({
           </dd>
         </div>
 
+        <div className="customer-phone-row">
+          <dt>電話番号2</dt>
+          <dd className="customer-value-line phone-line">
+            <button
+              className="phone-number-link"
+              type="button"
+              onClick={() => onZoomCall(customer.phone2)}
+              disabled={isSaving || !customer.phone2}
+              title="電話番号2をクリックして発信"
+            >
+              {customer.phone2 || "―"}
+            </button>
+            <button
+              className="icon-copy-button"
+              type="button"
+              onClick={() => onCopyField(customer.phone2, "電話番号2")}
+              disabled={isSaving || !customer.phone2}
+              aria-label="電話番号2をコピー"
+              title="電話番号2をコピー"
+            >
+              <CopyIcon />
+            </button>
+          </dd>
+        </div>
+
         <DetailRow
           label="住所"
           value={customer.address}
@@ -162,16 +189,32 @@ export default function CustomerInfoCard({
           copyLabel="詳細"
         />
 
-        <DetailRow
-          label="備考"
-          value={customer.pinnedMemo}
-          onCopy={onCopyField}
-          copyLabel="備考"
-        />
-
         {(customer.status || customer.history?.length > 0) && customer.ap && (
           <DetailRow label="AP" value={customer.ap} onCopy={onCopyField} copyLabel="AP" />
         )}
+
+        <div className="customer-remarks-row">
+          <dt>備考</dt>
+          <dd>
+            <textarea
+              rows="4"
+              value={draft.pinnedMemo || ""}
+              onChange={(event) => setDraft({ ...draft, pinnedMemo: event.target.value })}
+              placeholder="常に表示しておきたい情報を入力"
+              disabled={isSaving || isUpdating}
+            />
+            <div className="customer-remarks-actions">
+              <button
+                className="primary-button"
+                type="button"
+                onClick={saveEdit}
+                disabled={isSaving || isUpdating || (draft.pinnedMemo || "") === (customer.pinnedMemo || "")}
+              >
+                {isUpdating ? "保存中..." : "備考を保存"}
+              </button>
+            </div>
+          </dd>
+        </div>
 
         {customer.reminderAt && (
           <div className="customer-reminder-row">

@@ -42,6 +42,7 @@ function mapCustomer(row, profilesById = new Map(), profilesByEmail = new Map())
     id: row.id,
     companyName: row.company_name,
     phone: row.phone,
+    phone2: row.phone_2 || "",
     address: row.address || "",
     businessSubcategory: row.business_subcategory || "",
     pinnedMemo: row.pinned_memo || "",
@@ -125,7 +126,7 @@ export async function fetchCustomers(listId) {
   // 顧客一覧では履歴を取得しない。大量リストでの初回表示を優先し、履歴は顧客を開いた時だけ取得する。
   const data = await fetchAllRows(() => supabase
     .from("customers")
-    .select("id,company_name,phone,address,business_subcategory,pinned_memo,ap_name,status,last_called_at,reminder_at")
+    .select("id,company_name,phone,phone_2,address,business_subcategory,pinned_memo,ap_name,status,last_called_at,reminder_at")
     .eq("list_id", listId)
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("id", { ascending: true }));
@@ -168,6 +169,7 @@ export async function fetchCustomerDetails(customerId) {
         id,
         company_name,
         phone,
+        phone_2,
         address,
         business_subcategory,
         pinned_memo,
@@ -218,6 +220,7 @@ export async function updateCustomerInfo(customerId, values) {
   const normalized = {
     companyName: String(values.companyName || "").trim(),
     phone: String(values.phone || "").trim(),
+    phone2: String(values.phone2 || "").trim(),
     address: String(values.address || "").trim(),
     businessSubcategory: String(values.businessSubcategory || "").trim(),
     pinnedMemo: String(values.pinnedMemo || ""),
@@ -229,6 +232,7 @@ export async function updateCustomerInfo(customerId, values) {
   const { error } = await supabase.from("customers").update({
     company_name: normalized.companyName,
     phone: normalized.phone,
+    phone_2: normalized.phone2 || null,
     address: normalized.address,
     business_subcategory: normalized.businessSubcategory,
     pinned_memo: normalized.pinnedMemo,
