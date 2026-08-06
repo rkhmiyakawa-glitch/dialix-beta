@@ -50,12 +50,12 @@ export default function CustomerInfoCard({
   isSaving = false,
   onSaveCustomer,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingRemarks, setIsEditingRemarks] = useState(false);
   const [draft, setDraft] = useState({});
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    setIsEditing(false);
+    setIsEditingRemarks(false);
     setDraft({
       companyName: customer.companyName || "",
       phone: customer.phone || "",
@@ -66,7 +66,7 @@ export default function CustomerInfoCard({
     });
   }, [customer.id]);
 
-  function beginEdit() {
+  function beginRemarksEdit() {
     setDraft({
       companyName: customer.companyName || "",
       phone: customer.phone || "",
@@ -75,14 +75,14 @@ export default function CustomerInfoCard({
       businessSubcategory: customer.businessSubcategory || "",
       pinnedMemo: customer.pinnedMemo || "",
     });
-    setIsEditing(true);
+    setIsEditingRemarks(true);
   }
 
-  async function saveEdit() {
+  async function saveRemarks() {
     setIsUpdating(true);
     try {
       await onSaveCustomer(draft);
-      setIsEditing(false);
+      setIsEditingRemarks(false);
     } finally {
       setIsUpdating(false);
     }
@@ -104,19 +104,7 @@ export default function CustomerInfoCard({
         </div>
       </div>
 
-      {isEditing ? (
-        <div className="customer-edit-form">
-          <label>顧客名<input value={draft.companyName} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} /></label>
-          <label>電話番号<input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} /></label>
-          <label>電話番号2<input value={draft.phone2} onChange={(e) => setDraft({ ...draft, phone2: e.target.value })} /></label>
-          <label>住所<input value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} /></label>
-          <label>詳細<textarea rows="3" value={draft.businessSubcategory} onChange={(e) => setDraft({ ...draft, businessSubcategory: e.target.value })} /></label>
-          <div className="customer-edit-actions">
-            <button className="secondary-button" type="button" onClick={() => setIsEditing(false)} disabled={isUpdating}>キャンセル</button>
-            <button className="primary-button" type="button" onClick={saveEdit} disabled={isUpdating}>{isUpdating ? "保存中..." : "顧客情報を保存"}</button>
-          </div>
-        </div>
-      ) : <dl className="customer-details customer-details-v106">
+      <dl className="customer-details customer-details-v106">
         <DetailRow
           label="顧客ID"
           value={customer.id}
@@ -194,30 +182,27 @@ export default function CustomerInfoCard({
 
         <div className="customer-remarks-row">
           <dt>備考</dt>
-          <dd>
-            <textarea
-              rows="4"
-              value={draft.pinnedMemo || ""}
-              onChange={(event) => setDraft({ ...draft, pinnedMemo: event.target.value })}
-              placeholder="常に表示しておきたい情報を入力"
-              disabled={isSaving || isUpdating}
-            />
-            <div className="customer-remarks-actions">
+          <dd className={isEditingRemarks ? "is-editing" : "is-viewing"}>
+            {isEditingRemarks ? (
+              <textarea
+                rows="4"
+                value={draft.pinnedMemo || ""}
+                onChange={(event) => setDraft({ ...draft, pinnedMemo: event.target.value })}
+                placeholder="常に表示しておきたい情報を入力"
+                disabled={isSaving || isUpdating}
+                autoFocus
+              />
+            ) : (
+              <div className="customer-remarks-value">{customer.pinnedMemo || "―"}</div>
+            )}
+            <div className="customer-remarks-action">
               <button
-                className="secondary-button customer-edit-button"
+                className={isEditingRemarks ? "primary-button customer-remarks-save-button" : "secondary-button customer-edit-button"}
                 type="button"
-                onClick={beginEdit}
+                onClick={isEditingRemarks ? saveRemarks : beginRemarksEdit}
                 disabled={isSaving || isUpdating}
               >
-                編集
-              </button>
-              <button
-                className="primary-button customer-remarks-save-button"
-                type="button"
-                onClick={saveEdit}
-                disabled={isSaving || isUpdating || (draft.pinnedMemo || "") === (customer.pinnedMemo || "")}
-              >
-                {isUpdating ? "保存中..." : "保存"}
+                {isEditingRemarks ? (isUpdating ? "保存中..." : "保存") : "編集"}
               </button>
             </div>
           </dd>
@@ -234,7 +219,7 @@ export default function CustomerInfoCard({
             </dd>
           </div>
         )}
-      </dl>}
+      </dl>
     </section>
   );
 }

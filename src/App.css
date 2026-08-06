@@ -343,11 +343,12 @@ body{background:#f4f7fb;color:#142039}.app-page{min-height:100vh;padding-left:21
 .customer-edit-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
 .customer-details-v106>.customer-remarks-row{grid-column:1/-1!important;align-items:start!important;padding:10px 0!important}
 .customer-remarks-row dt{padding-top:0}
-.customer-remarks-row dd{display:grid;gap:10px}
+.customer-remarks-row dd{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px}
+.customer-remarks-value{min-height:38px;padding:8px 0;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .customer-remarks-row textarea{width:100%;min-height:112px;margin:0;padding:12px 13px;border:1px solid #cfd8e6;border-radius:9px;background:#fff;color:#18243b;font:inherit;line-height:1.6;resize:vertical;white-space:pre-wrap}
 .customer-remarks-row textarea:focus{outline:0;border-color:#527ba8;box-shadow:0 0 0 3px rgba(82,123,168,.12)}
-.customer-remarks-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px}
-.customer-remarks-actions .secondary-button,.customer-remarks-actions .primary-button{flex:0 0 auto;width:auto!important;min-width:72px;min-height:38px;padding:8px 15px}
+.customer-remarks-action{display:flex;justify-content:flex-end;align-items:flex-start}
+.customer-remarks-action .secondary-button,.customer-remarks-action .primary-button{flex:0 0 auto;width:72px!important;min-width:72px;max-width:72px;min-height:38px;padding:8px 12px}
 @media(max-width:720px){.customer-edit-form{grid-template-columns:1fr}.customer-edit-form label{grid-column:1!important}}
 @media(max-width:720px){
   .app-page{padding-top:62px!important}
@@ -3369,16 +3370,9 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   .app-dialog-actions button{flex:1;}
 }
 
-/* v1.0.102: keep the remarks action buttons compact and right aligned. */
-.customer-remarks-row .customer-remarks-actions{
-  display:flex!important;
-  width:100%!important;
-  justify-content:flex-end!important;
-  align-items:center!important;
-  gap:10px!important;
-}
-.customer-remarks-row .customer-remarks-actions .customer-edit-button,
-.customer-remarks-row .customer-remarks-actions .customer-remarks-save-button{
+/* v1.0.104: keep the single remarks action compact at the field's right edge. */
+.customer-remarks-row .customer-remarks-action .customer-edit-button,
+.customer-remarks-row .customer-remarks-action .customer-remarks-save-button{
   display:inline-flex!important;
   flex:0 0 72px!important;
   width:72px!important;
@@ -3390,7 +3384,11 @@ button.overview-day:hover { transform:translateY(-1px); border-color:#93c5fd; bo
   justify-content:center!important;
 }
 
-/* v1.0.103: match the remarks field's top spacing to the other customer values. */
+/* v1.0.104: use the same divider spacing as every other customer row. */
 .customer-details-v106 > .customer-remarks-row > dd{
-  padding-top:6px!important;
+  padding-top:0!important;
+}
+
+@media(max-width:720px){
+  .customer-remarks-row dd{grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important}
 }
