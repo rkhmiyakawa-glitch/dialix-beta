@@ -34,7 +34,6 @@ export default function StatusButtons({
       <div className="section-heading">
         <h2>コールステータス</h2>
         <div className="status-heading-actions">
-          <span>必須</span>
           <button
             type="button"
             className={`status-clear-button${

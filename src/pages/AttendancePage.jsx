@@ -71,7 +71,7 @@ export default function AttendancePage({ currentProfile, onGoLists, onLogout, on
           <label>希望退勤時刻<input type="time" value={requestForm.clockOut} onChange={(e)=>setRequestForm({...requestForm,clockOut:e.target.value})} /></label>
           <label>理由<select value={requestForm.reasonType} onChange={(e)=>setRequestForm({...requestForm,reasonType:e.target.value})}><option>出勤押し忘れ</option><option>退勤押し忘れ</option><option>時間修正</option><option>その他</option></select></label>
           <label className="attendance-correction-detail">詳細<input value={requestForm.reasonDetail} onChange={(e)=>setRequestForm({...requestForm,reasonDetail:e.target.value})} placeholder="状況を入力してください" /></label>
-          <button className="primary-button" type="submit" disabled={requestSaving}>{requestSaving ? "依頼中..." : "修正依頼を送信"}</button>
+          <div className="attendance-correction-actions"><button className="primary-button" type="submit" disabled={requestSaving}>{requestSaving ? "依頼中..." : "修正依頼を送信"}</button></div>
         </form>
         {requests.length > 0 && <div className="table-scroll"><table className="admin-table"><thead><tr><th>依頼日</th><th>対象日</th><th>内容</th><th>理由</th><th>状態</th></tr></thead><tbody>{requests.map((r)=><tr key={r.id}><td>{new Date(r.created_at).toLocaleString("ja-JP")}</td><td>{r.work_date}</td><td>{fmtTime(r.requested_clock_in)}〜{fmtTime(r.requested_clock_out)}</td><td>{r.reason_type}{r.reason_detail ? `：${r.reason_detail}` : ""}</td><td><span className={`request-status ${r.status}`}>{({pending:"依頼中",approved:"承認",rejected:"却下"})[r.status] || r.status}</span></td></tr>)}</tbody></table></div>}
       </section>

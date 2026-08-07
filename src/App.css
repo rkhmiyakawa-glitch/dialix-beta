@@ -480,6 +480,37 @@ input,select,textarea,button{max-width:100%}
   .save-bar button{font-size:14px!important;min-height:46px!important}
 }
 
+/* v1.0.111: align form actions and tighten the call-status heading. */
+.attendance-correction-actions{
+  grid-column:1 / -1;
+  display:flex;
+  justify-content:flex-end;
+}
+.attendance-correction-actions .primary-button,
+.mypage-form-actions .primary-button{
+  width:auto!important;
+}
+.mypage-form-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:auto;
+}
+.mypage-panel{
+  display:flex;
+  flex-direction:column;
+}
+.status-panel .section-heading{
+  align-items:start;
+  margin-bottom:8px;
+}
+.status-panel .status-heading-actions{
+  justify-self:end;
+}
+.status-panel .status-workspace,
+.status-panel .status-workspace > .status-grid{
+  margin-top:0!important;
+}
+
 
 /* v1.0.4 customer page arrangement */
 .call-layout-v1{

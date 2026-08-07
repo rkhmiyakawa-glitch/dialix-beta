@@ -107,13 +107,13 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
             <div><dt>アカウント状態</dt><dd>{currentProfile?.isActive === false ? "停止" : "有効"}</dd></div>
           </dl>
           <p className="mypage-note">メールアドレスと権限の変更は管理者が行います。</p>
-          <button className="primary-button" type="submit" disabled={profileSaving}>{profileSaving ? "保存中..." : "表示名を保存"}</button>
+          <div className="mypage-form-actions"><button className="primary-button" type="submit" disabled={profileSaving}>{profileSaving ? "保存中..." : "表示名を保存"}</button></div>
         </form>
         <form className="panel mypage-panel" onSubmit={savePassword}>
           <h2>パスワード変更</h2>
           <label>新しいパスワード<input type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="8文字以上" /></label>
           <label>新しいパスワード（確認）<input type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></label>
-          <button className="primary-button" type="submit" disabled={passwordSaving}>{passwordSaving ? "変更中..." : "パスワードを変更"}</button>
+          <div className="mypage-form-actions"><button className="primary-button" type="submit" disabled={passwordSaving}>{passwordSaving ? "変更中..." : "パスワードを変更"}</button></div>
         </form>
       </div>
     </section>
