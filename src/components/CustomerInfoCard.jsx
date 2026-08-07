@@ -61,6 +61,8 @@ export default function CustomerInfoCard({
       phone: customer.phone || "",
       phone2: customer.phone2 || "",
       address: customer.address || "",
+      industry: customer.industry || "",
+      representativeName: customer.representativeName || "",
       businessSubcategory: customer.businessSubcategory || "",
       pinnedMemo: customer.pinnedMemo || "",
     });
@@ -72,6 +74,8 @@ export default function CustomerInfoCard({
       phone: customer.phone || "",
       phone2: customer.phone2 || "",
       address: customer.address || "",
+      industry: customer.industry || "",
+      representativeName: customer.representativeName || "",
       businessSubcategory: customer.businessSubcategory || "",
       pinnedMemo: customer.pinnedMemo || "",
     });
@@ -170,10 +174,24 @@ export default function CustomerInfoCard({
         />
 
         <DetailRow
-          label="詳細"
+          label="業種"
+          value={customer.industry}
+          onCopy={onCopyField}
+          copyLabel="業種"
+        />
+
+        <DetailRow
+          label="代表名"
+          value={customer.representativeName}
+          onCopy={onCopyField}
+          copyLabel="代表名"
+        />
+
+        <DetailRow
+          label="その他"
           value={customer.businessSubcategory}
           onCopy={onCopyField}
-          copyLabel="詳細"
+          copyLabel="その他"
         />
 
         {(customer.status || customer.history?.length > 0) && customer.ap && (

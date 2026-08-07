@@ -27,6 +27,8 @@ export const customersByList = {
     {
       id: "CUST-000001",
       companyName: "株式会社サンプルダイニング",
+      industry: "飲食業",
+      representativeName: "山田 太郎",
       businessSubcategory: "レストラン",
       phone: "03-1234-5678",
       address: "東京都新宿区西新宿1-1-1",
@@ -42,6 +44,8 @@ export const customersByList = {
     {
       id: "CUST-000002",
       companyName: "株式会社東京キッチン",
+      industry: "飲食業",
+      representativeName: "佐藤 花子",
       businessSubcategory: "ラーメン店",
       phone: "03-2345-6789",
       address: "東京都渋谷区道玄坂2-2-2",
@@ -113,6 +117,8 @@ export const customersByList = {
     {
       id: "CUST-000007",
       companyName: "カフェリベルタ合同会社",
+      industry: "飲食業",
+      representativeName: "鈴木 一郎",
       businessSubcategory: "喫茶店",
       phone: "043-777-8899",
       address: "千葉県千葉市中央区中央3-7-7",
@@ -144,6 +150,8 @@ export const customersByList = {
     {
       id: "CUST-010001",
       companyName: "美容室ルーチェ",
+      industry: "美容業",
+      representativeName: "高橋 美咲",
       businessSubcategory: "美容室",
       phone: "03-1111-2222",
       address: "東京都世田谷区北沢1-1-1",

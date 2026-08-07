@@ -155,6 +155,8 @@ export async function fetchListExportCustomers(listId) {
       phone: customer.phone || "",
       phone_2: customer.phone2 || "",
       address: customer.address || "",
+      industry: customer.industry || "",
+      representative_name: customer.representativeName || "",
       business_subcategory: customer.businessSubcategory || "",
       pinned_memo: customer.pinnedMemo || "",
       ap_name: customer.ap || "",
@@ -218,12 +220,12 @@ export function downloadCustomersCsv(listName, customers) {
 }
 
 export function downloadListDataCsv(listName, customers) {
-  const preferredColumns = ["id", "list_id", "company_name", "phone", "phone_2", "address", "business_subcategory", "pinned_memo", "ap_name", "status", "last_called_at", "reminder_at", "sort_order", "created_at", "updated_at", "call_histories"];
+  const preferredColumns = ["id", "list_id", "company_name", "phone", "phone_2", "address", "industry", "representative_name", "business_subcategory", "pinned_memo", "ap_name", "status", "last_called_at", "reminder_at", "sort_order", "created_at", "updated_at", "call_histories"];
   const allColumns = [...new Set(customers.flatMap((item) => Object.keys(item)))];
   const columns = [...preferredColumns, ...allColumns.filter((column) => !preferredColumns.includes(column))];
   const headerLabels = {
     id: "顧客ID", list_id: "リストID", company_name: "顧客名", phone: "電話番号", phone_2: "電話番号2",
-    address: "住所", business_subcategory: "詳細", pinned_memo: "備考", ap_name: "最終担当AP", status: "コールステータス",
+    address: "住所", industry: "業種", representative_name: "代表名", business_subcategory: "その他", pinned_memo: "備考", ap_name: "最終担当AP", status: "コールステータス",
     last_called_at: "最終架電日時", reminder_at: "次回架電日時", sort_order: "表示順", created_at: "顧客登録日時",
     updated_at: "顧客更新日時", call_histories: "架電履歴（全件）",
   };

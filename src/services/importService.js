@@ -5,7 +5,7 @@ const HEADER_ALIASES = {
   companyName: ["顧客名", "企業名", "会社名", "店舗名", "company", "company_name"],
   phone: ["電話番号", "電話", "tel", "phone"],
   address: ["住所", "所在地", "address"],
-  businessSubcategory: ["詳細", "小項目", "小分類", "業種小分類", "サブカテゴリ", "business_subcategory", "事業内容"],
+  businessSubcategory: ["その他", "詳細", "小項目", "小分類", "業種小分類", "サブカテゴリ", "business_subcategory", "事業内容"],
   status: ["ステータス", "架電結果", "コールステータス", "status"],
   memo: ["メモ", "備考", "架電メモ", "memo"],
   apName: ["最終担当AP", "担当AP", "ap", "AP", "アポインター", "担当者", "ap_name"],

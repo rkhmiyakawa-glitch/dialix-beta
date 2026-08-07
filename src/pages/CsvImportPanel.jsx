@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DIALIX_STATUSES, IGNORE_AP_MAPPING, IGNORE_STATUS_MAPPING, fetchImportLists, fetchImportProfiles, guessMapping, guessStatusMappings, importCustomers, parseCsv, prepareRows } from "../services/importService";
 
 const fieldLabels = {
-  companyName: "顧客名（必須）", phone: "電話番号（必須）", address: "住所", businessSubcategory: "詳細・事業内容",
+  companyName: "顧客名（必須）", phone: "電話番号（必須）", address: "住所", businessSubcategory: "その他",
   status: "既存ステータス", memo: "メモ", apName: "最終担当AP", lastCalledAt: "最終架電日時", reminderAt: "次回架電日時",
 };
 

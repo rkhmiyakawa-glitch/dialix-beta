@@ -301,6 +301,8 @@ export default function App() {
       companyName: task.companyName || "顧客",
       phone: task.phone || "",
       address: task.address || "",
+      industry: task.industry || "",
+      representativeName: task.representativeName || "",
       businessSubcategory: task.businessSubcategory || "",
       ap: task.apName || "",
       status: task.status || "",
