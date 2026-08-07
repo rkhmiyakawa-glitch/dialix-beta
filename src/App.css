@@ -501,9 +501,29 @@ input,select,textarea,button{max-width:100%}
   justify-content:flex-end;
   margin-top:auto;
 }
+.mypage-profile-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:auto;
+}
+.mypage-profile-footer .mypage-note{
+  margin:0;
+}
+.mypage-profile-footer .mypage-form-actions{
+  flex:0 0 auto;
+  margin-top:0;
+}
 .mypage-panel{
   display:flex;
   flex-direction:column;
+}
+@media(max-width:560px){
+  .mypage-profile-footer{
+    align-items:flex-end;
+    flex-direction:column;
+  }
 }
 .status-panel .section-heading{
   align-items:start;

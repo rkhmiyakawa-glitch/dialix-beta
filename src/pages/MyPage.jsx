@@ -106,8 +106,10 @@ export default function MyPage({ currentProfile, onProfileUpdated, onBack, onGoL
             <div><dt>権限</dt><dd>{roleLabels[String(currentProfile?.role || "").toLowerCase()] || "オペレーター"}</dd></div>
             <div><dt>アカウント状態</dt><dd>{currentProfile?.isActive === false ? "停止" : "有効"}</dd></div>
           </dl>
-          <p className="mypage-note">メールアドレスと権限の変更は管理者が行います。</p>
-          <div className="mypage-form-actions"><button className="primary-button" type="submit" disabled={profileSaving}>{profileSaving ? "保存中..." : "表示名を保存"}</button></div>
+          <div className="mypage-profile-footer">
+            <p className="mypage-note">メールアドレスと権限の変更は管理者が行います。</p>
+            <div className="mypage-form-actions"><button className="primary-button" type="submit" disabled={profileSaving}>{profileSaving ? "保存中..." : "表示名を保存"}</button></div>
+          </div>
         </form>
         <form className="panel mypage-panel" onSubmit={savePassword}>
           <h2>パスワード変更</h2>
