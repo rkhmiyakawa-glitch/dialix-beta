@@ -539,16 +539,16 @@ export default function App() {
         calledAt: result.savedAt,
         at: savedAtLabel,
         ap: userName,
-        status: payload.status,
+        status: result.isCorrection ? payload.correctionStatus : payload.status,
         memo: payload.memo || "",
       };
       const refreshed = customers.map((customer) =>
         customer.id === payload.customerId
           ? {
               ...customer,
-              ap: userName,
-              status: payload.status,
-              lastCallAt: savedAtLabel,
+              ap: result.isCorrection ? customer.ap : userName,
+              status: result.isCorrection ? payload.correctionStatus : payload.status,
+              lastCallAt: result.isCorrection ? customer.lastCallAt : savedAtLabel,
               reminderAt: payload.reminderDate && payload.reminderTime
                 ? new Date(`${payload.reminderDate}T${payload.reminderTime}`).toLocaleString("ja-JP")
                 : "",
@@ -565,9 +565,9 @@ export default function App() {
     const savedAtLabel = new Date(result.savedAt).toLocaleString("ja-JP");
     const optimistic = {
       ...selectedCustomer,
-      ap: userName,
-      status: payload.status,
-      lastCallAt: savedAtLabel,
+      ap: result.isCorrection ? selectedCustomer.ap : userName,
+      status: result.isCorrection ? payload.correctionStatus : payload.status,
+      lastCallAt: result.isCorrection ? selectedCustomer.lastCallAt : savedAtLabel,
       reminderAt: payload.reminderDate && payload.reminderTime
         ? new Date(`${payload.reminderDate}T${payload.reminderTime}`).toLocaleString("ja-JP")
         : "",

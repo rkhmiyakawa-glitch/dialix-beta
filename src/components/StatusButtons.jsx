@@ -26,6 +26,8 @@ export default function StatusButtons({
   onAssigneeChange,
   onClearStatus,
   disabled = false,
+  correctionStatus = "",
+  onCorrectionStatusChange,
 }) {
   const details = detailOptions[selectedCategory] || [];
 
@@ -132,6 +134,30 @@ export default function StatusButtons({
                   embedded
                 />
               </div>
+            </div>
+          )}
+
+          {selectedCategory === "内容修正" && (
+            <div className="correction-detail-area">
+              <p className="status-detail-label">直前の架電履歴を訂正します</p>
+              <label className="correction-status-field">
+                <span>訂正後のステータス</span>
+                <select value={correctionStatus} onChange={(event) => onCorrectionStatusChange?.(event.target.value)} disabled={disabled}>
+                  <option value="">選択してください</option>
+                  {["留守", "NG", "非決裁NG", "決裁NG", "対象外", "内容相違", "現アナ", "再コール", "再コール留守", "見込み", "非決裁見込み", "決裁見込み", "見込み留守", "トスアップ", "前確依頼", "前確OK", "前確NG"].map((name) => <option key={name} value={name}>{name}</option>)}
+                </select>
+              </label>
+              <div className="status-reminder-area">
+                <ReminderPanel
+                  reminderDate={reminderDate}
+                  reminderTime={reminderTime}
+                  onDateChange={onReminderDateChange}
+                  onTimeChange={onReminderTimeChange}
+                  disabled={disabled}
+                  embedded
+                />
+              </div>
+              <p className="correction-note">新しい架電には加算されず、前回の架電日時と担当APは維持されます。</p>
             </div>
           )}
 

@@ -34,6 +34,7 @@ function mapHistory(row, profilesById = new Map(), profilesByEmail = new Map()) 
     ap: resolveOperatorName(row, profilesById, profilesByEmail),
     status: row.status || "未架電",
     memo: row.memo || "",
+    reminderAt: row.reminder_at || "",
   };
 }
 
@@ -54,6 +55,7 @@ function mapCustomer(row, profilesById = new Map(), profilesByEmail = new Map())
     reminderAt: row.reminder_at
       ? new Date(row.reminder_at).toLocaleString("ja-JP")
       : "",
+    reminderAtRaw: row.reminder_at || "",
     reminderDue:
       Boolean(row.reminder_at) &&
       new Date(row.reminder_at).getTime() <= Date.now(),
@@ -183,7 +185,8 @@ export async function fetchCustomerDetails(customerId) {
           user_id,
           operator_name,
           status,
-          memo
+          memo,
+          reminder_at
         )
       `)
       .eq("id", customerId)
@@ -197,7 +200,7 @@ export async function fetchCustomerDetails(customerId) {
   if (!customerResult.data) return null;
   const row = customerResult.data;
   const customer = mapCustomer(row, profileMaps.byId, profileMaps.byEmail);
-  const latestHistory = customer.history[0];
+  const latestHistory = customer.history.find((item) => item.status !== "内容修正");
   const legacyName = profileMaps.byEmail.get(String(row.ap_name || "").toLowerCase()) || row.ap_name || "";
   return { ...customer, ap: customer.status || customer.history.length ? (latestHistory?.ap || legacyName) : "" };
 }
@@ -251,10 +254,13 @@ export async function saveCallResult({
   operatorName,
   userId,
   reminderAssignee,
+  correctionStatus,
 }) {
   if (!isSupabaseConfigured) {
     return {
       savedAt: new Date().toISOString(),
+      status: status === "内容修正" ? correctionStatus : status,
+      isCorrection: status === "内容修正",
       demoMode: true,
     };
   }
@@ -263,6 +269,28 @@ export async function saveCallResult({
     reminderDate && reminderTime
       ? new Date(`${reminderDate}T${reminderTime}`).toISOString()
       : null;
+
+  if (status === "内容修正") {
+    if (!correctionStatus) throw new Error("訂正後のステータスを選択してください。");
+    const { data, error } = await supabase.rpc("correct_latest_call_history", {
+      target_customer_id: customerId,
+      corrected_status: correctionStatus,
+      corrected_memo: memo || "",
+      corrected_reminder_at: reminderAt,
+      editor_user_id: userId || null,
+      editor_name: operatorName || "",
+    });
+    if (error) throw error;
+    invalidateListCache();
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      savedAt: row?.original_called_at || new Date().toISOString(),
+      auditSavedAt: row?.corrected_at || new Date().toISOString(),
+      status: correctionStatus,
+      isCorrection: true,
+      demoMode: false,
+    };
+  }
 
   const calledAt = new Date().toISOString();
   const assignedApName =

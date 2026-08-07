@@ -43,6 +43,7 @@ export default function CallPage({
   const [reminderTime, setReminderTime] = useState("");
   const [assignableProfiles, setAssignableProfiles] = useState([]);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState("");
+  const [correctionStatus, setCorrectionStatus] = useState("");
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [callState, setCallState] = useState("room");
@@ -69,6 +70,7 @@ export default function CallPage({
     setReminderDate("");
     setReminderTime("");
     setSelectedAssigneeId("");
+    setCorrectionStatus("");
     setIsDirty(false);
     setIsSaving(false);
     setCallState("room");
@@ -104,6 +106,29 @@ export default function CallPage({
     setSelectedCategory(category);
     setSelectedStatus(directStatuses.includes(category) ? category : "");
 
+    if (category === "内容修正") {
+      const latestCall = (selectedCustomer.history || []).find((item) => item.status !== "内容修正");
+      if (!latestCall) {
+        dialog.alert("訂正できる架電履歴がありません。");
+        setSelectedCategory("");
+        setSelectedStatus("");
+        return;
+      }
+      setCorrectionStatus(latestCall.status || "");
+      setMemo(latestCall.memo || "");
+      const reminderSource = latestCall.reminderAt || selectedCustomer.reminderAtRaw || "";
+      if (reminderSource) {
+        const date = new Date(reminderSource);
+        if (!Number.isNaN(date.getTime())) {
+          const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+          setReminderDate(local.slice(0, 10));
+          setReminderTime(local.slice(11, 16));
+        }
+      }
+    } else {
+      setCorrectionStatus("");
+    }
+
     if (!hasReminder) {
       setReminderDate("");
       setReminderTime("");
@@ -119,6 +144,7 @@ export default function CallPage({
     setReminderDate("");
     setReminderTime("");
     setSelectedAssigneeId("");
+    setCorrectionStatus("");
     setIsDirty(true);
   }
 
@@ -126,6 +152,10 @@ export default function CallPage({
     if (isSaving || !isDirty) return;
     if (!selectedStatus) {
       dialog.alert("コールステータスを選択してください");
+      return;
+    }
+    if (selectedStatus === "内容修正" && !correctionStatus) {
+      dialog.alert("訂正後のステータスを選択してください");
       return;
     }
 
@@ -138,6 +168,7 @@ export default function CallPage({
         reminderDate,
         reminderTime,
         reminderAssignee: assignableProfiles.find((profile) => profile.id === selectedAssigneeId) || null,
+        correctionStatus,
       });
 
       setIsDirty(false);
@@ -232,7 +263,7 @@ export default function CallPage({
             </section>
 
             <section className="call-column memo-column-v106">
-              <MemoBox value={memo} onChange={markDirty(setMemo)} disabled={isSaving} />
+              <MemoBox value={memo} onChange={markDirty(setMemo)} disabled={isSaving} label={selectedCategory === "内容修正" ? "訂正後のメモ" : "メモ"} />
             </section>
 
             <section className="call-column history-column-v106">
@@ -261,6 +292,8 @@ export default function CallPage({
                 assignableProfiles={assignableProfiles}
                 selectedAssigneeId={selectedAssigneeId}
                 onAssigneeChange={markDirty(setSelectedAssigneeId)}
+                correctionStatus={correctionStatus}
+                onCorrectionStatusChange={markDirty(setCorrectionStatus)}
               />
             </section>
           </div>

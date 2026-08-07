@@ -525,6 +525,9 @@ input,select,textarea,button{max-width:100%}
     flex-direction:column;
   }
 }
+
+/* v1.0.114: call history correction */
+.correction-detail-area{display:grid;gap:12px}.correction-status-field{display:grid;gap:7px}.correction-status-field span{color:#536078;font-size:13px;font-weight:400}.correction-status-field select{width:100%;min-height:44px;border:1px solid #d6deeb;border-radius:9px;padding:8px 10px;background:#fff;color:#17233a}.correction-note{margin:0;padding:10px 12px;border-radius:8px;background:#f8faff;color:#69768b;font-size:12px;line-height:1.55}
 .status-panel .section-heading{
   align-items:start;
   margin-bottom:8px;
