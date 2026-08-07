@@ -79,7 +79,7 @@ export default function ReportsPanel({ canResetKpi = false }) {
       <article><span>トスアップ</span><strong>{totals.tossupCount}</strong><small>件</small></article>
     </div>
     {loading ? <div className="empty-state">集計中...</div> : !rows.length ? <div className="empty-state">対象期間のデータはありません。</div> :
-      <div className="table-scroll"><table className="admin-table report-table"><thead><tr><th>日付</th><th>担当者</th><th>権限</th><th>コール</th><th>有効</th><th>有効率</th><th>決裁</th><th>決裁者率</th><th>再コール</th><th>見込み</th><th>トスアップ</th></tr></thead><tbody>
+      <div className="table-scroll report-table-scroll"><table className="admin-table report-table"><thead><tr><th>日付</th><th>担当者</th><th>権限</th><th>コール</th><th>有効</th><th>有効率</th><th>決裁</th><th>決裁者率</th><th>再コール</th><th>見込み</th><th>トスアップ</th></tr></thead><tbody>
         {rows.map((row) => <tr key={`${row.periodDate}-${row.userId}`}><td>{row.periodDate}</td><td><strong>{row.displayName}</strong></td><td>{roleLabel[row.role]}</td><td>{row.callCount}</td><td>{row.validCount}</td><td>{row.callCount ? `${Math.round(row.validCount / row.callCount * 100)}%` : "0%"}</td><td>{row.decisionCount}</td><td>{row.validCount ? `${Math.round(row.decisionCount / row.validCount * 100)}%` : "0%"}</td><td>{row.reCallCount}</td><td>{row.prospectCount}</td><td>{row.tossupCount}</td></tr>)}
       </tbody></table></div>}
   </section>;
