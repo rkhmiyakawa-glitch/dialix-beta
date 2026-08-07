@@ -482,9 +482,15 @@ input,select,textarea,button{max-width:100%}
 
 /* v1.0.111: align form actions and tighten the call-status heading. */
 .attendance-correction-actions{
-  grid-column:1 / -1;
+  grid-column:span 2;
   display:flex;
   justify-content:flex-end;
+}
+@media(max-width:900px){
+  .attendance-correction-actions{grid-column:span 2}
+}
+@media(max-width:600px){
+  .attendance-correction-actions{grid-column:span 1}
 }
 .attendance-correction-actions .primary-button,
 .mypage-form-actions .primary-button{
